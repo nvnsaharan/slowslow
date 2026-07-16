@@ -18,70 +18,197 @@
 <style>
   :root {
     color-scheme: light;
-    --bg: #ffffff;
-    --fg: #1a1a1a;
-    --muted: #666666;
-    --faint: #888888;
-    --border: #e1e4e8;
+    --bg: #fdfdfc;
+    --fg: #24292f;
+    --muted: #59636e;
+    --faint: #848d97;
+    --border: #e4e7eb;
     --border-strong: #d0d7de;
     --code-bg: #f6f8fa;
-    --inline-code-bg: #f0f1f3;
-    --link: #0969da;
-    --accent: #10857a;
+    --inline-code-bg: #eff1f3;
+    --inline-code-fg: #9a3d6e;
+    --link: #0b6bcb;
+    --accent: #0f766e;
+    --accent-soft: #e6f2f0;
+    --heading: #1f2328;
+    --tip-bg: #ecf8ef;     --tip-border: #34a853;   --tip-fg: #1d7a35;
+    --info-bg: #eaf3fd;    --info-border: #3b82f6;  --info-fg: #1d5fbf;
+    --warn-bg: #fdf3e2;    --warn-border: #f59e0b;  --warn-fg: #9a6a08;
+    --note-bg: #f3f1fb;    --note-border: #8b7ed8;  --note-fg: #5b4fb5;
+    --chip-bg: #eef1f4;
+    --selection: #b9e6e0;
   }
   :root[data-theme="dark"] {
     color-scheme: dark;
-    --bg: #121212;
-    --fg: #e6e6e6;
-    --muted: #aaaaaa;
-    --faint: #999999;
-    --border: #333333;
-    --border-strong: #3a3a3a;
-    --code-bg: #1e1e1e;
-    --inline-code-bg: #252525;
+    --bg: #14161a;
+    --fg: #dde1e6;
+    --muted: #9aa4af;
+    --faint: #7d8590;
+    --border: #2c313a;
+    --border-strong: #3d444d;
+    --code-bg: #1d2127;
+    --inline-code-bg: #262b33;
+    --inline-code-fg: #e59fc4;
     --link: #6cb2ff;
-    --accent: #34b3a6;
+    --accent: #2fbfae;
+    --accent-soft: #12332f;
+    --heading: #f0f3f6;
+    --tip-bg: #14261a;     --tip-border: #2ea04d;   --tip-fg: #56d364;
+    --info-bg: #142033;    --info-border: #3b82f6;  --info-fg: #79b8ff;
+    --warn-bg: #2b2111;    --warn-border: #d29922;  --warn-fg: #e3b341;
+    --note-bg: #201d31;    --note-border: #8b7ed8;  --note-fg: #b3a7f7;
+    --chip-bg: #23272e;
+    --selection: #0f5049;
   }
   * { box-sizing: border-box; }
+  ::selection { background: var(--selection); }
+  html { scroll-behavior: smooth; }
   body {
     margin: 0 auto;
-    padding: 2rem 1.25rem 4rem;
-    max-width: 46rem;
+    padding: 2rem 1.5rem 5rem;
+    max-width: 47rem;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size: 1.0625rem;
-    line-height: 1.7;
+    line-height: 1.75;
     color: var(--fg);
     background: var(--bg);
   }
-  h1, h2, h3, h4, h5, h6 { line-height: 1.3; margin: 2em 0 0.6em; }
-  h1 { font-size: 2rem; margin-top: 0.5em; }
+
+  /* ---- top bar ---- */
+  .lesson-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.875rem;
+    margin-bottom: 2.25rem;
+    padding-bottom: 0.875rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .lesson-nav a { color: var(--accent); text-decoration: none; font-weight: 600; }
+  .lesson-nav a:hover { text-decoration: underline; }
+
+  /* ---- headings ---- */
+  h1, h2, h3, h4, h5, h6 { line-height: 1.3; margin: 1.9em 0 0.6em; color: var(--heading); }
+  h1 { font-size: 2.125rem; margin-top: 0.4em; letter-spacing: -0.02em; }
+  h2 {
+    font-size: 1.5rem;
+    padding-bottom: 0.3em;
+    border-bottom: 2px solid var(--accent-soft);
+  }
+  h3 { font-size: 1.1875rem; }
+  h4 { font-size: 1.0625rem; }
+  h5 { font-size: 1rem; }
+  h6 {
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin: 1.5em 0 0.25em;
+  }
+
+  /* ---- text rhythm (site paragraphs are divs — give them real margins) ---- */
+  .mdx-p, p { margin: 0 0 1.05em; }
+  ul, ol, .mdx-ul, .mdx-ol { margin: 0 0 1.05em; padding-left: 1.6em; }
+  li, .mdx-li { margin: 0.3em 0; }
+  strong { color: var(--heading); }
+
+  /* ---- media ---- */
   img, svg, video { max-width: 100%; height: auto; }
+  .chrome { margin: 1.75em auto; text-align: center; }
+  .chrome img { border-radius: 10px; }
   figure { margin: 1.5em 0; text-align: center; }
-  figcaption { font-size: 0.875rem; color: var(--muted); }
+  figcaption, .MuiTypography-caption {
+    display: block;
+    font-size: 0.8438rem;
+    color: var(--muted);
+    text-align: center;
+    font-style: italic;
+    margin-top: 0.35em;
+  }
+
+  /* ---- code ---- */
   pre {
-    padding: 1em;
+    padding: 1em 1.15em;
     overflow-x: auto;
-    border-radius: 8px;
+    border-radius: 10px;
     background: var(--code-bg);
     border: 1px solid var(--border);
     font-size: 0.875rem;
-    line-height: 1.5;
+    line-height: 1.55;
+    margin: 1.25em 0;
   }
   code {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 0.9em;
+    font-size: 0.875em;
     background: var(--inline-code-bg);
-    padding: 0.15em 0.35em;
-    border-radius: 4px;
+    color: var(--inline-code-fg);
+    padding: 0.16em 0.4em;
+    border-radius: 5px;
   }
-  pre code { background: none; padding: 0; font-size: inherit; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+  /* ---- tables ---- */
   table { border-collapse: collapse; width: 100%; margin: 1.5em 0; display: block; overflow-x: auto; }
-  th, td { border: 1px solid var(--border-strong); padding: 0.5em 0.75em; text-align: left; }
-  th { background: var(--code-bg); }
-  blockquote { margin: 1.5em 0; padding: 0.5em 1.25em; border-left: 4px solid var(--border-strong); color: var(--muted); }
+  th, td { border: 1px solid var(--border-strong); padding: 0.55em 0.8em; text-align: left; }
+  th { background: var(--accent-soft); color: var(--heading); }
+  tr:nth-child(even) td { background: var(--code-bg); }
+
+  blockquote {
+    margin: 1.5em 0;
+    padding: 0.5em 1.25em;
+    border-left: 4px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 0 8px 8px 0;
+    color: var(--muted);
+  }
   a { color: var(--link); }
   hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
-  .lesson-source { font-size: 0.8125rem; color: var(--faint); margin-bottom: 2rem; }
+
+  /* ---- callouts (tip / info / warning / general / question) ---- */
+  .callout {
+    margin: 1.5em 0;
+    padding: 0.9em 1.15em 0.9em 1.3em;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    border-left-width: 4px;
+    position: relative;
+  }
+  .callout::before {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 0.3em;
+  }
+  .callout .mdx-p:last-child, .callout p:last-child { margin-bottom: 0; }
+  .callout svg[class*="heroicon"] { display: none; }
+  .callout-tip      { background: var(--tip-bg);  border-color: var(--tip-border); }
+  .callout-tip::before      { content: '💡 Tip';      color: var(--tip-fg); }
+  .callout-info     { background: var(--info-bg); border-color: var(--info-border); }
+  .callout-info::before     { content: 'ℹ️ Info';     color: var(--info-fg); }
+  .callout-warning  { background: var(--warn-bg); border-color: var(--warn-border); }
+  .callout-warning::before  { content: '⚠️ Warning';  color: var(--warn-fg); }
+  .callout-general  { background: var(--note-bg); border-color: var(--note-border); }
+  .callout-general::before  { content: '📝 Note';     color: var(--note-fg); }
+  .callout-question { background: var(--note-bg); border-color: var(--note-border); }
+  .callout-question::before { content: '❓ Question';  color: var(--note-fg); }
+
+  /* ---- chips (difficulty, companies, tags) ---- */
+  [class*="MuiChip-root"] {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    padding: 0.12em 0.7em;
+    border-radius: 999px;
+    background: var(--chip-bg);
+    border: 1px solid var(--border);
+    font-size: 0.8125rem;
+    color: var(--muted);
+    margin: 0.15em 0.25em 0.15em 0;
+  }
+  [class*="MuiChip-label"] { padding: 0; }
 
   #theme-toggle {
     position: fixed;
@@ -117,7 +244,9 @@
   refresh();
 })();
 </script>
-<p class="lesson-source">Saved for offline reading from <a href="https://www.hellointerview.com/learn/system-design/problem-breakdowns/ticketmaster">https://www.hellointerview.com/learn/system-design/problem-breakdowns/ticketmaster</a></p>
+<nav class="lesson-nav">
+  <a href="../../index.html">← Library</a>
+</nav>
 <main class="flex-1 min-w-0 overflow-y-auto print-main"><div class="flex flex-col bg-nav-bg-paper"><div class="px-4 md:px-6 max-w-7xl mx-auto py-3 w-full print-main-content" style="min-height:calc(100vh - 48px - 0px);transition:min-height 0.3s ease-in-out;background-color:var(--nav-bg-paper)"><div class="grid grid-cols-7 gap-12 md:gap-0 mx-auto max-w-5xl"><div class="col-span-7 w-full max-w-4xl md:pr-6 xl:col-span-5"><div class="relative"><div id="markdown" class="mui-4tqezl"><div class="chrome"><div class="flex flex-col gap-2"><div class="flex flex-col relative"><div class="flex items-center justify-between   "><h6 class="MuiTypography-root MuiTypography-h6 mui-pkyqy5">Common Problems</h6></div><div class="flex flex-col md:flex-row md:items-start md:justify-between md:gap-4"><div class="flex items-center gap-2"><h1 class="MuiTypography-root MuiTypography-h2 mui-xhvznl">Ticketmaster</h1><div class="MuiBox-root mui-yrscm7"></div></div></div><div class="flex flex-wrap items-center gap-2 mt-2"><div class="MuiButtonBase-root MuiChip-root MuiChip-filled MuiChip-sizeSmall MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-filledDefault mui-1occa5h" tabindex="0" role="button"><span class="MuiChip-label MuiChip-labelSmall mui-4y436t"><div class="MuiBox-root mui-c0u8y1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-4 h-4 heroicon-sw-1-5" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M16.5 10.5V6.75a4.5 4.5 0 1 0-9 0v3.75m-.75 11.25h10.5a2.25 2.25 0 0 0 2.25-2.25v-6.75a2.25 2.25 0 0 0-2.25-2.25H6.75a2.25 2.25 0 0 0-2.25 2.25v6.75a2.25 2.25 0 0 0 2.25 2.25Z"></path></svg>Dealing with Contention</div></span></div><div class="MuiButtonBase-root MuiChip-root MuiChip-filled MuiChip-sizeSmall MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-filledDefault mui-1occa5h" tabindex="0" role="button"><span class="MuiChip-label MuiChip-labelSmall mui-4y436t"><div class="MuiBox-root mui-c0u8y1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-4 h-4 heroicon-sw-1-5" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"></path></svg>Scaling Reads</div></span></div><div class="MuiButtonBase-root MuiChip-root MuiChip-filled MuiChip-sizeSmall MuiChip-colorDefault MuiChip-clickable MuiChip-clickableColorDefault MuiChip-filledDefault mui-1occa5h" tabindex="0" role="button"><span class="MuiChip-label MuiChip-labelSmall mui-4y436t"><div class="MuiBox-root mui-c0u8y1"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-4 h-4 heroicon-sw-1-5" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="m3.75 13.5 10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75Z"></path></svg>Real-time Updates</div></span></div></div></div><div class="MuiBox-root mui-j7tv77"><span class="MuiBox-root mui-172hjuw">By<a target="_blank" rel="noopener noreferrer" class="font-medium hover:underline" style="color:inherit;text-decoration:none" href="https://www.linkedin.com/in/evan-king-40072280/">Evan King</a></span><span>·</span><span class="MuiBox-root mui-1ch289i">Updated<!-- --> <span>Feb 15, 2026</span><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-3 h-3" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"></path></svg></span><span>·</span><div class="MuiBox-root mui-1wbv3zj"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-3.5 h-3.5" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.362 5.214A8.252 8.252 0 0 1 12 21 8.25 8.25 0 0 1 6.038 7.047 8.287 8.287 0 0 0 9 9.601a8.983 8.983 0 0 1 3.361-6.867 8.21 8.21 0 0 0 3 2.48Z"></path><path stroke-linecap="round" stroke-linejoin="round" d="M12 18a3.75 3.75 0 0 0 .495-7.468 5.99 5.99 0 0 0-1.925 3.547 5.975 5.975 0 0 1-2.133-1.001A3.75 3.75 0 0 0 12 18Z"></path></svg><span>medium</span></div><span style="color: var(--mui-palette-text-secondary);">·</span><div class="MuiBox-root mui-a8hkuy"><span class="MuiTypography-root MuiTypography-body2 asked-at-label mui-1tblrur">Asked at:</span><div class="MuiBox-root mui-70qvj9"><div class="MuiBox-root mui-1txd58k"><span role="img" aria-label="Meta" style="display: inline-block; width: 10px; height: 10px; background-color: rgb(0, 129, 251); mask-image: url(&quot;/assets/companyLogos/svg/si/meta.svg&quot;); mask-size: contain; mask-repeat: no-repeat; mask-position: center center;"></span></div><div class="MuiBox-root mui-649hpi"><img alt="Google" loading="lazy" width="10" height="10" decoding="async" data-nimg="1" src="assets/google-square.2p5sdisco8gfq-2baa903e.svg" style="color: transparent;"></div><div class="MuiBox-root mui-1pqaecu"><img alt="Amazon" loading="lazy" width="10" height="10" decoding="async" data-nimg="1" src="assets/amazon-icon.2lvwf_3t3zas2-ddb29bc9.svg" style="color: transparent;"></div><div class="MuiBox-root mui-13uagx1"><img alt="Microsoft" loading="lazy" width="10" height="10" decoding="async" data-nimg="1" src="assets/microsoft.42hyl5w3z8hlv-e1528a04.svg" style="color: transparent;"></div><div class="MuiBox-root mui-gj2tlk"><span class="MuiTypography-root MuiTypography-caption mui-vqylta">+9</span></div></div></div></div></div><hr class="MuiDivider-root MuiDivider-fullWidth mui-18s6yq7"></div>
 <h2 id="understanding-the-problem" class="mdx-h2" data-hi-narration-block-id="p-0" data-hi-narration-clickable="false">Understanding the Problem</h2>
 <div class="callout callout-general my-6" data-hi-narration-block-id="p-1" data-hi-narration-clickable="false"><div class="MuiBox-root mui-1la67gd"><div class="MuiBox-root mui-79elbk"><div class="mdx-p"><strong>🎟️ What is <a href="https://www.ticketmaster.com/" target="_blank" rel="noopener noreferrer" class="mdx-a">Ticketmaster</a>?</strong>

@@ -18,70 +18,197 @@
 <style>
   :root {
     color-scheme: light;
-    --bg: #ffffff;
-    --fg: #1a1a1a;
-    --muted: #666666;
-    --faint: #888888;
-    --border: #e1e4e8;
+    --bg: #fdfdfc;
+    --fg: #24292f;
+    --muted: #59636e;
+    --faint: #848d97;
+    --border: #e4e7eb;
     --border-strong: #d0d7de;
     --code-bg: #f6f8fa;
-    --inline-code-bg: #f0f1f3;
-    --link: #0969da;
-    --accent: #10857a;
+    --inline-code-bg: #eff1f3;
+    --inline-code-fg: #9a3d6e;
+    --link: #0b6bcb;
+    --accent: #0f766e;
+    --accent-soft: #e6f2f0;
+    --heading: #1f2328;
+    --tip-bg: #ecf8ef;     --tip-border: #34a853;   --tip-fg: #1d7a35;
+    --info-bg: #eaf3fd;    --info-border: #3b82f6;  --info-fg: #1d5fbf;
+    --warn-bg: #fdf3e2;    --warn-border: #f59e0b;  --warn-fg: #9a6a08;
+    --note-bg: #f3f1fb;    --note-border: #8b7ed8;  --note-fg: #5b4fb5;
+    --chip-bg: #eef1f4;
+    --selection: #b9e6e0;
   }
   :root[data-theme="dark"] {
     color-scheme: dark;
-    --bg: #121212;
-    --fg: #e6e6e6;
-    --muted: #aaaaaa;
-    --faint: #999999;
-    --border: #333333;
-    --border-strong: #3a3a3a;
-    --code-bg: #1e1e1e;
-    --inline-code-bg: #252525;
+    --bg: #14161a;
+    --fg: #dde1e6;
+    --muted: #9aa4af;
+    --faint: #7d8590;
+    --border: #2c313a;
+    --border-strong: #3d444d;
+    --code-bg: #1d2127;
+    --inline-code-bg: #262b33;
+    --inline-code-fg: #e59fc4;
     --link: #6cb2ff;
-    --accent: #34b3a6;
+    --accent: #2fbfae;
+    --accent-soft: #12332f;
+    --heading: #f0f3f6;
+    --tip-bg: #14261a;     --tip-border: #2ea04d;   --tip-fg: #56d364;
+    --info-bg: #142033;    --info-border: #3b82f6;  --info-fg: #79b8ff;
+    --warn-bg: #2b2111;    --warn-border: #d29922;  --warn-fg: #e3b341;
+    --note-bg: #201d31;    --note-border: #8b7ed8;  --note-fg: #b3a7f7;
+    --chip-bg: #23272e;
+    --selection: #0f5049;
   }
   * { box-sizing: border-box; }
+  ::selection { background: var(--selection); }
+  html { scroll-behavior: smooth; }
   body {
     margin: 0 auto;
-    padding: 2rem 1.25rem 4rem;
-    max-width: 46rem;
+    padding: 2rem 1.5rem 5rem;
+    max-width: 47rem;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size: 1.0625rem;
-    line-height: 1.7;
+    line-height: 1.75;
     color: var(--fg);
     background: var(--bg);
   }
-  h1, h2, h3, h4, h5, h6 { line-height: 1.3; margin: 2em 0 0.6em; }
-  h1 { font-size: 2rem; margin-top: 0.5em; }
+
+  /* ---- top bar ---- */
+  .lesson-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    font-size: 0.875rem;
+    margin-bottom: 2.25rem;
+    padding-bottom: 0.875rem;
+    border-bottom: 1px solid var(--border);
+  }
+  .lesson-nav a { color: var(--accent); text-decoration: none; font-weight: 600; }
+  .lesson-nav a:hover { text-decoration: underline; }
+
+  /* ---- headings ---- */
+  h1, h2, h3, h4, h5, h6 { line-height: 1.3; margin: 1.9em 0 0.6em; color: var(--heading); }
+  h1 { font-size: 2.125rem; margin-top: 0.4em; letter-spacing: -0.02em; }
+  h2 {
+    font-size: 1.5rem;
+    padding-bottom: 0.3em;
+    border-bottom: 2px solid var(--accent-soft);
+  }
+  h3 { font-size: 1.1875rem; }
+  h4 { font-size: 1.0625rem; }
+  h5 { font-size: 1rem; }
+  h6 {
+    font-size: 0.8125rem;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    margin: 1.5em 0 0.25em;
+  }
+
+  /* ---- text rhythm (site paragraphs are divs — give them real margins) ---- */
+  .mdx-p, p { margin: 0 0 1.05em; }
+  ul, ol, .mdx-ul, .mdx-ol { margin: 0 0 1.05em; padding-left: 1.6em; }
+  li, .mdx-li { margin: 0.3em 0; }
+  strong { color: var(--heading); }
+
+  /* ---- media ---- */
   img, svg, video { max-width: 100%; height: auto; }
+  .chrome { margin: 1.75em auto; text-align: center; }
+  .chrome img { border-radius: 10px; }
   figure { margin: 1.5em 0; text-align: center; }
-  figcaption { font-size: 0.875rem; color: var(--muted); }
+  figcaption, .MuiTypography-caption {
+    display: block;
+    font-size: 0.8438rem;
+    color: var(--muted);
+    text-align: center;
+    font-style: italic;
+    margin-top: 0.35em;
+  }
+
+  /* ---- code ---- */
   pre {
-    padding: 1em;
+    padding: 1em 1.15em;
     overflow-x: auto;
-    border-radius: 8px;
+    border-radius: 10px;
     background: var(--code-bg);
     border: 1px solid var(--border);
     font-size: 0.875rem;
-    line-height: 1.5;
+    line-height: 1.55;
+    margin: 1.25em 0;
   }
   code {
     font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    font-size: 0.9em;
+    font-size: 0.875em;
     background: var(--inline-code-bg);
-    padding: 0.15em 0.35em;
-    border-radius: 4px;
+    color: var(--inline-code-fg);
+    padding: 0.16em 0.4em;
+    border-radius: 5px;
   }
-  pre code { background: none; padding: 0; font-size: inherit; }
+  pre code { background: none; color: inherit; padding: 0; font-size: inherit; }
+
+  /* ---- tables ---- */
   table { border-collapse: collapse; width: 100%; margin: 1.5em 0; display: block; overflow-x: auto; }
-  th, td { border: 1px solid var(--border-strong); padding: 0.5em 0.75em; text-align: left; }
-  th { background: var(--code-bg); }
-  blockquote { margin: 1.5em 0; padding: 0.5em 1.25em; border-left: 4px solid var(--border-strong); color: var(--muted); }
+  th, td { border: 1px solid var(--border-strong); padding: 0.55em 0.8em; text-align: left; }
+  th { background: var(--accent-soft); color: var(--heading); }
+  tr:nth-child(even) td { background: var(--code-bg); }
+
+  blockquote {
+    margin: 1.5em 0;
+    padding: 0.5em 1.25em;
+    border-left: 4px solid var(--accent);
+    background: var(--accent-soft);
+    border-radius: 0 8px 8px 0;
+    color: var(--muted);
+  }
   a { color: var(--link); }
   hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
-  .lesson-source { font-size: 0.8125rem; color: var(--faint); margin-bottom: 2rem; }
+
+  /* ---- callouts (tip / info / warning / general / question) ---- */
+  .callout {
+    margin: 1.5em 0;
+    padding: 0.9em 1.15em 0.9em 1.3em;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    border-left-width: 4px;
+    position: relative;
+  }
+  .callout::before {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    margin-bottom: 0.3em;
+  }
+  .callout .mdx-p:last-child, .callout p:last-child { margin-bottom: 0; }
+  .callout svg[class*="heroicon"] { display: none; }
+  .callout-tip      { background: var(--tip-bg);  border-color: var(--tip-border); }
+  .callout-tip::before      { content: '💡 Tip';      color: var(--tip-fg); }
+  .callout-info     { background: var(--info-bg); border-color: var(--info-border); }
+  .callout-info::before     { content: 'ℹ️ Info';     color: var(--info-fg); }
+  .callout-warning  { background: var(--warn-bg); border-color: var(--warn-border); }
+  .callout-warning::before  { content: '⚠️ Warning';  color: var(--warn-fg); }
+  .callout-general  { background: var(--note-bg); border-color: var(--note-border); }
+  .callout-general::before  { content: '📝 Note';     color: var(--note-fg); }
+  .callout-question { background: var(--note-bg); border-color: var(--note-border); }
+  .callout-question::before { content: '❓ Question';  color: var(--note-fg); }
+
+  /* ---- chips (difficulty, companies, tags) ---- */
+  [class*="MuiChip-root"] {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35em;
+    padding: 0.12em 0.7em;
+    border-radius: 999px;
+    background: var(--chip-bg);
+    border: 1px solid var(--border);
+    font-size: 0.8125rem;
+    color: var(--muted);
+    margin: 0.15em 0.25em 0.15em 0;
+  }
+  [class*="MuiChip-label"] { padding: 0; }
 
   #theme-toggle {
     position: fixed;
@@ -117,7 +244,9 @@
   refresh();
 })();
 </script>
-<p class="lesson-source">Saved for offline reading from <a href="https://www.hellointerview.com/learn/system-design/deep-dives/vector-databases">https://www.hellointerview.com/learn/system-design/deep-dives/vector-databases</a></p>
+<nav class="lesson-nav">
+  <a href="../../index.html">← Library</a>
+</nav>
 <main class="flex-1 min-w-0 overflow-y-auto print-main"><div class="flex flex-col bg-nav-bg-paper"><div class="px-4 md:px-6 max-w-7xl mx-auto py-3 w-full print-main-content" style="min-height:calc(100vh - 48px - 0px);transition:min-height 0.3s ease-in-out;background-color:var(--nav-bg-paper)"><div class="grid grid-cols-7 gap-12 md:gap-0 mx-auto max-w-5xl"><div class="col-span-7 w-full max-w-4xl md:pr-6 xl:col-span-5"><div class="relative"><div id="markdown" class="mui-4tqezl"><div class="chrome"><div class="flex flex-col gap-2"><div class="flex flex-col relative"><div class="flex items-center justify-between   "><h6 class="MuiTypography-root MuiTypography-h6 mui-pkyqy5">Key Technologies</h6><div class="MuiBox-root mui-fxfzfo" aria-label="Premium content"><svg stroke="currentColor" fill="none" stroke-width="2" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round" class="w-5 h-5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M11.562 3.266a.5.5 0 0 1 .876 0L15.39 8.87a1 1 0 0 0 1.516.294L21.183 5.5a.5.5 0 0 1 .798.519l-2.834 10.246a1 1 0 0 1-.956.734H5.81a1 1 0 0 1-.957-.734L2.02 6.02a.5.5 0 0 1 .798-.519l4.276 3.664a1 1 0 0 0 1.516-.294z"></path><path d="M5 21h14"></path></svg></div></div><div class="flex flex-col md:flex-row md:items-start md:justify-between md:gap-4"><div class="flex items-center gap-2"><h1 class="MuiTypography-root MuiTypography-h2 mui-xhvznl">Vector Databases</h1><div class="MuiBox-root mui-yrscm7"></div></div></div><p class="MuiTypography-root MuiTypography-body2 mui-19x8mt2" data-hi-narration-block-id="p-0" data-hi-narration-clickable="false">Learn how vector databases power similarity search, recommendations, and AI applications in system design.</p></div></div><hr class="MuiDivider-root MuiDivider-fullWidth mui-18s6yq7"></div>
 <div class="mdx-p" data-hi-narration-block-id="p-1" data-hi-narration-clickable="false">If you've been paying attention to anything in tech over the past few years, you've noticed "embeddings" everywhere. Search engines that actually understand what you mean. Recommendation systems that surface eerily relevant content. Chatbots that can retrieve information from massive document collections. All of these rely on the same underlying primitive: finding things that are <em>similar</em> to other things, fast.</div>
 <div class="mdx-p" data-hi-narration-block-id="p-2" data-hi-narration-clickable="false">This isn't actually a new concept. Vector databases and their related techniques have been around for a long time in recommendation systems. But the power of vector databases has been amplified by the rise of new machine learning techniques and it unlocks a cool new set of infra applications.</div>
@@ -135,7 +264,7 @@
 <span class="line"><span>"The stock market crashed" → [-0.89, 0.12, -0.45, ..., 0.23] // very different</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
 <div class="mdx-p" data-hi-narration-block-id="p-10" data-hi-narration-clickable="false">The typical embedding has somewhere between 128 and 1536 dimensions (OpenAI's <span class="mdx-code">text-embedding-3-large</span> uses 3072). Each dimension captures some aspect of the meaning, though the individual dimensions aren't usually interpretable by humans. What matters is that the geometric relationships between vectors reflect semantic relationships between the things they represent.</div>
 <div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/afpx8igxd_7x.0ecm8axbc7w5d-c54c830f.svg" alt="Vector Similarity with just 2 dimensions for visualization (real embeddings have many more!)" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Vector Similarity with just 2 dimensions for visualization (real embeddings have many more!)</span></div></div></div></div>
-<div class="callout callout-info my-6"><div class="MuiBox-root mui-1obauxr"><div class="MuiBox-root mui-14185gn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk" data-hi-expandable="true" data-hi-expanded="false"><div style="overflow:hidden;max-height:300px"><div class="mdx-p">Note we're being a bit hand-wavey about "similarity" here. Does similar mean the same color? Or excerpts from the same book? Or a similar concept? Well, that actually depends a bit on the embedding model you're using.</div><div class="mdx-p">Many applications will use a pre-trained embedding model. For text, this might be something like OpenAI's embedding API, Sentence Transformers, or <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">BERT</span>. For images, models like <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">CLIP</span> or ResNet. These models are trained on diverse tasks such that the notion of similarity you care about is <em>probably</em> captured by the embedding model. Think of it like a very vague "semantic" similarity. For these, to you the embedding model is an expensive GPU function: data goes in, fixed-length vector comes out.</div><div class="mdx-p">But "similarity" <em>can</em> be much more precise for the application. A very common application for recommendation systems is to find items that are likely to be purchased together. Diapers and bottles are only vaguely similar in the sense they're both related to babies, but <em>profoundly</em> similar in that they're things that new parents are often buying. In these cases, a custom ML model can create these embeddings specifically targeting this idea of "similarity".</div></div><div class="MuiBox-root mui-133ctg5"></div></div></div></div>
+<div class="callout callout-info my-6"><div class="MuiBox-root mui-1obauxr"><div class="MuiBox-root mui-14185gn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk" data-hi-expandable="true" data-hi-expanded="false"><div><div class="mdx-p">Note we're being a bit hand-wavey about "similarity" here. Does similar mean the same color? Or excerpts from the same book? Or a similar concept? Well, that actually depends a bit on the embedding model you're using.</div><div class="mdx-p">Many applications will use a pre-trained embedding model. For text, this might be something like OpenAI's embedding API, Sentence Transformers, or <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">BERT</span>. For images, models like <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">CLIP</span> or ResNet. These models are trained on diverse tasks such that the notion of similarity you care about is <em>probably</em> captured by the embedding model. Think of it like a very vague "semantic" similarity. For these, to you the embedding model is an expensive GPU function: data goes in, fixed-length vector comes out.</div><div class="mdx-p">But "similarity" <em>can</em> be much more precise for the application. A very common application for recommendation systems is to find items that are likely to be purchased together. Diapers and bottles are only vaguely similar in the sense they're both related to babies, but <em>profoundly</em> similar in that they're things that new parents are often buying. In these cases, a custom ML model can create these embeddings specifically targeting this idea of "similarity".</div></div><div class="MuiBox-root mui-133ctg5"></div></div></div></div>
 <div data-hi-narration-passthrough="true"><h2 id="similarity-metrics" class="mdx-h2" data-hi-narration-block-id="p-14" data-hi-narration-clickable="false">Similarity Metrics</h2><div class="mdx-p" data-hi-narration-block-id="p-15" data-hi-narration-clickable="false">Once you have vectors, you need a way to measure how similar two vectors are. There are a few common approaches:</div><div class="mdx-p" data-hi-narration-block-id="p-16" data-hi-narration-clickable="false"><strong>Euclidean distance (L2)</strong> is the straight-line distance between two points in space. If you remember the Pythagorean theorem from high school, that's essentially what we're doing, just extended to hundreds of dimensions. Smaller distance means more similar. This metric cares about both direction and magnitude.</div><div class="mdx-p" data-hi-narration-block-id="p-17" data-hi-narration-clickable="false"><strong>Cosine similarity</strong> measures the angle between two vectors, ignoring their magnitudes. Two vectors pointing in the same direction have cosine similarity of 1, perpendicular vectors have 0, and opposite vectors have -1. This is great when you've normalized your embeddings (which most embedding models do).</div><div class="mdx-p" data-hi-narration-block-id="p-18" data-hi-narration-clickable="false"><strong>Dot product</strong> is similar to cosine similarity but doesn't normalize for magnitude. It's essentially cosine similarity multiplied by the lengths of both vectors. Some systems use this because it's slightly faster to compute.</div><div class="mdx-p" data-hi-narration-block-id="p-19" data-hi-narration-clickable="false"><strong>Hamming distance</strong> counts the number of positions where two binary vectors differ. This is extremely fast (just XOR the bits and count), which is why it's popular in certain indexing schemes like Locality Sensitive Hashing.</div><div class="callout callout-tip my-6" data-hi-narration-block-id="p-20" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">For an infra-style system design interview, the choice of similarity metric usually doesn't appear much at all. You can mention "we'd use a cosine similarity or some appropriate similarity metric" and come ahead of most candidates. In an ML system design interview, the choice might be more significant depending on your embedding model and use case. If your embedding model is trained on a specific task, you'll use that (e.g. minimizing the dot product between two items that are bought together, that's your distance metric).</div></div></div></div><h2 id="the-nearest-neighbor-problem" class="mdx-h2" data-hi-narration-block-id="p-21" data-hi-narration-clickable="false">The Nearest Neighbor Problem</h2><div class="mdx-p" data-hi-narration-block-id="p-22" data-hi-narration-clickable="false">Now, once we have a bunch of vectors and a similarity metric, we can start to ask questions. These are usually framed in terms of a "query vector" which you can think of like your search term. For most applications the query vector is the embedding of the item to which you're trying to find similar things.</div><div class="mdx-p" data-hi-narration-block-id="p-23" data-hi-narration-clickable="false">The K-Nearest Neighbors (KNN) problem is: given a query vector, give me the K most similar vectors in your collection. Or, given an item, find the K most similar items in your collection.</div><div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/lbzb2x7pyysq.42sbrh5-k5y1c-b09700f2.svg" alt="KNN Search for Similar Items" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">KNN Search for Similar Items</span></div></div></div></div><div class="mdx-p" data-hi-narration-block-id="p-24" data-hi-narration-clickable="false">The naive approach KNN search is simple. Compare your query against every vector in the database, compute similarity scores, sort, return the top K. This is <strong>exact</strong> KNN and it's effectively <span class="mdx-code">O(n)</span> where <span class="mdx-code">n</span> is the number of vectors (<span class="mdx-code">k</span> is typically very small, so we can ignore it).</div><div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic"># Python Pseudocode</span></span>
 <span class="line"><span style="color:#299A8D">def</span><span style="color:#212B36"> exact_knn(query_vector, all_vectors, k):</span></span>
 <span class="line"><span style="color:#212B36">    heap = []  </span><span style="color:#919EAB;font-style:italic"># min-heap by similarity</span></span>
