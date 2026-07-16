@@ -1,0 +1,693 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elasticsearch</title>
+<meta name="source-url" content="https://www.hellointerview.com/learn/system-design/deep-dives/elasticsearch">
+<script>
+(function () {
+  var theme;
+  try { theme = localStorage.getItem('course-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #666666;
+    --faint: #888888;
+    --border: #e1e4e8;
+    --border-strong: #d0d7de;
+    --code-bg: #f6f8fa;
+    --inline-code-bg: #f0f1f3;
+    --link: #0969da;
+    --accent: #10857a;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121212;
+    --fg: #e6e6e6;
+    --muted: #aaaaaa;
+    --faint: #999999;
+    --border: #333333;
+    --border-strong: #3a3a3a;
+    --code-bg: #1e1e1e;
+    --inline-code-bg: #252525;
+    --link: #6cb2ff;
+    --accent: #34b3a6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    max-width: 46rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--fg);
+    background: var(--bg);
+  }
+  h1, h2, h3, h4, h5, h6 { line-height: 1.3; margin: 2em 0 0.6em; }
+  h1 { font-size: 2rem; margin-top: 0.5em; }
+  img, svg, video { max-width: 100%; height: auto; }
+  figure { margin: 1.5em 0; text-align: center; }
+  figcaption { font-size: 0.875rem; color: var(--muted); }
+  pre {
+    padding: 1em;
+    overflow-x: auto;
+    border-radius: 8px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    background: var(--inline-code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  table { border-collapse: collapse; width: 100%; margin: 1.5em 0; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--border-strong); padding: 0.5em 0.75em; text-align: left; }
+  th { background: var(--code-bg); }
+  blockquote { margin: 1.5em 0; padding: 0.5em 1.25em; border-left: 4px solid var(--border-strong); color: var(--muted); }
+  a { color: var(--link); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+  .lesson-source { font-size: 0.8125rem; color: var(--faint); margin-bottom: 2rem; }
+
+  #theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+  #theme-toggle:hover { border-color: var(--accent); }
+
+</style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Toggle light/dark theme"></button>
+<script>
+(function () {
+  var btn = document.getElementById('theme-toggle');
+  function refresh() { btn.textContent = document.documentElement.dataset.theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19'; }
+  btn.addEventListener('click', function () {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('course-theme', next); } catch (e) {}
+    refresh();
+  });
+  refresh();
+})();
+</script>
+<p class="lesson-source">Saved for offline reading from <a href="https://www.hellointerview.com/learn/system-design/deep-dives/elasticsearch">https://www.hellointerview.com/learn/system-design/deep-dives/elasticsearch</a></p>
+<main class="flex-1 min-w-0 overflow-y-auto print-main"><div class="flex flex-col bg-nav-bg-paper"><div class="px-4 md:px-6 max-w-7xl mx-auto py-3 w-full print-main-content" style="min-height:calc(100vh - 48px - 0px);transition:min-height 0.3s ease-in-out;background-color:var(--nav-bg-paper)"><div class="grid grid-cols-7 gap-12 md:gap-0 mx-auto max-w-5xl"><div class="col-span-7 w-full max-w-4xl md:pr-6 xl:col-span-5"><div class="relative"><div id="markdown" class="mui-4tqezl"><div class="chrome"><div class="flex flex-col gap-2"><div class="flex flex-col relative"><div class="flex items-center justify-between   "><h6 class="MuiTypography-root MuiTypography-h6 mui-pkyqy5">Key Technologies</h6></div><div class="flex flex-col md:flex-row md:items-start md:justify-between md:gap-4"><div class="flex items-center gap-2"><h1 class="MuiTypography-root MuiTypography-h2 mui-xhvznl">Elasticsearch</h1><div class="MuiBox-root mui-yrscm7"></div></div></div><p class="MuiTypography-root MuiTypography-body2 mui-19x8mt2">Learn about how you can use Elasticsearch to solve a large number of problems in System Design.</p></div></div><hr class="MuiDivider-root MuiDivider-fullWidth mui-18s6yq7"></div>
+<div class="mdx-p" data-hi-narration-block-id="p-0" data-hi-narration-clickable="false">Many system design problems will involve some aspect of search and retrieval: I've got a lot of "things" and I want to be able to find the right one(s). While most database systems are pretty good at this (e.g. Postgres with a full-text index is sufficient for many problems!), at a certain scale or level of sophistication you'll want to bring out a purpose-built system. And usually this involves a lot of similar requirements like sorting, filtering, ranking, faceting, etc. Enter one of the most well-known search engines: <strong>Elasticsearch</strong>.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-1" data-hi-narration-clickable="false">From an interview perspective, this deep dive will tackle two different angles to understanding Elasticsearch:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-2" data-hi-narration-clickable="false">First, you'll learn how to <em>use</em> Elasticsearch. This will give you a powerful tool for your arsenal. Rarely are you going to find a search and retrieval question which is too complex for Elasticsearch. If you're interviewing for a startup or interviewing at a product architecture-style interview, knowing Elasticsearch will help. You can skip this section if you've used it before!</li>
+<li class="mdx-li" data-hi-narration-block-id="p-3" data-hi-narration-clickable="false">Secondly, you'll learn how Elasticsearch <em>works</em> under the hood. As an incredible piece of distributed systems engineering, Elasticsearch brings together a lot of different concepts which can be used even outside search and retrieval problems. And some gnarly interviewers (I'm not the only one, I promise!) might ask you to pretend Elasticsearch doesn't exist and explain some of the top-level concepts yourself. This is more common for infra- heavy roles, particularly at cloud companies.</li>
+</ol>
+<div class="mdx-p" data-hi-narration-block-id="p-4" data-hi-narration-clickable="false">Elasticsearch is an enormous project built over more than a decade so there's a ton of features and functionality that we won't cover here, but we'll try to cover  important bits in as we dig all the way in to this project. Off we go.</div>
+<h2 id="basic-concepts" class="mdx-h2" data-hi-narration-block-id="p-5" data-hi-narration-clickable="false">Basic Concepts</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-6" data-hi-narration-clickable="false">Let's start with names. The important concepts of Elasticsearch from a client perspective are documents, indices, mappings, and fields.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/okbhfqttfwn1.1plmb-s5zedl1-f88b8ec4.svg" alt="Key Concepts" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Key Concepts</span></div></div></div></div>
+<h3 id="documents" class="mdx-h3">Documents</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-8" data-hi-narration-clickable="false"><strong>Documents</strong> are the individual units of data that you're searching over. A "document" doesn't have to be a website or a blog post, so don't get too hung up on the terminology. Just think of it like any JSON object. Like books in our bookstore:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="json"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>{</span></span>
+<span class="line"><span>  "id": "XYZ123",</span></span>
+<span class="line"><span>  "title": "The Great Gatsby",</span></span>
+<span class="line"><span>  "author": "F. Scott Fitzgerald",</span></span>
+<span class="line"><span>  "price": 10.99,</span></span>
+<span class="line"><span>  "createdAt": "2024-01-01T00:00:00.000Z"</span></span>
+<span class="line"><span>}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<h3 id="indices" class="mdx-h3" data-hi-narration-block-id="p-10" data-hi-narration-clickable="false">Indices</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-11" data-hi-narration-clickable="false">An <strong>index</strong> is a collection of documents. Each document is associated with a unique ID and a set of fields, which are key-value pairs that contain the data you're searching over. Think of an index as a database table. Searches happen against these indices and return document results which match the search criteria.</div>
+<div class="callout callout-info my-6" data-hi-narration-block-id="p-12" data-hi-narration-clickable="false"><div class="MuiBox-root mui-r83s7g"><div class="MuiBox-root mui-14185gn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Note this terminology overloads the more general term "index" which is often used to describe auxilary data structures which make searches faster. We'll try to clarify which "index" we're talking about to avoid confusion.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-13" data-hi-narration-clickable="false">We'll create an index for our books, but we might have indexes for any number of different entities relevant to our business. Reviews, users, orders, etc.</div>
+<h3 id="mappings-and-fields" class="mdx-h3" data-hi-narration-block-id="p-14" data-hi-narration-clickable="false">Mappings and Fields</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-15" data-hi-narration-clickable="false">Finally, a <strong>mapping</strong> is the schema of the index. It defines the <strong>fields</strong> that the index will have, the data type of each field, and any other properties like how the field is processed and indexed. You can put whatever data you want in the document, but the mapping determines which fields are searchable and what type of data they contain.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-16" data-hi-narration-clickable="false">These types can be arbitrarily complex. For example, you can nest objects and arrays within your documents, use special geospatial types like <span class="mdx-code">geo_point</span> and <span class="mdx-code">geo_shape</span>, define custom analyzers, or even use embeddings for semantic search. We won't go into all of these but if you suspect you'll need something else for search, there's a solid chance Elasticsearch already has you covered.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-17" data-hi-narration-clickable="false">Here's an example of a mapping:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="json"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>{</span></span>
+<span class="line"><span>  "properties": {</span></span>
+<span class="line"><span>    "id": { "type": "keyword" },</span></span>
+<span class="line"><span>    "title": { "type": "text" },</span></span>
+<span class="line"><span>    "author": { "type": "text" },</span></span>
+<span class="line"><span>    "price": { "type": "float" },</span></span>
+<span class="line"><span>    "createdAt": { "type": "date" }</span></span>
+<span class="line"><span>  }</span></span>
+<span class="line"><span>}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-18" data-hi-narration-clickable="false">The mapping is crucial because it tells Elasticsearch how to interpret the data you're storing. For example, in the mapping above we define <span class="mdx-code">id</span> as a <span class="mdx-code">keyword</span> type. This means that the <span class="mdx-code">id</span> field is treated as a whole value rather than as a string that can be tokenized. This is important because it allows for more efficient searching and sorting. While I'm usually looking up a single value of <span class="mdx-code">id</span> (think: hash table!), searches against <span class="mdx-code">title</span> might include queries that try to see whether a given title <em>contains</em> a certain value (think: reverse index!).</div>
+<div class="mdx-p" data-hi-narration-block-id="p-19" data-hi-narration-clickable="false">Mappings also have some important implications on the performance of your cluster: if you include a lot of fields in your mapping that aren't actually used in search, this increases the memory overhead of each index. This can lead to performance issues and increased costs. Say you have a <span class="mdx-code">User</span> object with 10 fields, but you only allow searching by 2 of them. If you map the entire object, you're wasting memory on the 8 fields that you're not using. This is notable because a lot of the control that you will exert over query performance depends on adjustments to the mapping and various cluster parameters. We'll touch on that later.</div>
+<h2 id="basic-use" class="mdx-h2" data-hi-narration-block-id="p-20" data-hi-narration-clickable="false">Basic Use</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-21" data-hi-narration-clickable="false">Next, let's walk through a series of operations to create an index, store some data, and perform a search to get an idea of the essential functionality. Elasticsearch has a nice, clean <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">REST</span> API that makes it easy to perform these operations although there are plenty of GUIs and clients available.</div>
+<h3 id="create-an-index" class="mdx-h3">Create an Index</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-23" data-hi-narration-clickable="false">A simple PUT request will create an index with a dynamic mapping, 1 shard, and 1 replica. These are parameters you can update after the index is created.</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// PUT /books</span></span>
+<span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "settings"</span><span style="color:#212B36">: {</span></span>
+<span class="line"><span style="color:#2C9C59">    "number_of_shards"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 1</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">    "number_of_replicas"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 1</span></span>
+<span class="line"><span style="color:#212B36">  }</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<h3 id="set-a-mapping" class="mdx-h3" data-hi-narration-block-id="p-25" data-hi-narration-clickable="false">Set a Mapping</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-26" data-hi-narration-clickable="false">If dynamic mapping isn't appropriate (maybe most of the fields in my data aren't searchable), I can set a mapping for the index up front. This lets Elasticsearch know that certain fields should be treated as searchable and what types to expect in those fields.</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// PUT /books/_mapping</span></span>
+<span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "properties"</span><span style="color:#212B36">: {</span></span>
+<span class="line"><span style="color:#2C9C59">    "title"</span><span style="color:#637381">:</span><span style="color:#212B36"> { </span><span style="color:#2C9C59">"type"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "text"</span><span style="color:#212B36"> }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">    "author"</span><span style="color:#637381">:</span><span style="color:#212B36"> { </span><span style="color:#2C9C59">"type"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "keyword"</span><span style="color:#212B36"> }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">    "description"</span><span style="color:#637381">:</span><span style="color:#212B36"> { </span><span style="color:#2C9C59">"type"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "text"</span><span style="color:#212B36"> }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">    "price"</span><span style="color:#637381">:</span><span style="color:#212B36"> { </span><span style="color:#2C9C59">"type"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "float"</span><span style="color:#212B36"> }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">    "publish_date"</span><span style="color:#637381">:</span><span style="color:#212B36"> { </span><span style="color:#2C9C59">"type"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "date"</span><span style="color:#212B36"> }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">    "categories"</span><span style="color:#637381">:</span><span style="color:#212B36"> { </span><span style="color:#2C9C59">"type"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "keyword"</span><span style="color:#212B36"> }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">    "reviews"</span><span style="color:#637381">:</span><span style="color:#212B36"> {</span></span>
+<span class="line"><span style="color:#2C9C59">      "type"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "nested"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">      "properties"</span><span style="color:#637381">:</span><span style="color:#212B36"> {</span></span>
+<span class="line"><span style="color:#2C9C59">        "user"</span><span style="color:#637381">:</span><span style="color:#212B36"> { </span><span style="color:#2C9C59">"type"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "keyword"</span><span style="color:#212B36"> }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">        "rating"</span><span style="color:#637381">:</span><span style="color:#212B36"> { </span><span style="color:#2C9C59">"type"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "integer"</span><span style="color:#212B36"> }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">        "comment"</span><span style="color:#637381">:</span><span style="color:#212B36"> { </span><span style="color:#2C9C59">"type"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "text"</span><span style="color:#212B36"> }</span></span>
+<span class="line"><span style="color:#212B36">      }</span></span>
+<span class="line"><span style="color:#212B36">    }</span></span>
+<span class="line"><span style="color:#212B36">  }</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-28" data-hi-narration-clickable="false">Here I've pre-registered the fields I want to be searchable for my bookstore. When I add documents, Elasticsearch will extract values for these fields and index them so that they're ready to be searched.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-29" data-hi-narration-clickable="false">Mappings can be very complex and can change over time as you add more data and new use cases emerge. As one example, note the nested review field. In this case, each review is a nested document with its own fields. This is different from a flat structure where each review is a separate document.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-30" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Your decision of whether to nest reviews within the individual books largely depends on the data update and query patterns and is fair game for a picky interviewer. If reviews are infrequently updated and frequently queried, it may be more efficient to nest them within the book documents. Otherwise you'll probably want to create a separate index for reviews. Think of this like the normalization/denormalization tradeoff that might be familiar if you've worked with SQL databases.</div></div></div></div>
+<h3 id="add-documents" class="mdx-h3" data-hi-narration-block-id="p-31" data-hi-narration-clickable="false">Add Documents</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-32" data-hi-narration-clickable="false">So I got an index and a mapping, great. Next, I need to add documents to the index! This is a simple HTTP POST to the /_doc endpoint.</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// POST /books/_doc</span></span>
+<span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "title"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"The Great Gatsby"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "author"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"F. Scott Fitzgerald"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "description"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"A novel about the American Dream in the Jazz Age"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "price"</span><span style="color:#212B36">: </span><span style="color:#F4A261">9.99</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "publish_date"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"1925-04-10"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "categories"</span><span style="color:#212B36">: </span><span style="color:#637381">[</span><span style="color:#2C9C59">"Classic"</span><span style="color:#637381">,</span><span style="color:#2C9C59"> "Fiction"</span><span style="color:#637381">],</span></span>
+<span class="line"><span style="color:#2C9C59">  "reviews"</span><span style="color:#212B36">: </span><span style="color:#637381">[</span></span>
+<span class="line"><span style="color:#212B36">    {</span></span>
+<span class="line"><span style="color:#2C9C59">      "user"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "reader1"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">      "rating"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 5</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">      "comment"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "A masterpiece!"</span></span>
+<span class="line"><span style="color:#212B36">    }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#212B36">    {</span></span>
+<span class="line"><span style="color:#2C9C59">      "user"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "reader2"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">      "rating"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 4</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">      "comment"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "Beautifully written, but a bit sad."</span></span>
+<span class="line"><span style="color:#212B36">    }</span></span>
+<span class="line"><span style="color:#637381">  ]</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-34" data-hi-narration-clickable="false">If I want to add another, I can make another request.</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// POST /books/_doc</span></span>
+<span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "title"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"To Kill a Mockingbird"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "author"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"Harper Lee"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "description"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"A novel about racial injustice in the American South"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "price"</span><span style="color:#212B36">: </span><span style="color:#F4A261">12.99</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "publish_date"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"1960-07-11"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "categories"</span><span style="color:#212B36">: </span><span style="color:#637381">[</span><span style="color:#2C9C59">"Classic"</span><span style="color:#637381">,</span><span style="color:#2C9C59"> "Fiction"</span><span style="color:#637381">],</span></span>
+<span class="line"><span style="color:#2C9C59">  "reviews"</span><span style="color:#212B36">: </span><span style="color:#637381">[</span></span>
+<span class="line"><span style="color:#212B36">    {</span></span>
+<span class="line"><span style="color:#2C9C59">      "user"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "reader3"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">      "rating"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 5</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">      "comment"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "Powerful and moving."</span></span>
+<span class="line"><span style="color:#212B36">    }</span></span>
+<span class="line"><span style="color:#637381">  ]</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-36" data-hi-narration-clickable="false">Each of these requests will return a document ID along with data about how the document was persisted across the cluster.</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "_index"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"books"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "_id"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"kLEHMYkBq7V9x4qGJOnh"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "_version"</span><span style="color:#212B36">: </span><span style="color:#F4A261">1</span><span style="color:#637381">,</span><span style="color:#919EAB;font-style:italic"> // NOTE!</span></span>
+<span class="line"><span style="color:#2C9C59">  "result"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"created"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "_shards"</span><span style="color:#212B36">: {</span></span>
+<span class="line"><span style="color:#2C9C59">    "total"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 2</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">    "successful"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 1</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">    "failed"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 0</span></span>
+<span class="line"><span style="color:#212B36">  }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "_seq_no"</span><span style="color:#212B36">: </span><span style="color:#F4A261">0</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "_primary_term"</span><span style="color:#212B36">: </span><span style="color:#F4A261">1</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-38" data-hi-narration-clickable="false">Take special note of that <span class="mdx-code">_version</span> field. This is a special field that Elasticsearch uses to ensure the document can be updated atomically.</div>
+<h3 id="updating-documents" class="mdx-h3" data-hi-narration-block-id="p-39" data-hi-narration-clickable="false">Updating Documents</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-40" data-hi-narration-clickable="false">Updating a document is similar to creating a document, but you need to specify the document ID in the URL. We <em>can</em> raise our price by specifying the entire document:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// PUT /books/_doc/kLEHMYkBq7V9x4qGJOnh</span></span>
+<span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "title"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"To Kill a Mockingbird"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "author"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"Harper Lee"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "description"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"A novel about racial injustice in the American South"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "price"</span><span style="color:#212B36">: </span><span style="color:#F4A261">13.99</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "publish_date"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"1960-07-11"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "categories"</span><span style="color:#212B36">: </span><span style="color:#637381">[</span><span style="color:#2C9C59">"Classic"</span><span style="color:#637381">,</span><span style="color:#2C9C59"> "Fiction"</span><span style="color:#637381">],</span></span>
+<span class="line"><span style="color:#2C9C59">  "reviews"</span><span style="color:#212B36">: </span><span style="color:#637381">[</span></span>
+<span class="line"><span style="color:#212B36">    {</span></span>
+<span class="line"><span style="color:#2C9C59">      "user"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "reader3"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">      "rating"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 5</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">      "comment"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "Powerful and moving."</span></span>
+<span class="line"><span style="color:#212B36">    }</span></span>
+<span class="line"><span style="color:#637381">  ]</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-42" data-hi-narration-clickable="false">And this might be appropriate in some instances, but it can be risky! If another process is updating the same document concurrently, you could overwrite their changes.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-43" data-hi-narration-clickable="false">If we want to guard against this we can use the <span class="mdx-code">_version</span> field from above to specify that we only want to update the document if the version matches. The following request will only update the document if the version is 1. Otherwise it will throw an error.</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// PUT /books/_doc/kLEHMYkBq7V9x4qGJOnh?version=1</span></span>
+<span class="line"><span style="color:#299A8D">...</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-45" data-hi-narration-clickable="false">These errors give clients an opportunity to handle the conflict and retry the request, a simple example of <a href="https://en.wikipedia.org/wiki/Optimistic_concurrency_control" target="_blank" rel="noopener noreferrer" class="mdx-a">optimistic concurrency control</a>.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-46" data-hi-narration-clickable="false">Finally, the <span class="mdx-code">_update</span> endpoint (note POST) allows you to update some fields of a document without having to fetch the entire document.</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// POST /books/_update/kLEHMYkBq7V9x4qGJOnh</span></span>
+<span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "doc"</span><span style="color:#212B36">: {</span></span>
+<span class="line"><span style="color:#2C9C59">    "price"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 14.99</span></span>
+<span class="line"><span style="color:#212B36">  }</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-48" data-hi-narration-clickable="false">It may be obvious why this would be useful for clients, but remember that Elasticsearch is distributed, asynchronous, and concurrent. Your request is potentially sent to many different nodes and the requests can arrive out of order. Being explicit about the update semantics makes sure that the updates happen as you expect.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-49" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Take note of some of these mechanics for the API design questions of your interview. Some companies and interview types go dramatically deeper on API design and learning from popular open source projects is a great way to develop your skills.</div></div></div></div>
+<h3 id="search" class="mdx-h3" data-hi-narration-block-id="p-50" data-hi-narration-clickable="false">Search</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-51" data-hi-narration-clickable="false">Ok, so we've got an index with documents, how do we actually search for them? Elasticsearch makes this straightforward! The Elasticsearch query syntax is very similar to that of SQL, and it's also JSON based which makes it very easy to work with.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-52" data-hi-narration-clickable="false">A simple query might be to search for books with "Great" in the title:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// GET /books/_search</span></span>
+<span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "query"</span><span style="color:#212B36">: {</span></span>
+<span class="line"><span style="color:#2C9C59">    "match"</span><span style="color:#637381">:</span><span style="color:#212B36"> {</span></span>
+<span class="line"><span style="color:#2C9C59">      "title"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "Great"</span></span>
+<span class="line"><span style="color:#212B36">    }</span></span>
+<span class="line"><span style="color:#212B36">  }</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="callout callout-info my-6" data-hi-narration-block-id="p-54" data-hi-narration-clickable="false"><div class="MuiBox-root mui-r83s7g"><div class="MuiBox-root mui-14185gn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Is this a body in a GET request? Yes and no. Elasticsearch will respond to GET requests with bodies, or if you're dealing with a pedantic proxy you'll need to pack this object into the query string or use the POST endpoint. I've written it this way to make it more readable.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-55" data-hi-narration-clickable="false">We can also search for books with "Great" in the title that are priced less than 15 dollars:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// GET /books/_search</span></span>
+<span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "query"</span><span style="color:#212B36">: {</span></span>
+<span class="line"><span style="color:#2C9C59">    "bool"</span><span style="color:#637381">:</span><span style="color:#212B36"> {</span></span>
+<span class="line"><span style="color:#2C9C59">      "must"</span><span style="color:#637381">:</span><span style="color:#637381"> [</span></span>
+<span class="line"><span style="color:#212B36">        { </span><span style="color:#2C9C59">"match"</span><span style="color:#637381">:</span><span style="color:#212B36"> { </span><span style="color:#2C9C59">"title"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "Great"</span><span style="color:#212B36"> } }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#212B36">        { </span><span style="color:#2C9C59">"range"</span><span style="color:#637381">:</span><span style="color:#212B36"> { </span><span style="color:#2C9C59">"price"</span><span style="color:#637381">:</span><span style="color:#212B36"> { </span><span style="color:#2C9C59">"lte"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 15</span><span style="color:#212B36"> } } }</span></span>
+<span class="line"><span style="color:#637381">      ]</span></span>
+<span class="line"><span style="color:#212B36">    }</span></span>
+<span class="line"><span style="color:#212B36">  }</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-57" data-hi-narration-clickable="false">Finally, we can search within our nested "reviews" field for books with an "excellent" review:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// GET /books/_search</span></span>
+<span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "query"</span><span style="color:#212B36">: {</span></span>
+<span class="line"><span style="color:#2C9C59">    "nested"</span><span style="color:#637381">:</span><span style="color:#212B36"> {</span></span>
+<span class="line"><span style="color:#2C9C59">      "path"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "reviews"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">      "query"</span><span style="color:#637381">:</span><span style="color:#212B36"> {</span></span>
+<span class="line"><span style="color:#2C9C59">        "bool"</span><span style="color:#637381">:</span><span style="color:#212B36"> {</span></span>
+<span class="line"><span style="color:#2C9C59">          "must"</span><span style="color:#637381">:</span><span style="color:#637381"> [</span></span>
+<span class="line"><span style="color:#212B36">            { </span><span style="color:#2C9C59">"match"</span><span style="color:#637381">:</span><span style="color:#212B36"> { </span><span style="color:#2C9C59">"reviews.comment"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "excellent"</span><span style="color:#212B36"> } }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#212B36">            { </span><span style="color:#2C9C59">"range"</span><span style="color:#637381">:</span><span style="color:#212B36"> { </span><span style="color:#2C9C59">"reviews.rating"</span><span style="color:#637381">:</span><span style="color:#212B36"> { </span><span style="color:#2C9C59">"gte"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 4</span><span style="color:#212B36"> } } }</span></span>
+<span class="line"><span style="color:#637381">          ]</span></span>
+<span class="line"><span style="color:#212B36">        }</span></span>
+<span class="line"><span style="color:#212B36">      }</span></span>
+<span class="line"><span style="color:#212B36">    }</span></span>
+<span class="line"><span style="color:#212B36">  }</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p">The response might look like this:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "took"</span><span style="color:#212B36">: </span><span style="color:#F4A261">7</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "timed_out"</span><span style="color:#212B36">: </span><span style="color:#F4A261">false</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "_shards"</span><span style="color:#212B36">: {</span></span>
+<span class="line"><span style="color:#2C9C59">    "total"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 5</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">    "successful"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 5</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">    "skipped"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 0</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">    "failed"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 0</span></span>
+<span class="line"><span style="color:#212B36">  }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "hits"</span><span style="color:#212B36">: {</span></span>
+<span class="line"><span style="color:#2C9C59">    "total"</span><span style="color:#637381">:</span><span style="color:#212B36"> {</span></span>
+<span class="line"><span style="color:#2C9C59">      "value"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 2</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">      "relation"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "eq"</span></span>
+<span class="line"><span style="color:#212B36">    }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">    "max_score"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 2.1806526</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">    "hits"</span><span style="color:#637381">:</span><span style="color:#637381"> [</span></span>
+<span class="line"><span style="color:#212B36">      {</span></span>
+<span class="line"><span style="color:#2C9C59">        "_index"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "books"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">        "_type"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "_doc"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">        "_id"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "1"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">        "_score"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 2.1806526</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">        "_source"</span><span style="color:#637381">:</span><span style="color:#212B36"> {</span></span>
+<span class="line"><span style="color:#2C9C59">          "title"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "The Great Gatsby"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">          "author"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "F. Scott Fitzgerald"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">          "price"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 12.99</span></span>
+<span class="line"><span style="color:#212B36">        }</span></span>
+<span class="line"><span style="color:#212B36">      }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#212B36">      {</span></span>
+<span class="line"><span style="color:#2C9C59">        "_index"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "books"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">        "_type"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "_doc"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">        "_id"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "2"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">        "_score"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 1.9876543</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">        "_source"</span><span style="color:#637381">:</span><span style="color:#212B36"> {</span></span>
+<span class="line"><span style="color:#2C9C59">          "title"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "Great Expectations"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">          "author"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "Charles Dickens"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">          "price"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 10.50</span></span>
+<span class="line"><span style="color:#212B36">        }</span></span>
+<span class="line"><span style="color:#212B36">      }</span></span>
+<span class="line"><span style="color:#637381">    ]</span></span>
+<span class="line"><span style="color:#212B36">  }</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-60" data-hi-narration-clickable="false">We're utilizing the mapping and applying a series of constraints/filters to the data to get our results. The results contain both the document ids of the matching books, scores based on relevance (more on this in a second), and the source documents (in this case, my books JSON) if I didn't explicitly specify otherwise.</div>
+<h3 id="geospatial-search" class="mdx-h3" data-hi-narration-block-id="p-61" data-hi-narration-clickable="false">Geospatial Search</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-62" data-hi-narration-clickable="false">One of Elasticsearch's most powerful (and interview-relevant) capabilities is its native support for geospatial data. If you're designing something like Yelp, Uber, or any location-based service, this is where Elasticsearch really shines compared to a traditional relational database.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-63" data-hi-narration-clickable="false">Elasticsearch supports two primary geospatial field types:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-64" data-hi-narration-clickable="false"><strong><span class="mdx-code">geo_point</span></strong>: Stores a single latitude/longitude pair. Use this for things like restaurant locations, user check-ins, or delivery addresses.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-65" data-hi-narration-clickable="false"><strong><span class="mdx-code">geo_shape</span></strong>: Stores arbitrary geometries — polygons, lines, circles, bounding boxes. Use this for delivery zones, city boundaries, or service coverage areas.</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-66" data-hi-narration-clickable="false">To use geospatial search, you first need to define the field type in your mapping:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="json"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>{</span></span>
+<span class="line"><span>  "properties": {</span></span>
+<span class="line"><span>    "name": { "type": "text" },</span></span>
+<span class="line"><span>    "location": { "type": "geo_point" },</span></span>
+<span class="line"><span>    "delivery_zone": { "type": "geo_shape" }</span></span>
+<span class="line"><span>  }</span></span>
+<span class="line"><span>}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-68" data-hi-narration-clickable="false">Then when you add a document, include the coordinates:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// POST /restaurants/_doc</span></span>
+<span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "name"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"Joe's Pizza"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "location"</span><span style="color:#212B36">: { </span><span style="color:#2C9C59">"lat"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 40.7128</span><span style="color:#637381">,</span><span style="color:#2C9C59"> "lon"</span><span style="color:#637381">:</span><span style="color:#299A8D"> -</span><span style="color:#F4A261">74.0060</span><span style="color:#212B36"> }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "delivery_zone"</span><span style="color:#212B36">: {</span></span>
+<span class="line"><span style="color:#2C9C59">    "type"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "polygon"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">    "coordinates"</span><span style="color:#637381">:</span><span style="color:#637381"> [[[</span><span style="color:#299A8D">-</span><span style="color:#F4A261">74.01</span><span style="color:#637381">,</span><span style="color:#F4A261"> 40.71</span><span style="color:#637381">],</span><span style="color:#637381"> [</span><span style="color:#299A8D">-</span><span style="color:#F4A261">74.00</span><span style="color:#637381">,</span><span style="color:#F4A261"> 40.71</span><span style="color:#637381">],</span><span style="color:#637381"> [</span><span style="color:#299A8D">-</span><span style="color:#F4A261">74.00</span><span style="color:#637381">,</span><span style="color:#F4A261"> 40.72</span><span style="color:#637381">],</span><span style="color:#637381"> [</span><span style="color:#299A8D">-</span><span style="color:#F4A261">74.01</span><span style="color:#637381">,</span><span style="color:#F4A261"> 40.72</span><span style="color:#637381">],</span><span style="color:#637381"> [</span><span style="color:#299A8D">-</span><span style="color:#F4A261">74.01</span><span style="color:#637381">,</span><span style="color:#F4A261"> 40.71</span><span style="color:#637381">]]]</span></span>
+<span class="line"><span style="color:#212B36">  }</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-70" data-hi-narration-clickable="false">Now you can run geospatial queries. The most common is <span class="mdx-code">geo_distance</span>, which finds documents within a radius of a point:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// GET /restaurants/_search</span></span>
+<span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "query"</span><span style="color:#212B36">: {</span></span>
+<span class="line"><span style="color:#2C9C59">    "geo_distance"</span><span style="color:#637381">:</span><span style="color:#212B36"> {</span></span>
+<span class="line"><span style="color:#2C9C59">      "distance"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "5km"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">      "location"</span><span style="color:#637381">:</span><span style="color:#212B36"> { </span><span style="color:#2C9C59">"lat"</span><span style="color:#637381">:</span><span style="color:#F4A261"> 40.7128</span><span style="color:#637381">,</span><span style="color:#2C9C59"> "lon"</span><span style="color:#637381">:</span><span style="color:#299A8D"> -</span><span style="color:#F4A261">74.0060</span><span style="color:#212B36"> }</span></span>
+<span class="line"><span style="color:#212B36">    }</span></span>
+<span class="line"><span style="color:#212B36">  }</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-72" data-hi-narration-clickable="false">You can combine this with other filters in a <span class="mdx-code">bool</span> query — find Italian restaurants within 2 miles, sorted by rating. That's exactly the kind of multi-faceted search that makes Elasticsearch a natural fit for location-based applications.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-73" data-hi-narration-clickable="false">Under the hood, Elasticsearch uses a combination of geospatial indexing strategies — including <a href="https://en.wikipedia.org/wiki/Geohash" target="_blank" rel="noopener noreferrer" class="mdx-a">geohashes</a>, <a href="/learn/system-design/deep-dives/proximity-search#k-d-trees-and-bkd-trees" target="_blank" rel="noopener noreferrer" class="mdx-a">BKD trees</a> (a variant of k-d trees optimized for block storage), and R-tree-like structures — to make these queries fast even across millions of documents. The <span class="mdx-code">geo_point</span> type specifically uses a BKD tree to index coordinates, which allows Elasticsearch to efficiently narrow the search space in two dimensions without the limitations of a standard B-tree index on latitude and longitude separately.</div>
+<h3 id="sort" class="mdx-h3" data-hi-narration-block-id="p-74" data-hi-narration-clickable="false">Sort</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-75" data-hi-narration-clickable="false">Once we've narrowed down the results to a set of books that we think are interesting, how do we sort them so that our users get the best results at the top of the page?</div>
+<div class="mdx-p" data-hi-narration-block-id="p-76" data-hi-narration-clickable="false">Sorting is a crucial feature in Elasticsearch that allows you to order your search results based on specific fields.</div>
+<h4 id="basic-sorting" class="mdx-h4" data-hi-narration-block-id="p-77" data-hi-narration-clickable="false">Basic Sorting</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-78" data-hi-narration-clickable="false">To sort results, you can use the <span class="mdx-code">sort</span> parameter in your search query. Here's a basic example that sorts books by price in ascending order:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// GET /books/_search</span></span>
+<span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "sort"</span><span style="color:#212B36">: </span><span style="color:#637381">[</span></span>
+<span class="line"><span style="color:#212B36">    { </span><span style="color:#2C9C59">"price"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "asc"</span><span style="color:#212B36"> }</span></span>
+<span class="line"><span style="color:#637381">  ],</span></span>
+<span class="line"><span style="color:#2C9C59">  "query"</span><span style="color:#212B36">: {</span></span>
+<span class="line"><span style="color:#2C9C59">    "match_all"</span><span style="color:#637381">:</span><span style="color:#212B36"> {}</span></span>
+<span class="line"><span style="color:#212B36">  }</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-80" data-hi-narration-clickable="false">You can also sort by multiple fields. For instance, to sort by price ascending and then by publish date descending:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// GET /books/_search</span></span>
+<span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "sort"</span><span style="color:#212B36">: </span><span style="color:#637381">[</span></span>
+<span class="line"><span style="color:#212B36">    { </span><span style="color:#2C9C59">"price"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "asc"</span><span style="color:#212B36"> }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#212B36">    { </span><span style="color:#2C9C59">"publish_date"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "desc"</span><span style="color:#212B36"> }</span></span>
+<span class="line"><span style="color:#637381">  ],</span></span>
+<span class="line"><span style="color:#2C9C59">  "query"</span><span style="color:#212B36">: {</span></span>
+<span class="line"><span style="color:#2C9C59">    "match_all"</span><span style="color:#637381">:</span><span style="color:#212B36"> {}</span></span>
+<span class="line"><span style="color:#212B36">  }</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<h4 id="sorting-by-script" class="mdx-h4" data-hi-narration-block-id="p-82" data-hi-narration-clickable="false">Sorting by Script</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-83" data-hi-narration-clickable="false">Elasticsearch also allows sorting based on custom scripts (using the "Painless" scripting language). This is useful when you need to sort by a computed value. Here's an example that sorts books by a discounted price (10% off) - which you would never do because the sort order is identical:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// GET /books/_search</span></span>
+<span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "sort"</span><span style="color:#212B36">: </span><span style="color:#637381">[</span></span>
+<span class="line"><span style="color:#212B36">    {</span></span>
+<span class="line"><span style="color:#2C9C59">      "_script"</span><span style="color:#637381">:</span><span style="color:#212B36"> {</span></span>
+<span class="line"><span style="color:#2C9C59">        "type"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "number"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">        "script"</span><span style="color:#637381">:</span><span style="color:#212B36"> {</span></span>
+<span class="line"><span style="color:#2C9C59">          "source"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "doc['price'].value * 0.9"</span></span>
+<span class="line"><span style="color:#212B36">        }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">        "order"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "asc"</span></span>
+<span class="line"><span style="color:#212B36">      }</span></span>
+<span class="line"><span style="color:#212B36">    }</span></span>
+<span class="line"><span style="color:#637381">  ],</span></span>
+<span class="line"><span style="color:#2C9C59">  "query"</span><span style="color:#212B36">: {</span></span>
+<span class="line"><span style="color:#2C9C59">    "match_all"</span><span style="color:#637381">:</span><span style="color:#212B36"> {}</span></span>
+<span class="line"><span style="color:#212B36">  }</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<h4 id="sorting-on-nested-fields" class="mdx-h4" data-hi-narration-block-id="p-85" data-hi-narration-clickable="false">Sorting on Nested Fields</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-86" data-hi-narration-clickable="false">When dealing with nested fields, you need to use a nested sort. This ensures that the sort values come from the same nested object. Here's how you might sort books by their highest review rating:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="json"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>// GET /books/_search</span></span>
+<span class="line"><span>{</span></span>
+<span class="line"><span>  "sort": [</span></span>
+<span class="line"><span>    {</span></span>
+<span class="line"><span>      "reviews.rating": {</span></span>
+<span class="line"><span>        "order": "desc",</span></span>
+<span class="line"><span>        "mode": "max",</span></span>
+<span class="line"><span>        "nested": {</span></span>
+<span class="line"><span>          "path": "reviews"</span></span>
+<span class="line"><span>        }</span></span>
+<span class="line"><span>      }</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>  ],</span></span>
+<span class="line"><span>  "query": {</span></span>
+<span class="line"><span>    "match_all": {}</span></span>
+<span class="line"><span>  }</span></span>
+<span class="line"><span>}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<h4 id="relevance-based-sorting" class="mdx-h4" data-hi-narration-block-id="p-88" data-hi-narration-clickable="false">Relevance-Based Sorting</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-89" data-hi-narration-clickable="false">If we don't specify a sort order, Elasticsearch sorts results by relevance score (<span class="mdx-code">_score</span>). This is configurable, but the default scoring algorithm is related closely to <a href="https://en.wikipedia.org/wiki/Tf%E2%80%93idf" target="_blank" rel="noopener noreferrer" class="mdx-a">TF-IDF</a> (Term Frequency-Inverse Document Frequency).</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-90" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">If you haven't already heard about TF-IDF, it's worth 10 minutes of your time to <a href="https://en.wikipedia.org/wiki/Tf%E2%80%93idf" target="_blank" rel="noopener noreferrer" class="mdx-a">learn about it</a> as it's useful in a wide variety of contexts!</div></div></div></div>
+<h3 id="pagination-and-cursors" class="mdx-h3" data-hi-narration-block-id="p-91" data-hi-narration-clickable="false">Pagination and Cursors</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-92" data-hi-narration-clickable="false">Our last concern after specifying how we filter and sort our results is how to get them back to the user, basically how we can paginate them. Pagination in Elasticsearch allows you to retrieve a subset of search results, typically used to display results across multiple pages. While we need to determine how we're going to specify the results on each page (either by number or by filtering criteria), we also need to consider whether we want to maintain state or re-run our search query on every page/request.</div>
+<h4 id="from-size-pagination" class="mdx-h4" data-hi-narration-block-id="p-93" data-hi-narration-clickable="false">From/Size Pagination</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-94" data-hi-narration-clickable="false">This is the simplest form of pagination, where you specify:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-95" data-hi-narration-clickable="false"><span class="mdx-code">from</span>: The starting index of the results</li>
+<li class="mdx-li" data-hi-narration-block-id="p-96" data-hi-narration-clickable="false"><span class="mdx-code">size</span>: The number of results to return</li>
+</ul>
+<div class="mdx-p">Example query:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="json"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>// GET /my_index/_search</span></span>
+<span class="line"><span>{</span></span>
+<span class="line"><span>  "from": 0,</span></span>
+<span class="line"><span>  "size": 10,</span></span>
+<span class="line"><span>  "query": {</span></span>
+<span class="line"><span>    "match": {</span></span>
+<span class="line"><span>      "title": "elasticsearch"</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>  }</span></span>
+<span class="line"><span>}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-98" data-hi-narration-clickable="false">However, this method becomes inefficient for deep pagination (e.g., beyond 10,000 results) due to the overhead of sorting and fetching all preceding documents. The cluster needs to retrieve and sort all these documents on each request, which can be prohibitively expensive.</div>
+<h4 id="search-after" class="mdx-h4" data-hi-narration-block-id="p-99" data-hi-narration-clickable="false">Search After</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-100" data-hi-narration-clickable="false">This method is more efficient for deep pagination. It uses the sort values of the last result as the starting point for the next page. With these values we can restrict each page to only fetch the documents that come after the last document of the previous page, progressively restricting the search set.</div>
+<div class="mdx-p">Example:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="json"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>// GET /my_index/_search</span></span>
+<span class="line"><span>{</span></span>
+<span class="line"><span>  "size": 10,</span></span>
+<span class="line"><span>  "query": {</span></span>
+<span class="line"><span>    "match": {</span></span>
+<span class="line"><span>      "title": "elasticsearch"</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>  },</span></span>
+<span class="line"><span>  "sort": [</span></span>
+<span class="line"><span>    {"date": "desc"},</span></span>
+<span class="line"><span>    {"_id": "desc"}</span></span>
+<span class="line"><span>  ],</span></span>
+<span class="line"><span>  "search_after": [1463538857, "654323"]</span></span>
+<span class="line"><span>}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-101" data-hi-narration-clickable="false">The <span class="mdx-code">search_after</span> parameter uses the sort values from the last result of the previous page. Here's how it works:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-103" data-hi-narration-clickable="false">In your initial query, you don't include the <span class="mdx-code">search_after</span> parameter.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-104" data-hi-narration-clickable="false">From the results of your initial query, you take the sort values of the last document.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-105" data-hi-narration-clickable="false">These sort values become the <span class="mdx-code">search_after</span> parameter for your next query.</li>
+</ol>
+<div class="mdx-p">In the example above:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-106" data-hi-narration-clickable="false"><span class="mdx-code">1463538857</span> is a timestamp (the <span class="mdx-code">date</span> field's value for the last document in the previous page).</li>
+<li class="mdx-li"><span class="mdx-code">"654323"</span> is the <span class="mdx-code">_id</span> of the last document in the previous page.</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-107" data-hi-narration-clickable="false">By providing these values, Elasticsearch knows exactly where to start for the next page, making it very efficient even for deep pagination. This approach ensures that:</div>
+<ul class="mdx-ul">
+<li class="mdx-li">You don't miss any documents added in subsequent pages (even if new documents are added between requests).</li>
+<li class="mdx-li">You don't get duplicate results across pages.</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-108" data-hi-narration-clickable="false">However, it requires maintaining state on the client side (remembering the sort values of the last document), and it doesn't allow random access to pages - you can only move forward through the results. This style of pagination also risks missing documents in prior pages if the underlying data is updated or deleted.</div>
+<h4 id="cursors" class="mdx-h4" data-hi-narration-block-id="p-109" data-hi-narration-clickable="false">Cursors</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-110" data-hi-narration-clickable="false">Cursors in Elasticsearch provide a stateful way to paginate through search results, solving the problem of the documents shifting underneath you. Cursors maintain consistency across paginated requests, and thus require a lot more overhead than the pagination methods we've already discussed.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-111" data-hi-narration-clickable="false">Elasticsearch uses the <span class="mdx-code">point in time</span> (PIT) API in conjunction with <span class="mdx-code">search_after</span> for cursor-based pagination:</div>
+<ol class="mdx-ol">
+<li class="mdx-li"><strong>Create a PIT</strong>:</li>
+</ol>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// POST /my_index/_pit?keep_alive=1m</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p">This returns a PIT ID.</div>
+<ol start="2" class="mdx-ol">
+<li class="mdx-li"><strong>Use the PIT in searches</strong>:</li>
+</ol>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// GET /_search</span></span>
+<span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "size"</span><span style="color:#212B36">: </span><span style="color:#F4A261">10</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "query"</span><span style="color:#212B36">: {</span></span>
+<span class="line"><span style="color:#2C9C59">    "match"</span><span style="color:#637381">:</span><span style="color:#212B36"> {</span></span>
+<span class="line"><span style="color:#2C9C59">      "title"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "elasticsearch"</span></span>
+<span class="line"><span style="color:#212B36">    }</span></span>
+<span class="line"><span style="color:#212B36">  }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "pit"</span><span style="color:#212B36">: {</span></span>
+<span class="line"><span style="color:#2C9C59">    "id"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "46To..."</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">    "keep_alive"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "1m"</span></span>
+<span class="line"><span style="color:#212B36">  }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "sort"</span><span style="color:#212B36">: </span><span style="color:#637381">[</span></span>
+<span class="line"><span style="color:#212B36">    {</span><span style="color:#2C9C59">"_score"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "desc"</span><span style="color:#212B36">}</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#212B36">    {</span><span style="color:#2C9C59">"_id"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "asc"</span><span style="color:#212B36">}</span></span>
+<span class="line"><span style="color:#637381">  ]</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<ol start="3" class="mdx-ol">
+<li class="mdx-li"><strong>For subsequent pages, add <span class="mdx-code">search_after</span></strong>:</li>
+</ol>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// GET /_search</span></span>
+<span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "size"</span><span style="color:#212B36">: </span><span style="color:#F4A261">10</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "query"</span><span style="color:#212B36">: {</span></span>
+<span class="line"><span style="color:#2C9C59">    "match"</span><span style="color:#637381">:</span><span style="color:#212B36"> {</span></span>
+<span class="line"><span style="color:#2C9C59">      "title"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "elasticsearch"</span></span>
+<span class="line"><span style="color:#212B36">    }</span></span>
+<span class="line"><span style="color:#212B36">  }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "pit"</span><span style="color:#212B36">: {</span></span>
+<span class="line"><span style="color:#2C9C59">    "id"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "46To..."</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">    "keep_alive"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "1m"</span></span>
+<span class="line"><span style="color:#212B36">  }</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "sort"</span><span style="color:#212B36">: </span><span style="color:#637381">[</span></span>
+<span class="line"><span style="color:#212B36">    {</span><span style="color:#2C9C59">"_score"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "desc"</span><span style="color:#212B36">}</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#212B36">    {</span><span style="color:#2C9C59">"_id"</span><span style="color:#637381">:</span><span style="color:#2C9C59"> "asc"</span><span style="color:#212B36">}</span></span>
+<span class="line"><span style="color:#637381">  ],</span></span>
+<span class="line"><span style="color:#2C9C59">  "search_after"</span><span style="color:#212B36">: </span><span style="color:#637381">[</span><span style="color:#F4A261">1.0</span><span style="color:#637381">,</span><span style="color:#2C9C59"> "1234"</span><span style="color:#637381">]</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<ol start="4" class="mdx-ol">
+<li class="mdx-li"><strong>Close the PIT when done</strong>:</li>
+</ol>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="js"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// DELETE /_pit</span></span>
+<span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "id"</span><span style="color:#212B36"> : </span><span style="color:#2C9C59">"46To..."</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-116" data-hi-narration-clickable="false">Using PITs with <span class="mdx-code">search_after</span> provides a consistent view of the data throughout the pagination process, even if the underlying index is being updated.</div>
+<h2 id="how-it-works" class="mdx-h2" data-hi-narration-block-id="p-117" data-hi-narration-clickable="false">How it works</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-118" data-hi-narration-clickable="false">Woo! So now that you have a basic understanding of how you might use Elasticsearch as a client, the natural next step for us is to dive into how it works under the covers. How are each of these operations implemented?</div>
+<div class="mdx-p" data-hi-narration-block-id="p-119" data-hi-narration-clickable="false">Elasticsearch can be thought of as a high-level orchestration framework for Apache Lucene, the highly optimized low-level search library. Elasticsearch handles the distributed systems aspects: cluster coordination, APIs, aggregations, and real-time capabilities while the "heart" of the search functionality is handled by Lucene.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-120" data-hi-narration-clickable="false">There's enough here to talk for hours so let's start with the high-level architecture of an Elasticsearch cluster and then we'll dive into some of the most interesting bits of indexing and searching.</div>
+<h2 id="cluster-architecture" class="mdx-h2" data-hi-narration-block-id="p-121" data-hi-narration-clickable="false">Cluster Architecture</h2>
+<h3 id="node-types" class="mdx-h3" data-hi-narration-block-id="p-122" data-hi-narration-clickable="false">Node Types</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-123" data-hi-narration-clickable="false">Elasticsearch is a <em>distributed</em> search engine. When you spin up an Elasticsearch cluster, you're actually spinning up multiple nodes. Nodes can be of 5 types which are specified when the instance is started.</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-124" data-hi-narration-clickable="false"><strong>Master Node</strong> is responsible for coordinating the cluster. It's the only node that can perform cluster-level operations like adding or removing nodes, and creating or deleting indices. Think of it like the "admin".</li>
+<li class="mdx-li" data-hi-narration-block-id="p-125" data-hi-narration-clickable="false"><strong>Data Node</strong> is responsible for storing the data. It's where your data is actually stored. You'll have lots of these in a big cluster.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-126" data-hi-narration-clickable="false"><strong>Coordinating Node</strong> is responsible for coordinating the search requests across the cluster. It's the node that receives the search request from the client and sends it to the appropriate nodes. This is the frontend for your cluster.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-127" data-hi-narration-clickable="false"><strong>Ingest Node</strong> is responsible for data ingestion. It's where your data is transformed and prepared for indexing.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-128" data-hi-narration-clickable="false"><strong>Machine Learning Node</strong> is responsible for machine learning tasks.</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-129" data-hi-narration-clickable="false">These nodes work together in pretty straightforward ways. Here's a sequence diagram of Ingest nodes loading data into Data nodes which are then queried via Coordinating Nodes:</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/i7xkbqct23ld.0tnu180chncdl-b792cd48.svg" alt="Sequence Diagram" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Sequence Diagram</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-130" data-hi-narration-clickable="false">Every instance of Elasticsearch can be of multiple types, and the type is determined by the node's configuration. For example, an instance can be configured to be a master-eligible node AND coordinating node. In more sophisticated deployments, you might have dedicated hosts for each of these types (e.g. your ingest node host might be CPU bound and have many processors while your data node host might have high disk I/O or more memory).</div>
+<div class="mdx-p" data-hi-narration-block-id="p-131" data-hi-narration-clickable="false">Each of these node types also has specializations. As an example, data nodes can be hot, warm, cold, or frozen depending on how likely the data is to be queried (e.g. recent or not) and whether it can change.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-132" data-hi-narration-clickable="false">When the cluster starts, you'll specify a list of seed nodes (these are master-eligible) which will perform a leader election algorithm to choose a master for the cluster. Only one node should be the active master at a time, while the other master-eligible nodes are on standby.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-133" data-hi-narration-clickable="false">While ingest and coordinating nodes are interesting, data nodes are where the magic of search happens, so let's start there.</div>
+<h3 id="data-nodes" class="mdx-h3">Data Nodes</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-135" data-hi-narration-clickable="false">The primary function of data nodes is to store documents and make them rapidly searchable. Elasticsearch does this by separating the raw <span class="mdx-code">_source</span> data (remember seeing this in our search results above?) from Lucene indexes that are used in search. You can think of it like having a separate document database.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-136" data-hi-narration-clickable="false">Requests proceed in two phases: first the "query" phase is when the relevant documents are identified using the optimized index data structures and the "fetch" phase is when those document IDs are (optionally) pulled from the nodes.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-137" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">The ideal queries are ones that can be answered without ever touching the source documents, sometimes by pulling the relevant data into the index via included fields.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-138" data-hi-narration-clickable="false">Data nodes house our <span class="mdx-code">indices</span> (from earlier) which are comprised of <span class="mdx-code">shards</span> and their <span class="mdx-code">replicas</span>. Inside those shards are Lucene indexes which are made up of Lucene segments.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/rjnk9srh8n2f.1mlqyq4nb9bn8-369b768c.svg" alt="Elasticsearch Russian Dolls" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Elasticsearch Russian Dolls</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-139" data-hi-narration-clickable="false"><span class="mdx-code">Shards</span> allows Elasticsearch to split data (and the accompanying indexes) across hosts. This allows Elasticsearch to distribute both your documents and the corresponding index structures across multiple nodes in your cluster, which significantly improve performance and scalability.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-140" data-hi-narration-clickable="false">Searches will be executed across all relevant shards in parallel, and the results will be merged and sorted by the coordinating node. Queries are generally executed on the coordinating node, which then distributes the query to the appropriate shards.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-141" data-hi-narration-clickable="false">A <span class="mdx-code">replica</span> is an exact copy of a shard. Elasticsearch allows you to create one or more copies of your index's shards, which are called replica shards, or just replicas.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-142" data-hi-narration-clickable="false">Replicas serve two primary purposes: high availability and increased throughput. If our shard can handle <span class="mdx-code">X</span> <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">TPS</span>, then by having <span class="mdx-code">Y</span> replicas we can handle <span class="mdx-code">X * Y</span> TPS (all other things equal).</div>
+<div class="mdx-p" data-hi-narration-block-id="p-143" data-hi-narration-clickable="false">The coordinating node can leverage replicas to improve search performance by distributing search requests across all available shard copies (primary and replica), effectively load balancing the search workload across the cluster.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-144" data-hi-narration-clickable="false">Lastly, Elasticsearch shards are 1:1 with Lucene indexes. Remember earlier that Lucene is the low-level, highly optimized search library at the heart of Elasticsearch. Many of the operations that Elasticsearch needs to perform with shards (merging, splitting, refreshing, searching) are actually proxy operations on the Lucene indexes underneath.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-145" data-hi-narration-clickable="false">At this point we can start to oversimplify Elasticsearch like a bunch of availability and scalability on top of a big bag of Lucene indexes.</div>
+<h4 id="lucene-segment-crud" class="mdx-h4" data-hi-narration-block-id="p-146" data-hi-narration-clickable="false">Lucene Segment CRUD</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-147" data-hi-narration-clickable="false">Lucene indexes are made up of <span class="mdx-code">segments</span>, the base unit of our search engine. Segments are <strong>immutable</strong> containers of indexed data. Let that word sink in for one second before we continue. Don't we need to be able to update, add, and delete documents from our Elasticsearch index?</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/vycrulgkt4uk.0bvrzw0gsfqo2-9c001254.svg" alt="Lucene Segments" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Lucene Segments</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-148" data-hi-narration-clickable="false">The way that Lucene indexes work is by batching writes and constructing segments. When we insert a document, we don't immediately store it in the index. Instead, we add it to a segment. When we have a batch of documents, we construct a segment and flush it out to disk.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-149" data-hi-narration-clickable="false">When segments get too numerous, we can merge them: we create a new segment from the segments we want to merge and remove the previous segments.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-150" data-hi-narration-clickable="false">Deletions are tricky: each segment actually has a set of deleted identifiers. When a segment is queried for data against a deleted document, it pretends it doesn't exist - but the data is still there! During merge operations, the merged segments clean up deleted documents.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-151" data-hi-narration-clickable="false">Finally for update events we don't actually update the segment. Instead, we <em>soft</em> delete the old document and insert a new document with the updated data. That old document gets cleaned up on segment merge events later. This makes deletions super fast but have some lasting performance penalties until we merge and clean up those segments. Ideally we're not doing it a lot!</div>
+<div class="callout callout-warning my-6" data-hi-narration-block-id="p-152" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Note here that updates actually have <em>worse</em> performance than insertions because we need to handle the bookkeeping of soft deletions. This is part of why Elasticsearch isn't a great fit for data that is rapidly updating.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-153" data-hi-narration-clickable="false">This immutable architecture carries a number of benefits for Lucene:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-154" data-hi-narration-clickable="false">Improved write performance: New documents can be quickly added to new segments without modifying existing ones.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-155" data-hi-narration-clickable="false">Efficient caching: Since segments are immutable, they can be safely cached in memory or on SSD without worrying about consistency issues.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-156" data-hi-narration-clickable="false">Simplified concurrency: Read operations don't need to worry about the data changing mid-query, simplifying concurrent access.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-157" data-hi-narration-clickable="false">Easier recovery: In case of a crash, it's easier to recover from immutable segments as their state is known and consistent.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-158" data-hi-narration-clickable="false">Optimized compression: Immutable data can be more effectively compressed, saving disk space.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-159" data-hi-narration-clickable="false">Faster searches: The immutable nature allows for optimized data structures and algorithms for searching.</li>
+</ol>
+<div class="mdx-p" data-hi-narration-block-id="p-160" data-hi-narration-clickable="false">However, this design also introduces some challenges, such as the need for periodic segment merges and the temporary increased storage requirements before cleanup operations. Elasticsearch and Lucene have sophisticated mechanisms to manage these trade-offs effectively.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-161" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">These kind of design decisions (how to use immutability to your advantage) are a big consideration in data-heavy infrastructure system design interviews! Hopefully they're inspiring some ideas for how you think about other systems you might build.</div></div></div></div>
+<h4 id="lucene-segment-features" class="mdx-h4" data-hi-narration-block-id="p-162" data-hi-narration-clickable="false">Lucene Segment Features</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-163" data-hi-narration-clickable="false">Segments aren't just dumb containers of document data, they also house highly-optimized data structures relevant for search operations. Two of the most important ones are the <span class="mdx-code">inverted index</span> and <span class="mdx-code">doc values</span>.</div>
+<h5 id="inverted-index" class="mdx-h5">Inverted Index</h5>
+<div class="mdx-p" data-hi-narration-block-id="p-165" data-hi-narration-clickable="false">If Lucene is the heart of Elasticsearch, the <span class="mdx-code">inverted index</span> is the heart of Lucene. Fundamentally, if you want to make finding things fast you have two options:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-166" data-hi-narration-clickable="false">You can organize your data according to how you want to retrieve it. If you wanted to look up specific instances, a poor choice would be a table which you need to scan through every item (<span class="mdx-code">O(n)</span>), a better one would be a sorted list (<span class="mdx-code">O(log(n))</span>), and the best strategy would be a hash table (<span class="mdx-code">O(1)</span>).</li>
+<li class="mdx-li" data-hi-narration-block-id="p-167" data-hi-narration-clickable="false">You can copy your data and organize the copy like (1).</li>
+</ol>
+<div class="mdx-p" data-hi-narration-block-id="p-168" data-hi-narration-clickable="false">Let's pretend we have 1 billion books, a small number of which the title contains the word "lazy". We want to create some code that can find all the books that contain the word "lazy" as fast as possible. How might we do this?</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/cjed5ehlm6bo.1itaizv478-c2-3e3586ec.svg" alt="Inverted Index" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Inverted Index</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-169" data-hi-narration-clickable="false">An inverted index is a data structure used to store mapping from content, such as words or numbers, to its locations in a database, or in this case, documents. This is what makes keyword search with Elasticsearch fast. It lists every unique word that appears in any document and identifies all the documents each word occurs in. In this case, a map from strings like "lazy" to the documents that contain that token (above, documents #12 and #53).</div>
+<div class="mdx-p" data-hi-narration-block-id="p-170" data-hi-narration-clickable="false">Now instead of having to scan every document to find the documents that contain the word "lazy", we can just look up the inverted index and find the documents that contain the word "lazy" in constant time.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-171" data-hi-narration-clickable="false">We've exploited (1) and (2) above - by creating copies of our data and cleverly arranging it, we turn an <span class="mdx-code">O(n)</span> scan into an <span class="mdx-code">O(1)</span> lookup. Clever!</div>
+<h5 id="doc-values" class="mdx-h5" data-hi-narration-block-id="p-172" data-hi-narration-clickable="false">Doc Values</h5>
+<div class="mdx-p" data-hi-narration-block-id="p-173" data-hi-narration-clickable="false">Now, what if we want to sort all <em>those</em> results by price? This is where <span class="mdx-code">doc values</span> come in. While the documents contain a bunch of other fields like author, title, etc. we really want to get only the price for all the matched results. This is a very common problem for row-oriented databases like relational databases! Even though I only need to access a single column, I need to read the entire row and index into it.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-174" data-hi-narration-clickable="false">The secret to the performance of analytics workhorses like Spark or AWS's Redshift is they use a columnar format to store data in contiguous chunks of memory. When you query a column, you're really just reading a contiguous chunk of memory. The <span class="mdx-code">doc values</span> structure does just this with a columnar, contiguous representation of a single field for all documents across the segment. Our <span class="mdx-code">inverted index</span> gives us the mapping of tokens to documents, and <span class="mdx-code">doc values</span> give us the data we need to perform that final sort.</div>
+<h3 id="coordinating-nodes" class="mdx-h3" data-hi-narration-block-id="p-175" data-hi-narration-clickable="false">Coordinating Nodes</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-176" data-hi-narration-clickable="false">Remember that we talked about how Elasticsearch is a distributed system? Coordinating nodes are responsible for taking requests from end clients and coordinating their execution across the cluster. They are the entry point for a user request and are responsible for parsing the query, determining which nodes are responsible for the query, and returning the results to the user.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-177" data-hi-narration-clickable="false">One of the most important steps in execution on a coordinating node is query planning. <strong>Query planners</strong> are algorithms that determine the most efficient way to execute a search query. After a query is parsed by the coordinating node, the query planner evaluates how to best retrieve the relevant documents. This involves deciding whether to use an inverted index, determining the best order to execute parts of the query, and orchestrating how results from multiple nodes should be combined.</div>
+<h4 id="order-optimization" class="mdx-h4" data-hi-narration-block-id="p-178" data-hi-narration-clickable="false">Order Optimization</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-179" data-hi-narration-clickable="false">Let's talk about this in simple terms. You are searching through millions of documents for the string "bill nye". In your inverted index, "bill" has millions of entries and "nye" has a few hundred. How might you go about this?</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-180" data-hi-narration-clickable="false">You could generate a hash set of all the documents that contain "nye" and then scan over the documents that contain "bill" looking for an intersection, then do a string search for "bill nye"</li>
+<li class="mdx-li" data-hi-narration-block-id="p-182" data-hi-narration-clickable="false">You could generate a hash set of all the documents that contain "bill" and then scan over the documents that contain "nye" looking for an intersection, then do a string search for "bill nye".</li>
+<li class="mdx-li" data-hi-narration-block-id="p-183" data-hi-narration-clickable="false">You could load all the documents that contain "nye" and do a string search for "bill nye".</li>
+<li class="mdx-li">You could load all the documents that contain "bill" and do a string search for "bill nye".</li>
+<li class="mdx-li">...</li>
+</ol>
+<div class="mdx-p" data-hi-narration-block-id="p-184" data-hi-narration-clickable="false">There are lots of options! And the difference in performance between these options can vary by orders of magnitude.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-186" data-hi-narration-clickable="false">By keeping statistics on the types of fields that are present, the keywords that are popular, and the length of documents, Elasticsearch's query planner will choose between options so as to minimize the time it takes to return results to the user. This optimization is crucial for maintaining performance as the size and complexity of datasets grow.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-187" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">If you're dealing with an infrastructure-style system design interview, these questions should be familiar to you. Query planners, by adding a layer of statistics and an indirection allow the system to dynamically respond to the data in the index. Being able to handle <em>data dependence</em> is why database systems in general tend to be so powerful!</div></div></div></div>
+<h2 id="in-your-interview" class="mdx-h2" data-hi-narration-block-id="p-188" data-hi-narration-clickable="false">In Your Interview</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-189" data-hi-narration-clickable="false">Elasticsearch should fit obviously into many system design interview questions. Anything that involves complex searches is probably a good candidate. The majority of the time Elasticsearch is invoked in interviews it will be attached via Change Data Capture (<span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">CDC</span>) to an authoritative data store like Postgres or DynamoDB.</div>
+<h3 id="using-elasticsearch" class="mdx-h3" data-hi-narration-block-id="p-190" data-hi-narration-clickable="false">Using Elasticsearch</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-191" data-hi-narration-clickable="false">Some things to keep in mind when using Elasticsearch in your interview:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-192" data-hi-narration-clickable="false">It's usually not a good idea to use Elasticsearch as your database. It's a search engine first and foremost, and while it's incredibly powerful it's not meant to replace a traditional database. Earlier versions of Elasticsearch had a lot of issues with consistency and durability, and many of the issues that plagued CouchDB are issues that have plagued Elasticsearch. All to say: if you need the data to persist, put it somewhere else.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-193" data-hi-narration-clickable="false">Elasticsearch is designed for read-heavy workloads. If you're dealing with a write-heavy system, you might want to consider other options or implement a write buffer. While it might be convenient that you can add field for e.g. the number of likes on a post or impression counts, there's a lot of reasons this will cause ElasticSearch to struggle.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-194" data-hi-narration-clickable="false">Ensure you account for the <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">eventual consistency</span> model of Elasticsearch. Your results <em>will</em> be stale, sometimes significantly. If your use-case can't tolerate this, you may need to consider alternatives.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-195" data-hi-narration-clickable="false">Elasticsearch is <em>not</em> a relational database. You'll want to denormalize your data as much as possible to make search queries efficient. This may require some additional transformation logic on the write side to make it happen. You should aim for your results to be provided by 1 or 2 queries.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-196" data-hi-narration-clickable="false">Not all search problems require it! If your data is small (&lt; 100k documents) or doesn't change often, there are many other and faster solutions. See if a simple query against your primary data store is sufficient and only consider Elasticsearch if you find that to be insufficient.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-197" data-hi-narration-clickable="false">You need to be careful you're keeping Elasticsearch in sync with the underlying data. Failures in synchronization can lead to drift and are a common source of bugs with Elasticsearch.</li>
+</ol>
+<div class="mdx-p" data-hi-narration-block-id="p-198" data-hi-narration-clickable="false">Remember, while Elasticsearch is a powerful tool, it's not a silver bullet. Be prepared to justify why you're choosing Elasticsearch over other options, and be ready to discuss its limitations as well as its strengths.</div>
+<h3 id="lessons-from-elasticsearch" class="mdx-h3" data-hi-narration-block-id="p-199" data-hi-narration-clickable="false">Lessons from Elasticsearch</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-200" data-hi-narration-clickable="false">Even if we're not using Elasticsearch, we can borrow a number of lessons from its construction in designing performant infrastructure:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-201" data-hi-narration-clickable="false">Immutability can be a powerful tool when used at the right layer of the stack. By keeping data static, we enhance our ability to cache, compress, and otherwise optimize our data. We also don't need to worry about synchronization and integrity issues which are much harder to solve with mutable data.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-202" data-hi-narration-clickable="false">By separating the query execution from the storage of our data, we can optimize each independently. Elasticsearch's data nodes and coordination nodes complement each other beautifully by focusing on the respective responsibilities of each node type.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-203" data-hi-narration-clickable="false">Indexing strategies can significantly impact search performance. Elasticsearch's inverted index structure allows for fast full-text searches, while doc values enable efficient sorting and aggregations. When designing systems that require fast data retrieval, consider how you can structure your data to support the most common query patterns.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-204" data-hi-narration-clickable="false">Distributed systems can provide scalability and fault tolerance, but they also introduce complexity. Elasticsearch's cluster architecture allows it to handle large amounts of data and high query loads, but it also requires careful consideration of data consistency and network partitions. When designing distributed systems, always consider the trade-offs between consistency, availability, and partition tolerance (<span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">CAP theorem</span>).</li>
+<li class="mdx-li" data-hi-narration-block-id="p-205" data-hi-narration-clickable="false">The importance of efficient data structures cannot be overstated. Elasticsearch's use of specialized data structures like skip lists and finite state transducers for its inverted index shows how tailored data structures can dramatically improve performance for specific use cases. Always consider the access patterns of your data when choosing or designing data structures.</li>
+</ol>
+<h2 id="references" class="mdx-h2" data-hi-narration-block-id="p-206" data-hi-narration-clickable="false">References</h2>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-207" data-hi-narration-clickable="false"><a href="https://www.paradedb.com/blog/elasticsearch_vs_postgres" target="_blank" rel="noopener noreferrer" class="mdx-a">Full Text Search over Postgres: Elasticsearch vs. Alternatives</a></li>
+<li class="mdx-li" data-hi-narration-block-id="p-208" data-hi-narration-clickable="false"><a href="https://j.blaszyk.me/tech-blog/exploring-apache-lucene-index/" target="_blank" rel="noopener noreferrer" class="mdx-a">Exploring Apache Lucene - Part 1: The Index</a></li>
+<li class="mdx-li" data-hi-narration-block-id="p-209" data-hi-narration-clickable="false"><a href="https://medium.com/swlh/bkd-trees-used-in-elasticsearch-40e8afd2a1a4" target="_blank" rel="noopener noreferrer" class="mdx-a">BKD Trees, Used in Elasticsearch</a></li>
+</ul>
+<div class="MuiBox-root mui-10b10ta"><div class="flex flex-row items-center gap-3 mb-3"><div class="heroicon-sw-2 MuiBox-root mui-tbago3"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"></path></svg></div><div><h6 class="MuiTypography-root MuiTypography-h6 mui-jyzq54">Test Your Knowledge</h6><p class="MuiTypography-root MuiTypography-body2 mui-14ou361">Answer the question below to find your gaps.</p></div></div><div class="flex flex-row items-baseline gap-3 mb-1 "><p class="MuiTypography-root MuiTypography-body2 mui-nk2f70">Question 1 of 15</p></div><div class="MuiBox-root mui-1muw576"><div class="mdx-p">What is the fundamental relationship between Elasticsearch and Apache Lucene?</div></div><div class="MuiBox-root mui-0"><div class="grid grid-cols-1 gap-2 mb-4"><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">1</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Lucene is a distributed wrapper around Elasticsearch</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">2</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Elasticsearch and Lucene are competing search engines</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">3</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Elasticsearch is a distributed layer built on top of Lucene</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">4</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Elasticsearch replaced Lucene and shares no code with it</div></div></div></div></div></div></div></div></div></div></div></div><!--$--><!--/$--></div></div></main>
+</body>
+</html>

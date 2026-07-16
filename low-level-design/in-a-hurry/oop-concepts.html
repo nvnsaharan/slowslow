@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OOP Concepts</title>
+<meta name="source-url" content="https://www.hellointerview.com/learn/low-level-design/in-a-hurry/oop-concepts">
+<script>
+(function () {
+  var theme;
+  try { theme = localStorage.getItem('course-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #666666;
+    --faint: #888888;
+    --border: #e1e4e8;
+    --border-strong: #d0d7de;
+    --code-bg: #f6f8fa;
+    --inline-code-bg: #f0f1f3;
+    --link: #0969da;
+    --accent: #10857a;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121212;
+    --fg: #e6e6e6;
+    --muted: #aaaaaa;
+    --faint: #999999;
+    --border: #333333;
+    --border-strong: #3a3a3a;
+    --code-bg: #1e1e1e;
+    --inline-code-bg: #252525;
+    --link: #6cb2ff;
+    --accent: #34b3a6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    max-width: 46rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--fg);
+    background: var(--bg);
+  }
+  h1, h2, h3, h4, h5, h6 { line-height: 1.3; margin: 2em 0 0.6em; }
+  h1 { font-size: 2rem; margin-top: 0.5em; }
+  img, svg, video { max-width: 100%; height: auto; }
+  figure { margin: 1.5em 0; text-align: center; }
+  figcaption { font-size: 0.875rem; color: var(--muted); }
+  pre {
+    padding: 1em;
+    overflow-x: auto;
+    border-radius: 8px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    background: var(--inline-code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  table { border-collapse: collapse; width: 100%; margin: 1.5em 0; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--border-strong); padding: 0.5em 0.75em; text-align: left; }
+  th { background: var(--code-bg); }
+  blockquote { margin: 1.5em 0; padding: 0.5em 1.25em; border-left: 4px solid var(--border-strong); color: var(--muted); }
+  a { color: var(--link); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+  .lesson-source { font-size: 0.8125rem; color: var(--faint); margin-bottom: 2rem; }
+
+  #theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+  #theme-toggle:hover { border-color: var(--accent); }
+
+</style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Toggle light/dark theme"></button>
+<script>
+(function () {
+  var btn = document.getElementById('theme-toggle');
+  function refresh() { btn.textContent = document.documentElement.dataset.theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19'; }
+  btn.addEventListener('click', function () {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('course-theme', next); } catch (e) {}
+    refresh();
+  });
+  refresh();
+})();
+</script>
+<p class="lesson-source">Saved for offline reading from <a href="https://www.hellointerview.com/learn/low-level-design/in-a-hurry/oop-concepts">https://www.hellointerview.com/learn/low-level-design/in-a-hurry/oop-concepts</a></p>
+<main class="flex-1 min-w-0 overflow-y-auto print-main"><div class="flex flex-col bg-nav-bg-paper"><div class="px-4 md:px-6 max-w-7xl mx-auto py-3 w-full print-main-content" style="min-height:calc(100vh - 48px - 0px);transition:min-height 0.3s ease-in-out;background-color:var(--nav-bg-paper)"><div><div class="grid grid-cols-7 gap-12 md:gap-0 mx-auto max-w-5xl"><div class="col-span-7 w-full max-w-4xl md:pr-6 xl:col-span-5"><div class="relative"><div id="markdown" class="mui-4tqezl"><div class="chrome"><div class="flex flex-col gap-2"><div class="flex flex-col relative"><div class="flex items-center justify-between   "><h6 class="MuiTypography-root MuiTypography-h6 mui-pkyqy5">Low-Level Design in a Hurry</h6></div><div class="flex flex-col md:flex-row md:items-start md:justify-between md:gap-4"><div class="flex items-center gap-2"><h1 class="MuiTypography-root MuiTypography-h2 mui-xhvznl">OOP Concepts</h1><div class="MuiBox-root mui-yrscm7"></div></div></div><p class="MuiTypography-root MuiTypography-body2 mui-19x8mt2">A list of OOP concepts for low-level design interviews.</p></div></div><hr class="MuiDivider-root MuiDivider-fullWidth mui-18s6yq7"></div>
+<div class="mdx-p" data-hi-narration-block-id="p-0" data-hi-narration-clickable="false">Where the <a href="/learn/low-level-design/in-a-hurry/design-principles" target="_blank" rel="noopener noreferrer" class="mdx-a">design principles</a> page taught you how to think about clean code, OOP concepts are the mechanisms your language gives you to actually implement those ideas.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-1" data-hi-narration-clickable="false">We’ll assume you already know how to program. This page is a focused refresher on the parts that actually matter in interviews. We’ll walk through the four core concepts: encapsulation, abstraction, polymorphism, and inheritance. For each, you’ll be reminded what it is, why interviewers care, and how it shows up in real LLD problems.</div>
+<h2 id="encapsulation" class="mdx-h2">Encapsulation</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-3" data-hi-narration-clickable="false">Encapsulation means keeping an object’s data private and letting the object control how that data is used. You interact with it through simple methods instead of reaching in and changing its internal details yourself.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-4" data-hi-narration-clickable="false">The benefit is predictability. When your <span class="mdx-code">Account</span> class owns its balance field and only lets you modify it through <span class="mdx-code">deposit()</span> and <span class="mdx-code">withdraw()</span>, you can enforce rules in those methods. You can prevent negative balances, log transactions, update related state. If the balance was public and anyone could write to it directly, you'd have no guarantee those rules get followed.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-5" data-hi-narration-clickable="false">In interviews, encapsulation shows up as a basic hygiene check. Do your classes expose their fields directly, or do they provide methods? Are you returning references to mutable internal collections that callers can modify, or are you returning copies?</div>
+<div class="mdx-p" data-hi-narration-block-id="p-6" data-hi-narration-clickable="false">By leaving <span class="mdx-code">spots</span> public, we're allowing anyone to modify it directly.</div>
+<div class="my-6 MuiBox-root mui-lzjfwc"><div class="MuiBox-root mui-136gx4j"><div class="MuiBox-root mui-avdosu"><div class="MuiBox-root mui-13nbuy0"><svg stroke="currentColor" fill="currentColor" stroke-width="0" role="img" viewBox="0 0 24 24" class="w-3.5 h-3.5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"></path></svg><span>Bad: No Encapsulation</span></div></div><div class="MuiBox-root mui-h6kxy8"><div class="flex items-center gap-0 mb-0"><div class="MuiFormControl-root mui-882m9p"><div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root mui-s1farw"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="language-select-label" class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall mui-1jilzfn">Python</div><fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline mui-5v2ak0"><legend class="mui-w1u3ce"><span>Language</span></legend></fieldset></div></div></div></div></div><div class="MuiBox-root mui-7scwgg"><div class="MuiBox-root mui-357n2r" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> ParkingSpot:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> occupy(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, vehicle: </span><span style="color:#2C9C59">"Vehicle"</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">        ...</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Vehicle:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, type_: str):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.type = type_</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> ParkingLot:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.spots: list[ParkingSpot] = []  </span><span style="color:#919EAB;font-style:italic"># public, mutable</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre></div></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-8" data-hi-narration-clickable="false">Instead, we can make <span class="mdx-code">spots</span> private and provide a method to add a new spot since that's the only way to modify the list.</div>
+<div class="my-6 MuiBox-root mui-lzjfwc"><div class="MuiBox-root mui-136gx4j"><div class="MuiBox-root mui-avdosu"><div class="MuiBox-root mui-1id0flr"><svg stroke="currentColor" fill="currentColor" stroke-width="0" role="img" viewBox="0 0 24 24" class="w-3.5 h-3.5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"></path></svg><span>Good: Proper Encapsulation</span></div></div><div class="MuiBox-root mui-h0380b"><div class="flex items-center gap-0 mb-0"><div class="MuiFormControl-root mui-882m9p"><div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root mui-s1farw"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="language-select-label" class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall mui-1jilzfn">Python</div><fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline mui-5v2ak0"><legend class="mui-w1u3ce"><span>Language</span></legend></fieldset></div></div></div></div></div><div class="MuiBox-root mui-132n9fd"><div class="MuiBox-root mui-357n2r" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">from</span><span style="color:#212B36"> typing </span><span style="color:#299A8D">import</span><span style="color:#212B36"> Optional</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> ParkingSpot:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> occupy(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, vehicle: </span><span style="color:#2C9C59">"Vehicle"</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">        ...</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Vehicle:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, type_: str):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.type = type_</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> ParkingLot:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">._spots: list[ParkingSpot] = []</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> park_vehicle(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, vehicle: Vehicle) -&gt; bool:</span></span>
+<span class="line"><span style="color:#212B36">        spot = </span><span style="color:#299A8D">self</span><span style="color:#212B36">._find_available_spot(vehicle)</span></span>
+<span class="line"><span style="color:#299A8D">        if</span><span style="color:#212B36"> spot </span><span style="color:#299A8D">is</span><span style="color:#F4A261"> None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">            return</span><span style="color:#F4A261"> False</span></span>
+<span class="line"><span style="color:#212B36">        spot.occupy(vehicle)</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#F4A261"> True</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> _find_available_spot(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, vehicle: Vehicle) -&gt; Optional[ParkingSpot]:</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#299A8D"> self</span><span style="color:#212B36">._spots[</span><span style="color:#F4A261">0</span><span style="color:#212B36">] </span><span style="color:#299A8D">if</span><span style="color:#299A8D"> self</span><span style="color:#212B36">._spots </span><span style="color:#299A8D">else</span><span style="color:#F4A261"> None</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#212B36">    @property</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> spots(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; list[ParkingSpot]:</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#212B36"> list(</span><span style="color:#299A8D">self</span><span style="color:#212B36">._spots)</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre></div></div></div></div></div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-10" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">If you're designing a class and wondering whether to expose a field or write a getter, write the getter. If you need to return a collection, return an unmodifiable view or a copy.</div></div></div></div>
+<h2 id="abstraction" class="mdx-h2" data-hi-narration-block-id="p-11" data-hi-narration-clickable="false">Abstraction</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-12" data-hi-narration-clickable="false">Abstraction means exposing only what's essential and hiding implementation details behind clear interfaces. You define what something can do without revealing how it does it.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-13" data-hi-narration-clickable="false">The benefit is simplification. An abstraction hides complexity. When your payment processing code depends on a <span class="mdx-code">PaymentMethod</span> interface instead of concrete classes like <span class="mdx-code">CreditCardProcessor</span> or <span class="mdx-code">PayPalProcessor</span>, you can swap implementations without touching the code that uses them. The caller doesn't need to know whether you're hitting Stripe's API or storing payment tokens in a database. It just calls <span class="mdx-code">process()</span> and gets a result.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-14" data-hi-narration-clickable="false">Abstraction typically appears where there’s complexity in your system. When you encounter a complicated area of logic or state - something with lots of variations, rules, or messy details - abstractions help simplify it. By defining a clear interface or contract, you can hide those details and make the rest of your code easier to reason about. In interviews, look for places where the logic feels tangled or the requirements suggest multiple approaches - those are good signals that introducing an abstraction will make things more manageable.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-15" data-hi-narration-clickable="false">In this example, we tightly coupled the <span class="mdx-code">OrderService</span> to the <span class="mdx-code">StripeAPI</span> implementation, making changes to the payment system would require modifying the <span class="mdx-code">OrderService</span> class.</div>
+<div class="my-6 MuiBox-root mui-lzjfwc"><div class="MuiBox-root mui-136gx4j"><div class="MuiBox-root mui-avdosu"><div class="MuiBox-root mui-13nbuy0"><svg stroke="currentColor" fill="currentColor" stroke-width="0" role="img" viewBox="0 0 24 24" class="w-3.5 h-3.5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"></path></svg><span>Bad: No Abstraction</span></div></div><div class="MuiBox-root mui-h6kxy8"><div class="flex items-center gap-0 mb-0"><div class="MuiFormControl-root mui-882m9p"><div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root mui-s1farw"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="language-select-label" class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall mui-1jilzfn">Python</div><fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline mui-5v2ak0"><legend class="mui-w1u3ce"><span>Language</span></legend></fieldset></div></div></div></div></div><div class="MuiBox-root mui-qgiv56"><div class="MuiBox-root mui-357n2r" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Order:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, total: float, credit_card: str):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.total = total</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.credit_card = credit_card</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> StripeAPI:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> set_api_key(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, key: str) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">        ...</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> create_charge(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, amount: float, card: str) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">        ...</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> OrderService:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, api_key: str):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.api_key = api_key</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> checkout(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, order: Order) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">        stripe = StripeAPI()</span></span>
+<span class="line"><span style="color:#212B36">        stripe.set_api_key(</span><span style="color:#299A8D">self</span><span style="color:#212B36">.api_key)</span></span>
+<span class="line"><span style="color:#212B36">        stripe.create_charge(order.total, order.credit_card)</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre></div></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-17" data-hi-narration-clickable="false">Much better, we can rely on an abstraction like <span class="mdx-code">PaymentMethod</span> to handle the different payment methods.</div>
+<div class="my-6 MuiBox-root mui-lzjfwc"><div class="MuiBox-root mui-136gx4j"><div class="MuiBox-root mui-avdosu"><div class="MuiBox-root mui-1id0flr"><svg stroke="currentColor" fill="currentColor" stroke-width="0" role="img" viewBox="0 0 24 24" class="w-3.5 h-3.5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"></path></svg><span>Good: Proper Abstraction</span></div></div><div class="MuiBox-root mui-h0380b"><div class="flex items-center gap-0 mb-0"><div class="MuiFormControl-root mui-882m9p"><div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root mui-s1farw"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="language-select-label" class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall mui-1jilzfn">Python</div><fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline mui-5v2ak0"><legend class="mui-w1u3ce"><span>Language</span></legend></fieldset></div></div></div></div></div><div class="MuiBox-root mui-11aicpj"><div class="MuiBox-root mui-357n2r" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">from</span><span style="color:#212B36"> abc </span><span style="color:#299A8D">import</span><span style="color:#212B36"> ABC, abstractmethod</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> PaymentMethod(ABC):</span></span>
+<span class="line"><span style="color:#212B36">    @abstractmethod</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> process(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, amount: float) -&gt; bool:</span></span>
+<span class="line"><span style="color:#212B36">        ...</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> CreditCardPayment(PaymentMethod):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> process(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, amount: float) -&gt; bool:</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#F4A261"> True</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> PayPalPayment(PaymentMethod):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> process(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, amount: float) -&gt; bool:</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#F4A261"> True</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Order:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, total: float, credit_card: str):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.total = total</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.credit_card = credit_card</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> OrderService:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, payment_method: PaymentMethod):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.payment_method = payment_method</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> checkout(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, order: Order) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.payment_method.process(order.total)</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre></div></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-19" data-hi-narration-clickable="false">The interface defines the contract (<span class="mdx-code">process(amount)</span>), and each implementation handles the details. OrderService doesn't care which one it gets.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-20" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">The hard part is choosing the right level of abstraction. Too abstract and your interface becomes meaningless (<span class="mdx-code">doWork()</span>, <span class="mdx-code">handleRequest()</span>). Too specific and you haven't actually abstracted anything. Think about what operations the caller needs to perform, not how those operations happen internally.</div></div></div></div>
+<h2 id="polymorphism" class="mdx-h2" data-hi-narration-block-id="p-21" data-hi-narration-clickable="false">Polymorphism</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-22" data-hi-narration-clickable="false">Polymorphism is what replaces <span class="mdx-code">if (type == "credit")</span> or <span class="mdx-code">switch (vehicleType)</span> statements. Instead of checking types, you call the same method and let each object handle itself. Different objects respond to the same action in their own way.</div>
+<div class="callout callout-warning my-6" data-hi-narration-block-id="p-23" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Highly polymorphic code can be difficult to trace and debug, especially as the number of implementations grows. Each company has a different tolerance for polymorphism. Some prefer clear, explicit branches for each type, while others embrace the extensibility polymorphism offers. In interviews, always be ready to explain the tradeoff. Polymorphism offers flexibility and extensibility, but it can also make code flows less obvious and harder to follow when debugging or onboarding new engineers.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-24" data-hi-narration-clickable="false">Polymorphism naturally follows from abstraction. Once you define an interface like <span class="mdx-code">PaymentMethod</span> or <span class="mdx-code">Vehicle</span>, each implementation can provide its own behavior. When you call a method on an interface, the actual implementation that runs depends on the concrete type you're working with. Each type knows how to handle itself. No type checking required.</div>
+<div class="my-6 MuiBox-root mui-lzjfwc"><div class="MuiBox-root mui-136gx4j"><div class="MuiBox-root mui-avdosu"><div class="MuiBox-root mui-13nbuy0"><svg stroke="currentColor" fill="currentColor" stroke-width="0" role="img" viewBox="0 0 24 24" class="w-3.5 h-3.5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"></path></svg><span>Bad: No Polymorphism</span></div></div><div class="MuiBox-root mui-h6kxy8"><div class="flex items-center gap-0 mb-0"><div class="MuiFormControl-root mui-882m9p"><div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root mui-s1farw"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="language-select-label" class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall mui-1jilzfn">Python</div><fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline mui-5v2ak0"><legend class="mui-w1u3ce"><span>Language</span></legend></fieldset></div></div></div></div></div><div class="MuiBox-root mui-132n9fd"><div class="MuiBox-root mui-357n2r" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">from</span><span style="color:#212B36"> typing </span><span style="color:#299A8D">import</span><span style="color:#212B36"> Optional</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> ParkingSpot:</span></span>
+<span class="line"><span style="color:#299A8D">    pass</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Vehicle:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, type_: str):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.type = type_</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> ParkingLot:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> park_vehicle(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, vehicle: Vehicle) -&gt; bool:</span></span>
+<span class="line"><span style="color:#299A8D">        if</span><span style="color:#212B36"> vehicle.type == </span><span style="color:#2C9C59">"car"</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">            spot = </span><span style="color:#299A8D">self</span><span style="color:#212B36">._find_spot_by_size(</span><span style="color:#2C9C59">"regular"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#299A8D">            return</span><span style="color:#212B36"> spot </span><span style="color:#299A8D">is</span><span style="color:#299A8D"> not</span><span style="color:#F4A261"> None</span></span>
+<span class="line"><span style="color:#299A8D">        elif</span><span style="color:#212B36"> vehicle.type == </span><span style="color:#2C9C59">"motorcycle"</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">            spot = </span><span style="color:#299A8D">self</span><span style="color:#212B36">._find_spot_by_size(</span><span style="color:#2C9C59">"motorcycle"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#299A8D">            return</span><span style="color:#212B36"> spot </span><span style="color:#299A8D">is</span><span style="color:#299A8D"> not</span><span style="color:#F4A261"> None</span></span>
+<span class="line"><span style="color:#299A8D">        elif</span><span style="color:#212B36"> vehicle.type == </span><span style="color:#2C9C59">"truck"</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">            spot = </span><span style="color:#299A8D">self</span><span style="color:#212B36">._find_spot_by_size(</span><span style="color:#2C9C59">"large"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#299A8D">            return</span><span style="color:#212B36"> spot </span><span style="color:#299A8D">is</span><span style="color:#299A8D"> not</span><span style="color:#F4A261"> None</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#F4A261"> False</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> _find_spot_by_size(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, size: str) -&gt; Optional[ParkingSpot]:</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#F4A261"> None</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre></div></div></div></div></div>
+<div class="my-6 MuiBox-root mui-lzjfwc"><div class="MuiBox-root mui-136gx4j"><div class="MuiBox-root mui-avdosu"><div class="MuiBox-root mui-1id0flr"><svg stroke="currentColor" fill="currentColor" stroke-width="0" role="img" viewBox="0 0 24 24" class="w-3.5 h-3.5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"></path></svg><span>Good: Using Polymorphism</span></div></div><div class="MuiBox-root mui-h0380b"><div class="flex items-center gap-0 mb-0"><div class="MuiFormControl-root mui-882m9p"><div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root mui-s1farw"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="language-select-label" class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall mui-1jilzfn">Python</div><fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline mui-5v2ak0"><legend class="mui-w1u3ce"><span>Language</span></legend></fieldset></div></div></div></div></div><div class="MuiBox-root mui-11aicpj"><div class="MuiBox-root mui-357n2r" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">from</span><span style="color:#212B36"> enum </span><span style="color:#299A8D">import</span><span style="color:#212B36"> Enum</span></span>
+<span class="line"><span style="color:#299A8D">from</span><span style="color:#212B36"> typing </span><span style="color:#299A8D">import</span><span style="color:#212B36"> Optional</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> SpotSize(Enum):</span></span>
+<span class="line"><span style="color:#212B36">    REGULAR = </span><span style="color:#2C9C59">"regular"</span></span>
+<span class="line"><span style="color:#212B36">    MOTORCYCLE = </span><span style="color:#2C9C59">"motorcycle"</span></span>
+<span class="line"><span style="color:#212B36">    LARGE = </span><span style="color:#2C9C59">"large"</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> ParkingSpot:</span></span>
+<span class="line"><span style="color:#299A8D">    pass</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Vehicle:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> get_required_spot_size(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; SpotSize:</span></span>
+<span class="line"><span style="color:#299A8D">        raise</span><span style="color:#212B36"> NotImplementedError</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Car(Vehicle):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> get_required_spot_size(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; SpotSize:</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#212B36"> SpotSize.REGULAR</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Motorcycle(Vehicle):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> get_required_spot_size(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; SpotSize:</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#212B36"> SpotSize.MOTORCYCLE</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Truck(Vehicle):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> get_required_spot_size(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; SpotSize:</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#212B36"> SpotSize.LARGE</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> ParkingLot:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> park_vehicle(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, vehicle: Vehicle) -&gt; bool:</span></span>
+<span class="line"><span style="color:#212B36">        required = vehicle.get_required_spot_size()</span></span>
+<span class="line"><span style="color:#212B36">        spot = </span><span style="color:#299A8D">self</span><span style="color:#212B36">._find_spot_by_size(required)</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#212B36"> spot </span><span style="color:#299A8D">is</span><span style="color:#299A8D"> not</span><span style="color:#F4A261"> None</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> _find_spot_by_size(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, size: SpotSize) -&gt; Optional[ParkingSpot]:</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#F4A261"> None</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre></div></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-25" data-hi-narration-clickable="false">Now when you add a new vehicle type, you just create a new class that implements <span class="mdx-code">Vehicle</span>. The <span class="mdx-code">ParkingLot</span> code never changes.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-26" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Use polymorphism when behavior varies by type. If you see yourself writing type checks or switch statements on an enum, that's a sign you should be using polymorphism instead.</div></div></div></div>
+<h2 id="inheritance" class="mdx-h2" data-hi-narration-block-id="p-27" data-hi-narration-clickable="false">Inheritance</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-28" data-hi-narration-clickable="false">Inheritance lets one class be a more specific version of another, automatically getting the parent's data and behavior. It's a tool for sharing implementation, but it comes with a big cost: tight coupling.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-29" data-hi-narration-clickable="false">When a subclass inherits the parent's fields and methods, any change in the parent can break every child. That's the "fragile base class" problem, and it's why inheritance often creates more rigidity than it solves.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-30" data-hi-narration-clickable="false">A safer alternative is composition + interfaces. An interface defines the behavior, and each class implements it independently. You still get abstraction and polymorphism, but without forcing classes into a parent-child relationship or sharing state they shouldn't.</div>
+<h3 id="when-inheritance-works" class="mdx-h3" data-hi-narration-block-id="p-31" data-hi-narration-clickable="false">When Inheritance Works</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-32" data-hi-narration-clickable="false">Inheritance makes sense when you have stable, shared implementation that multiple subclasses genuinely need. Bank accounts are a good example. A <span class="mdx-code">SavingsAccount</span> and <span class="mdx-code">CheckingAccount</span> both track balances, handle deposits and withdrawals, and maintain transaction history. That logic is identical across all account types.</div>
+<div class="my-6 MuiBox-root mui-lzjfwc"><div class="MuiBox-root mui-136gx4j"><div class="MuiBox-root mui-avdosu"><div class="MuiBox-root mui-1id0flr"><svg stroke="currentColor" fill="currentColor" stroke-width="0" role="img" viewBox="0 0 24 24" class="w-3.5 h-3.5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"></path></svg><span>Good: Inheritance for Shared Implementation</span></div></div><div class="MuiBox-root mui-h0380b"><div class="flex items-center gap-0 mb-0"><div class="MuiFormControl-root mui-882m9p"><div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root mui-s1farw"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="language-select-label" class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall mui-1jilzfn">Python</div><fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline mui-5v2ak0"><legend class="mui-w1u3ce"><span>Language</span></legend></fieldset></div></div></div></div></div><div class="MuiBox-root mui-11aicpj"><div class="MuiBox-root mui-357n2r" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> BankAccount:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.balance = </span><span style="color:#F4A261">0.0</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> deposit(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, amount: float) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.balance += amount</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> withdraw(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, amount: float) -&gt; bool:</span></span>
+<span class="line"><span style="color:#299A8D">        if</span><span style="color:#299A8D"> self</span><span style="color:#212B36">.balance &lt; amount:</span></span>
+<span class="line"><span style="color:#299A8D">            return</span><span style="color:#F4A261"> False</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.balance -= amount</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#F4A261"> True</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> get_balance(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; float:</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#299A8D"> self</span><span style="color:#212B36">.balance</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> SavingsAccount(BankAccount):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, interest_rate: float):</span></span>
+<span class="line"><span style="color:#212B36">        super().__init__()</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.interest_rate = interest_rate</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> CheckingAccount(BankAccount):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, overdraft_limit: int):</span></span>
+<span class="line"><span style="color:#212B36">        super().__init__()</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.overdraft_limit = overdraft_limit</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre></div></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-34" data-hi-narration-clickable="false">Here, the shared implementation is stable and meaningful. Both subclasses genuinely are forms of <span class="mdx-code">BankAccount</span>, and they don't need to override the inherited behavior in ways that break the parent's contract. So inheritance is a good fit.</div>
+<h3 id="when-inheritance-breaks-down" class="mdx-h3" data-hi-narration-block-id="p-35" data-hi-narration-clickable="false">When Inheritance Breaks Down</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-36" data-hi-narration-clickable="false">The classic mistake made in interviews is using inheritance to model behavior differences. If subclasses need to override methods to provide completely different implementations, that's a sign you're using the wrong tool.</div>
+<div class="my-6 MuiBox-root mui-lzjfwc"><div class="MuiBox-root mui-136gx4j"><div class="MuiBox-root mui-avdosu"><div class="MuiBox-root mui-13nbuy0"><svg stroke="currentColor" fill="currentColor" stroke-width="0" role="img" viewBox="0 0 24 24" class="w-3.5 h-3.5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"></path></svg><span>Bad: Inheritance for Behavior Variation</span></div></div><div class="MuiBox-root mui-h6kxy8"><div class="flex items-center gap-0 mb-0"><div class="MuiFormControl-root mui-882m9p"><div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root mui-s1farw"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="language-select-label" class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall mui-1jilzfn">Python</div><fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline mui-5v2ak0"><legend class="mui-w1u3ce"><span>Language</span></legend></fieldset></div></div></div></div></div><div class="MuiBox-root mui-qgiv56"><div class="MuiBox-root mui-357n2r" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Car:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> start_engine(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">        # gasoline engine start logic</span></span>
+<span class="line"><span style="color:#212B36">        ...</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> ElectricCar(Car):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> start_engine(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">        # electric motor startup logic - completely different</span></span>
+<span class="line"><span style="color:#212B36">        ...</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre></div></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-38" data-hi-narration-clickable="false">Electric cars don't have engines. They don't share useful engine logic. You're forcing a behavior difference into a class hierarchy, which creates fragile code. When you add a hybrid car, do you extend <span class="mdx-code">Car</span> or <span class="mdx-code">ElectricCar</span>? Neither works cleanly.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-39" data-hi-narration-clickable="false">When behavior varies, the better approach is to isolate that behavior into its own abstraction and compose it.</div>
+<div class="my-6 MuiBox-root mui-lzjfwc"><div class="MuiBox-root mui-136gx4j"><div class="MuiBox-root mui-avdosu"><div class="MuiBox-root mui-1id0flr"><svg stroke="currentColor" fill="currentColor" stroke-width="0" role="img" viewBox="0 0 24 24" class="w-3.5 h-3.5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"></path></svg><span>Good: Composition for Behavior Variation</span></div></div><div class="MuiBox-root mui-h0380b"><div class="flex items-center gap-0 mb-0"><div class="MuiFormControl-root mui-882m9p"><div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root mui-s1farw"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="language-select-label" class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall mui-1jilzfn">Python</div><fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline mui-5v2ak0"><legend class="mui-w1u3ce"><span>Language</span></legend></fieldset></div></div></div></div></div><div class="MuiBox-root mui-11aicpj"><div class="MuiBox-root mui-357n2r" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">from</span><span style="color:#212B36"> abc </span><span style="color:#299A8D">import</span><span style="color:#212B36"> ABC, abstractmethod</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Drivetrain(ABC):</span></span>
+<span class="line"><span style="color:#212B36">    @abstractmethod</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> start(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">        ...</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> GasEngine(Drivetrain):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> start(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">        # gas engine startup logic</span></span>
+<span class="line"><span style="color:#212B36">        ...</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> ElectricMotor(Drivetrain):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> start(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">        # electric motor startup logic</span></span>
+<span class="line"><span style="color:#212B36">        ...</span></span>
+<span class="line"></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Car:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, drivetrain: Drivetrain):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.drivetrain = drivetrain</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> start(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.drivetrain.start()</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre></div></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-41" data-hi-narration-clickable="false">Now you can model any kind of car without breaking the hierarchy or overriding logic awkwardly. Want a hybrid? Give it two drivetrains. Want a hydrogen car? Add a new <span class="mdx-code">Drivetrain</span> implementation. The <span class="mdx-code">CarWithDrivetrain</span> class never changes.</div>
+<div class="callout callout-warning my-6" data-hi-narration-block-id="p-42" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">For your interview, default to interfaces with composition. Only use inheritance when you genuinely need to share implementation across classes and the relationship is stable. In most LLD interviews, you don't need inheritance at all.</div></div></div></div>
+<h2 id="putting-it-together" class="mdx-h2" data-hi-narration-block-id="p-43" data-hi-narration-clickable="false">Putting It Together</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-44" data-hi-narration-clickable="false">Just like with design principles, you don't need to recite these terms during your interview. If you forget the word "polymorphism," it doesn't matter. What matters is that when you see requirements like "support multiple payment methods," you know to define an interface. When you're designing a class, you know to keep fields private and expose methods. When you see yourself writing type checks, you know to use an interface instead.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-45" data-hi-narration-clickable="false">The concepts show through in how you design, not in what you name. Focus on applying them naturally:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-46" data-hi-narration-clickable="false"><strong>Encapsulation</strong>: Hide state, expose behavior. Make fields private, provide methods for access</li>
+<li class="mdx-li" data-hi-narration-block-id="p-47" data-hi-narration-clickable="false"><strong>Abstraction</strong>: Define interfaces for variations. Multiple payment methods? Different vehicle types? Create an interface</li>
+<li class="mdx-li" data-hi-narration-block-id="p-48" data-hi-narration-clickable="false"><strong>Polymorphism</strong>: Let objects handle themselves. No type checking, no switch statements on types</li>
+<li class="mdx-li" data-hi-narration-block-id="p-49" data-hi-narration-clickable="false"><strong>Inheritance</strong>: Compose behavior, don't inherit it. Reach for interfaces first, use inheritance only when sharing stable implementation</li>
+</ul>
+<div class="MuiBox-root mui-10b10ta"><div class="flex flex-row items-center gap-3 mb-3"><div class="heroicon-sw-2 MuiBox-root mui-tbago3"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"></path></svg></div><div><h6 class="MuiTypography-root MuiTypography-h6 mui-jyzq54">Test Your Knowledge</h6><p class="MuiTypography-root MuiTypography-body2 mui-14ou361">Answer the question below to find your gaps.</p></div></div><div class="flex flex-row items-baseline gap-3 mb-1 "><p class="MuiTypography-root MuiTypography-body2 mui-nk2f70">Question 1 of 15</p></div><div class="MuiBox-root mui-1muw576"><div class="mdx-p">A <span class="mdx-code">BankAccount</span> class has a public <span class="mdx-code">balance</span> field. What's the problem with this design?</div></div><div class="MuiBox-root mui-0"><div class="grid grid-cols-1 gap-2 mb-4"><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">1</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Callers can set <span class="mdx-code">balance</span> to any value, bypassing validation</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">2</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">The class needs a constructor to initialize public fields</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">3</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Public fields prevent the class from being serialized</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">4</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Public fields require more memory than private fields at runtime</div></div></div></div></div></div></div></div></div></div></div></div></div><!--$--><!--/$--></div></div></main>
+</body>
+</html>

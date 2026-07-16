@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Time Series Databases</title>
+<meta name="source-url" content="https://www.hellointerview.com/learn/system-design/deep-dives/time-series-databases">
+<script>
+(function () {
+  var theme;
+  try { theme = localStorage.getItem('course-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #666666;
+    --faint: #888888;
+    --border: #e1e4e8;
+    --border-strong: #d0d7de;
+    --code-bg: #f6f8fa;
+    --inline-code-bg: #f0f1f3;
+    --link: #0969da;
+    --accent: #10857a;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121212;
+    --fg: #e6e6e6;
+    --muted: #aaaaaa;
+    --faint: #999999;
+    --border: #333333;
+    --border-strong: #3a3a3a;
+    --code-bg: #1e1e1e;
+    --inline-code-bg: #252525;
+    --link: #6cb2ff;
+    --accent: #34b3a6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    max-width: 46rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--fg);
+    background: var(--bg);
+  }
+  h1, h2, h3, h4, h5, h6 { line-height: 1.3; margin: 2em 0 0.6em; }
+  h1 { font-size: 2rem; margin-top: 0.5em; }
+  img, svg, video { max-width: 100%; height: auto; }
+  figure { margin: 1.5em 0; text-align: center; }
+  figcaption { font-size: 0.875rem; color: var(--muted); }
+  pre {
+    padding: 1em;
+    overflow-x: auto;
+    border-radius: 8px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    background: var(--inline-code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  table { border-collapse: collapse; width: 100%; margin: 1.5em 0; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--border-strong); padding: 0.5em 0.75em; text-align: left; }
+  th { background: var(--code-bg); }
+  blockquote { margin: 1.5em 0; padding: 0.5em 1.25em; border-left: 4px solid var(--border-strong); color: var(--muted); }
+  a { color: var(--link); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+  .lesson-source { font-size: 0.8125rem; color: var(--faint); margin-bottom: 2rem; }
+
+  #theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+  #theme-toggle:hover { border-color: var(--accent); }
+
+</style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Toggle light/dark theme"></button>
+<script>
+(function () {
+  var btn = document.getElementById('theme-toggle');
+  function refresh() { btn.textContent = document.documentElement.dataset.theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19'; }
+  btn.addEventListener('click', function () {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('course-theme', next); } catch (e) {}
+    refresh();
+  });
+  refresh();
+})();
+</script>
+<p class="lesson-source">Saved for offline reading from <a href="https://www.hellointerview.com/learn/system-design/deep-dives/time-series-databases">https://www.hellointerview.com/learn/system-design/deep-dives/time-series-databases</a></p>
+<main class="flex-1 min-w-0 overflow-y-auto print-main"><div class="flex flex-col bg-nav-bg-paper"><div class="px-4 md:px-6 max-w-7xl mx-auto py-3 w-full print-main-content" style="min-height:calc(100vh - 48px - 0px);transition:min-height 0.3s ease-in-out;background-color:var(--nav-bg-paper)"><div class="grid grid-cols-7 gap-12 md:gap-0 mx-auto max-w-5xl"><div class="col-span-7 w-full max-w-4xl md:pr-6 xl:col-span-5"><div class="relative"><div id="markdown" class="mui-4tqezl"><div class="chrome"><div class="flex flex-col gap-2"><div class="flex flex-col relative"><div class="flex items-center justify-between   "><h6 class="MuiTypography-root MuiTypography-h6 mui-pkyqy5">Advanced Topics</h6></div><div class="flex flex-col md:flex-row md:items-start md:justify-between md:gap-4"><div class="flex items-center gap-2"><h1 class="MuiTypography-root MuiTypography-h2 mui-xhvznl">Time Series Databases</h1><div class="MuiBox-root mui-yrscm7"></div></div></div><p class="MuiTypography-root MuiTypography-body2 mui-19x8mt2" data-hi-narration-block-id="p-0" data-hi-narration-clickable="false">Learn the concepts behind time-series databases like LSM trees, append-only storage, and delta encoding.</p></div></div><hr class="MuiDivider-root MuiDivider-fullWidth mui-18s6yq7"></div>
+<div class="mdx-p" data-hi-narration-block-id="p-1" data-hi-narration-clickable="false">In this deep dive we're going to cover the patterns that enable high-throughput time-series databases. While the ideas in totality make time-series databases really hum, each of the ideas here has wider applicability to distributed systems, especially for infra-style system design interviews. And what we hope to demonstrate is that none of these ideas are terribly complex: they're simple ideas and the magic is in how you put them together.</div>
+<div class="callout callout-warning my-6" data-hi-narration-block-id="p-2" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Before we dive in, a worthwhile caveat about time series databases in general: just because you have time series data doesn't mean you need a time-series database! The <a href="/learn/system-design/problem-breakdowns/top-k" target="_blank" rel="noopener noreferrer" class="mdx-a">Top-K problem breakdown</a> is a classic example where it seems like a TSDB would be helpful but can actually make the problem harder because we need to sort and aggregate across a huge number of series — something that most TSDBs aren't designed for.</div><div class="mdx-p">Be careful about reaching for a time-series database when a general-purpose database like Postgres or DynamoDB would be a better fit. I'd advise you to stretch general-purpose solutions to fit your needs and only when you encounter a true bottleneck that can't be solved with another solution you should reach for specialized tech like a time-series database. Understanding their limits (in this guide) will help you understand when they apply!</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-3" data-hi-narration-clickable="false">Let's dive in to how time series databases work.</div>
+<h3 id="a-motivating-example" class="mdx-h3" data-hi-narration-block-id="p-4" data-hi-narration-clickable="false">A Motivating Example</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-5" data-hi-narration-clickable="false">Imagine you're designing a monitoring system for a cloud provider. You've got 100,000 servers, each emitting 5 metrics every 10 seconds: CPU usage, memory, disk I/O, network traffic. That's 50,000 metrics per second, or 4.3 billion data points per day. And users want to query this data to see dashboards, set up alerts, and debug issues from the past week.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-6" data-hi-narration-clickable="false">Let's try to store this in vanilla Postgres:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="sql"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">CREATE</span><span style="color:#299A8D"> TABLE</span><span style="color:#2675FF"> metrics</span><span style="color:#212B36"> (</span></span>
+<span class="line"><span style="color:#4A7C8F">    timestamp</span><span style="color:#4A7C8F"> TIMESTAMP</span><span style="color:#212B36">,</span></span>
+<span class="line"><span style="color:#212B36">    host </span><span style="color:#4A7C8F">VARCHAR</span><span style="color:#212B36">(</span><span style="color:#F4A261">255</span><span style="color:#212B36">),</span></span>
+<span class="line"><span style="color:#212B36">    metric_name </span><span style="color:#4A7C8F">VARCHAR</span><span style="color:#212B36">(</span><span style="color:#F4A261">255</span><span style="color:#212B36">),</span></span>
+<span class="line"><span style="color:#299A8D">    value</span><span style="color:#4A7C8F"> DOUBLE PRECISION</span></span>
+<span class="line"><span style="color:#212B36">);</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-7" data-hi-narration-clickable="false">With 4.3 billion rows per day, you're looking at ~30 billion rows per week. Even with indexes, simple queries like "show me the average CPU usage for host-42 over the past hour" become painfully slow and the write performance degrades as we add more indexes. Worse, the write throughput needed (50,000 writes/second minimum, with bursts much higher) will crush a single Postgres instance. Storage is also wildly inefficient: each row stores the full host name and metric name repeatedly, ballooning to 50-100 bytes per data point when the actual information (a timestamp and a float) is only 16 bytes.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-8" data-hi-narration-clickable="false">We can do a <em>lot</em> better.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-9" data-hi-narration-clickable="false">Time-series databases like InfluxDB, TimescaleDB, and Prometheus are built specifically for this workload. So how do they work?</div>
+<h2 id="the-building-blocks" class="mdx-h2" data-hi-narration-block-id="p-10" data-hi-narration-clickable="false">The Building Blocks</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-11" data-hi-narration-clickable="false">Let's talk about all of the pieces that make a time series database hum. Time series databases typically involve so much data that disk-based storage is the only viable option. So let's start with what we'll need there.</div>
+<h3 id="append-only-storage" class="mdx-h3" data-hi-narration-block-id="p-12" data-hi-narration-clickable="false">Append-Only Storage</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-13" data-hi-narration-clickable="false">The first insight is deceptively simple: <strong>if you're writing a lot of data, don't update data in place</strong>. Instead, always append new data to the end of a file.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-14" data-hi-narration-clickable="false">Why does this matter? Consider how traditional databases handle writes. When you update a row, the database needs to:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-15" data-hi-narration-clickable="false">Find the row's location on disk</li>
+<li class="mdx-li" data-hi-narration-block-id="p-16" data-hi-narration-clickable="false">Read the current data</li>
+<li class="mdx-li" data-hi-narration-block-id="p-17" data-hi-narration-clickable="false">Modify it in memory</li>
+<li class="mdx-li" data-hi-narration-block-id="p-18" data-hi-narration-clickable="false">Write the updated data back</li>
+</ol>
+<div class="mdx-p" data-hi-narration-block-id="p-19" data-hi-narration-clickable="false">This involves random I/O which is the most frequent cause of performance problems. With spinning disks, the disk head has to seek to a specific location. This is a physical arm moving on the drive and while hard disks are optimized for this, they still only operate at 100-200 operations per second. Even SSDs, while much faster at random operations, still perform significantly better with sequential access patterns due to their architecture.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-20" data-hi-narration-clickable="false">Append-only storage flips this around. Every new data point gets written to the end of the current file. No seeking, no reading-before-writing - just sequential writes. SSDs can handle hundreds of thousands of sequential writes per second, and even spinning disks can manage tens of thousands.</div>
+<div class="mdx-p"><strong>Traditional DB write:</strong></div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language=""><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>[Seek to block 4752] → [Read] → [Modify] → [Write] → [Seek to block 9201] → ...</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p"><strong>Append-only write:</strong></div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language=""><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>[Write to end] → [Write to end] → [Write to end] → ...</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/j2nbnof7nxh3.1_k5pihxuwzl2-b1319ff0.svg" alt="Random vs. Sequential I/O" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Random vs. Sequential I/O</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-22" data-hi-narration-clickable="false">But wait - if we only append, how do organize the data for reading? This is where the next piece comes in.</div>
+<h3 id="lsm-trees-log-structured-merge-trees" class="mdx-h3" data-hi-narration-block-id="p-23" data-hi-narration-clickable="false">LSM Trees (Log-Structured Merge Trees)</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-24" data-hi-narration-clickable="false">LSM trees are the secret sauce behind many high-write-throughput databases, including InfluxDB, Cassandra, and LevelDB. You may recall this idea from our <a href="/learn/system-design/deep-dives/cassandra" target="_blank" rel="noopener noreferrer" class="mdx-a">Cassandra deep dive</a> or <a href="/learn/system-design/core-concepts/db-indexing" target="_blank" rel="noopener noreferrer" class="mdx-a">DB Indexing core concept</a> - the core idea is to transform expensive random writes into cheap sequential writes, then periodically reorganize the data in the background to make reads more efficient.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-25" data-hi-narration-clickable="false">Here's how it works:</div>
+<div class="mdx-p" data-hi-narration-block-id="p-26" data-hi-narration-clickable="false"><strong>Step 1: Write to Memory (like a Memtable)</strong>
+When data arrives, it goes into an in-memory buffer like a memtable. The memtable is typically implemented as a sorted data structure (like a red-black tree or skip list), so data remains ordered by key. Writes are blazingly fast since they only touch RAM.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-27" data-hi-narration-clickable="false">Why keep it sorted? Because when we flush to disk, we want the resulting file to be sorted too. Sorted files let us use binary search for point lookups, make range queries efficient (adjacent keys are stored together), and - critically - allow us to merge multiple files efficiently using merge sort during compaction.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-28" data-hi-narration-clickable="false"><strong>Step 2: Flush to Disk (like SSTable)</strong>
+When the memtable gets full, it's written to disk as an immutable sorted file called an SSTable (Sorted String Table). Since the memtable was already sorted, this flush is just a sequential write from start to end - very fast. The memtable is then cleared for new data.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-29" data-hi-narration-clickable="false"><strong>Step 3: Background Compaction</strong>
+Over time, you accumulate many SSTables. Reading becomes expensive because you might need to check multiple files. Compaction runs in the background, merging smaller SSTables into larger ones, removing duplicates and tombstones (deleted data markers).</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/7nbgp3nd_rgk.2jn0iblldxvy8-56838ca3.svg" alt="LSM Model" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">LSM Model</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-30" data-hi-narration-clickable="false">The beauty of this approach is that writes never block on reads. The memtable handles new data while background threads organize older data. This separation is what enables LSM-based databases to handle sustained high write throughput.</div>
+<div class="callout callout-warning my-4" data-hi-narration-block-id="p-31" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">LSM trees aren't free. Read performance can suffer because you might need to check multiple SSTables to find a value. There's also write amplification - data gets rewritten multiple times during compaction. So reach for LSM trees when you have a high-write workload <strong>and</strong> you're willing to trade some read performance for write performance.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-32" data-hi-narration-clickable="false">Ok with append-only storage and LSM trees, we're starting to look like <a href="/learn/system-design/deep-dives/cassandra" target="_blank" rel="noopener noreferrer" class="mdx-a">Cassandra</a>. Let's add a few more pieces to the puzzle.</div>
+<h3 id="delta-encoding-and-compression" class="mdx-h3" data-hi-narration-block-id="p-33" data-hi-narration-clickable="false">Delta Encoding and Compression</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-34" data-hi-narration-clickable="false">Time-series data has a unique property: adjacent values are often similar. If you're recording CPU usage every second, the values might be 45.2%, 45.3%, 45.1%, 45.4%. Storing the full value each time wastes space.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-35" data-hi-narration-clickable="false">Delta encoding stores the difference between consecutive values instead of the absolute values:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="text"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>Raw values:     [45.2] [45.3] [45.1] [45.4]</span></span>
+<span class="line"><span>Delta encoded:  [45.2] [+0.1] [-0.2] [+0.3]</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-36" data-hi-narration-clickable="false">The deltas are much smaller numbers, requiring fewer bits to store.</div>
+<div class="callout callout-info my-6" data-hi-narration-block-id="p-37" data-hi-narration-clickable="false"><div class="MuiBox-root mui-r83s7g"><div class="MuiBox-root mui-14185gn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">But wait - don't integers and floats always take 32 or 64 bits? Not if you use variable-length encoding. Techniques like varint (variable-length integer) encode small numbers with fewer bytes: the number 1 might take just 1 byte, while 1,000,000 takes 3 bytes. When your deltas are tiny (like +1 or -2), you're storing 1-2 bytes instead of 8. This is why converting large absolute values into small deltas pays off so dramatically.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-38" data-hi-narration-clickable="false">Time-series databases go even further with specialized compression algorithms.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-39" data-hi-narration-clickable="false"><strong>Timestamps</strong> use delta-of-delta encoding. Timestamps in time-series data are often regular - every 10 seconds, for example. The delta between timestamps might be constant or nearly constant:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="text"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>Raw timestamps:     1000, 1010, 1020, 1030, 1040</span></span>
+<span class="line"><span>Deltas:             10  , 10  , 10  , 10  , 10  , ...</span></span>
+<span class="line"><span>Delta-of-deltas:    10  , 0   , 0   , 0   , 0   , ...</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-40" data-hi-narration-clickable="false">When timestamps are perfectly regular, you can encode millions of them with essentially zero overhead. <a href="https://www.vldb.org/pvldb/vol8/p1816-teller.pdf" target="_blank" rel="noopener noreferrer" class="mdx-a">Facebook's Gorilla paper</a> showed this technique can compress timestamps to as low as 1 bit per value on average.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-41" data-hi-narration-clickable="false"><strong>Float values</strong> use XOR-based compression. When you XOR two similar floating-point numbers, most bits are zero. You can then run-length encode those zeros:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="text"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>Value 1: 0 10000010 01101000101000111101011</span></span>
+<span class="line"><span>Value 2: 0 10000010 01101000110000100000000</span></span>
+<span class="line"><span>XOR:     0 00000000 00000000011000011101011</span></span>
+<span class="line"><span>                    ^^^^^^^^^^ lots of leading zeros</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-42" data-hi-narration-clickable="false">By storing only the position of the first differing bit and the meaningful bits after it, you compress each value significantly. In practice, this achieves 1.37 bytes per value on average for typical time-series data - a massive improvement over the 8 bytes needed for a raw double.</div>
+<div class="callout callout-general my-6" data-hi-narration-block-id="p-43" data-hi-narration-clickable="false"><div class="MuiBox-root mui-1la67gd"><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Most interviews aren't going to get into this level of detail, so don't try to memorize "1.37 bytes per value". The core idea is that we can achieve strong compression on data at rest that has a lot of redundancy in it — and time series data is a great example of this.</div></div></div></div>
+<h3 id="time-based-partitioning-sharding-by-time" class="mdx-h3" data-hi-narration-block-id="p-44" data-hi-narration-clickable="false">Time-Based Partitioning (Sharding by Time)</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-45" data-hi-narration-clickable="false">Another key concept is organizing data by time. Time-series databases group data into partitions based on time windows - for example, one partition per day or per week. These partitions don't <em>necessarily</em> live on different machines, but they absolutely can if necessary for scaling.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-46" data-hi-narration-clickable="false">Why is this so powerful?</div>
+<div class="mdx-p" data-hi-narration-block-id="p-47" data-hi-narration-clickable="false"><strong>Writes are localized.</strong> All incoming data goes to the current time partition. There's no need to figure out which of many partitions should receive the data - it's always the "now" partition.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-48" data-hi-narration-clickable="false"><strong>Reads are efficient.</strong> When you query "show me the last hour of data," the database knows exactly which partitions to examine. It doesn't need to scan data from last month.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-49" data-hi-narration-clickable="false"><strong>Retention becomes trivial.</strong> Want to keep only 7 days of data? Just delete partitions older than 7 days. No expensive DELETE queries scanning through a massive table - just drop the old files.</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="text"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>┌─────────────────────────────────────────────────────────┐</span></span>
+<span class="line"><span>│  Query: "Last 2 hours of CPU data for host-42"          │</span></span>
+<span class="line"><span>└─────────────────────────────────────────────────────────┘</span></span>
+<span class="line"><span>                         │                                 </span></span>
+<span class="line"><span>                         ▼                                 </span></span>
+<span class="line"><span>┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐ ┌─────────┐</span></span>
+<span class="line"><span>│ Nov 22  │ │ Nov 23  │ │ Nov 24  │ │ Nov 25  │ │ Nov 26  │</span></span>
+<span class="line"><span>│  skip   │ │  skip   │ │  skip   │ │  skip   │ │ ← SCAN  │</span></span>
+<span class="line"><span>└─────────┘ └─────────┘ └─────────┘ └─────────┘ └─────────┘</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-51" data-hi-narration-clickable="false">This time-partitioning strategy is nearly universal in time-series databases. You'll see it in TimescaleDB (which calls them "chunks"), in Prometheus, and in custom-built systems.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-52" data-hi-narration-clickable="false">So far we've focused on write optimization. But what about reads?</div>
+<h3 id="bloom-filters-for-read-optimization" class="mdx-h3" data-hi-narration-block-id="p-53" data-hi-narration-clickable="false">Bloom Filters for Read Optimization</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-54" data-hi-narration-clickable="false">Remember how LSM trees work: data gets written to multiple SSTables over time. To find a value, you might need to check several of these files. Each check means a potential disk read. The worst case scenario is a long query which might cover many partitions but is only seeking a single value, or a small number of values (like gathering the time series for a single host over a long period of time).</div>
+<div class="mdx-p" data-hi-narration-block-id="p-55" data-hi-narration-clickable="false">Bloom filters (more on Bloom Filters in our <a href="/learn/system-design/deep-dives/data-structures-for-big-data" target="_blank" rel="noopener noreferrer" class="mdx-a">Data Structures for Big Data deep dive</a>) solve this elegantly.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-56" data-hi-narration-clickable="false">A Bloom filter is a probabilistic data structure that can tell you "definitely not here" or "maybe here" with zero disk I/O. Each SSTable maintains a Bloom filter of all the keys it contains. When you query for a specific series, the database first checks the Bloom filter for each SSTable. If the filter says "not here," the database skips that file entirely with absolute certainty. False positives are possible (the filter says "maybe" but the key isn't there), but false negatives never happen.</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="text"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>Query: "Get data for host=server-42"</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>SSTable-1 Bloom filter: "not here"     → skip (no disk read)</span></span>
+<span class="line"><span>SSTable-2 Bloom filter: "not here"     → skip (no disk read)</span></span>
+<span class="line"><span>SSTable-3 Bloom filter: "maybe here"   → check (disk read)</span></span>
+<span class="line"><span>SSTable-4 Bloom filter: "not here"     → skip (no disk read)</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-58" data-hi-narration-clickable="false">In practice, a well-tuned Bloom filter uses about 10 bits per key and achieves a 1% false positive rate. For a database with millions of series spread across dozens of SSTables, this turns what could be dozens of disk reads into just one or two.</div>
+<h3 id="downsampling-and-rollups" class="mdx-h3" data-hi-narration-block-id="p-59" data-hi-narration-clickable="false">Downsampling and Rollups</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-60" data-hi-narration-clickable="false">Bloom filters help with point lookups, but what about aggregate queries over large time ranges? Raw metrics at 10-second resolution are great for debugging recent issues, but nobody needs that granularity when looking at last year's data. Downsampling automatically reduces the resolution of older data, trading precision for storage efficiency.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-61" data-hi-narration-clickable="false">A typical policy might look like:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-62" data-hi-narration-clickable="false"><strong>Last 24 hours:</strong> Full resolution (10-second intervals)</li>
+<li class="mdx-li" data-hi-narration-block-id="p-63" data-hi-narration-clickable="false"><strong>Last 7 days:</strong> 1-minute averages</li>
+<li class="mdx-li" data-hi-narration-block-id="p-64" data-hi-narration-clickable="false"><strong>Last 30 days:</strong> 5-minute averages</li>
+<li class="mdx-li" data-hi-narration-block-id="p-65" data-hi-narration-clickable="false"><strong>Last year:</strong> 1-hour averages</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-66" data-hi-narration-clickable="false">The database computes these rollups in the background, storing pre-aggregated values (typically min, max, sum, count) that can answer most queries without touching the raw data. When you ask "what was the average CPU usage last month?", the database reads from the 5-minute rollup table - 288x less data than the raw 10-second data.</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="text"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>Raw data (10s):     [45.2] [45.3] [45.1] [45.4] [45.0] [45.5] ... (8,640 points/day)</span></span>
+<span class="line"><span>1-min rollup:       [min:45.0, max:45.5, avg:45.25, count:6] ... (1,440 points/day)</span></span>
+<span class="line"><span>1-hour rollup:      [min:44.1, max:47.2, avg:45.8, count:360] ... (24 points/day)</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-68" data-hi-narration-clickable="false">This is a form of pre-computation that trades storage and write amplification for dramatically faster reads on historical data. If you want to see downsampling in action in a problem context, check out our <a href="/learn/system-design/problem-breakdowns/ad-click-aggregator" target="_blank" rel="noopener noreferrer" class="mdx-a">Ad Click Aggregator breakdown</a> where we use this technique to handle billions of ad events.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-69" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Downsampling and rollups frequently show up in interviews as a negotiation in requirements. Your interviewer says "we need to store 10s samples for 1 year", and you say "that's a ton of data, I think we probably only need the fine resolution for a week, and can downsample to 5 minute averages for a month ... does this work?" The key is (a) you anticipating a future problem, (b) explaining the challenge, and (c) offering an alternative. Even if the interviewer says no, they're marking down your ability to think outside of the rigid requirements that were given to you — a hallmark of a staff+ candidate.</div></div></div></div>
+<h3 id="block-level-metadata" class="mdx-h3" data-hi-narration-block-id="p-70" data-hi-narration-clickable="false">Block-Level Metadata</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-71" data-hi-narration-clickable="false">Our last optimization is a twist on the query planning ideas we covered in our <a href="/learn/system-design/deep-dives/elasticsearch" target="_blank" rel="noopener noreferrer" class="mdx-a">Elasticsearch deep dive</a>. When scanning data files, time-series databases maintain metadata about each block's contents - particularly min/max timestamps and sometimes min/max values. This enables block pruning during queries.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-72" data-hi-narration-clickable="false">If a query asks for CPU usage above 10%, and a block's metadata shows it only contains data from 0-5%, the database skips that entire block without reading it. Combined with time-based partitioning (which already limits which partitions to check), this provides another layer of filtering that keeps queries fast even as data volumes grow.</div>
+<h2 id="putting-it-together-a-time-series-storage-engine" class="mdx-h2" data-hi-narration-block-id="p-73" data-hi-narration-clickable="false">Putting It Together: A Time-Series Storage Engine</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-74" data-hi-narration-clickable="false">Now that we understand the building blocks, let's see how they combine in a typical time-series database architecture.</div>
+<h3 id="the-data-model" class="mdx-h3" data-hi-narration-block-id="p-75" data-hi-narration-clickable="false">The Data Model</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-76" data-hi-narration-clickable="false">Time-series databases typically organize data into:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-77" data-hi-narration-clickable="false"><strong>Measurements</strong> or <strong>metrics</strong> - like tables (e.g., "cpu_usage", "memory")</li>
+<li class="mdx-li" data-hi-narration-block-id="p-78" data-hi-narration-clickable="false"><strong>Tags</strong> - indexed metadata for filtering (e.g., host="server-1", region="us-west")</li>
+<li class="mdx-li" data-hi-narration-block-id="p-79" data-hi-narration-clickable="false"><strong>Fields</strong> - the actual measured values (e.g., value=45.2)</li>
+<li class="mdx-li" data-hi-narration-block-id="p-80" data-hi-narration-clickable="false"><strong>Timestamps</strong> - when the measurement was taken</li>
+</ul>
+<div class="mdx-p">A data point might look like this:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="text"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>cpu_usage,host=server-1,region=us-west value=45.2 1699999200000000000</span></span>
+<span class="line"><span>└─────────────────────────────────────┘ └────────┘ └─────────────────┘</span></span>
+<span class="line"><span>        measurement + tags               field          timestamp</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-82" data-hi-narration-clickable="false">Tags are crucial because they're indexed. Queries filtering by tags are fast. Fields are not indexed - they're the actual time-series data you're storing.</div>
+<div class="callout callout-warning my-4" data-hi-narration-block-id="p-83" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">The distinction between tags and fields trips people up. Use tags for metadata you'll filter by (host, region, service). Use fields for the actual values you're measuring. Getting this wrong leads to either poor query performance or the cardinality explosion problem we'll discuss later.</div></div></div></div>
+<h3 id="the-storage-engine" class="mdx-h3" data-hi-narration-block-id="p-84" data-hi-narration-clickable="false">The Storage Engine</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-85" data-hi-narration-clickable="false">A typical time-series storage engine combines the patterns we've discussed:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-86" data-hi-narration-clickable="false"><strong>Write Ahead Log (WAL):</strong> Data first goes to the WAL for durability. If the database crashes, it can recover uncommitted data from the WAL.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-87" data-hi-narration-clickable="false"><strong>In-Memory Buffer:</strong> Data is also written to an in-memory buffer, organized by measurement and tag combination. This is the memtable from our LSM discussion.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-88" data-hi-narration-clickable="false"><strong>Flush to Disk:</strong> When the buffer reaches a threshold, it's flushed to disk as an immutable file with compressed timestamps and values.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-89" data-hi-narration-clickable="false"><strong>Background Compaction:</strong> Smaller files are periodically merged into larger ones, reducing the number of files to check during queries and removing deleted data.</li>
+</ol>
+<div class="mdx-p" data-hi-narration-block-id="p-90" data-hi-narration-clickable="false">The file format is heavily optimized:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="text"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>File Structure:</span></span>
+<span class="line"><span>┌──────────────────────────────────────────────────────────────┐</span></span>
+<span class="line"><span>│                          Header                              │</span></span>
+<span class="line"><span>├──────────────────────────────────────────────────────────────┤</span></span>
+<span class="line"><span>│  Block 1: Timestamps (delta-of-delta + varint encoded)       │</span></span>
+<span class="line"><span>│  Block 1: Values (XOR compressed)                            │</span></span>
+<span class="line"><span>├──────────────────────────────────────────────────────────────┤</span></span>
+<span class="line"><span>│  Block 2: Timestamps                                         │</span></span>
+<span class="line"><span>│  Block 2: Values                                             │</span></span>
+<span class="line"><span>├──────────────────────────────────────────────────────────────┤</span></span>
+<span class="line"><span>│                         ...                                  │</span></span>
+<span class="line"><span>├──────────────────────────────────────────────────────────────┤</span></span>
+<span class="line"><span>│                    Index (series → block offsets)            │</span></span>
+<span class="line"><span>├──────────────────────────────────────────────────────────────┤</span></span>
+<span class="line"><span>│                         Footer                               │</span></span>
+<span class="line"><span>└──────────────────────────────────────────────────────────────┘</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-91" data-hi-narration-clickable="false">Each file contains an index at the end that maps series keys (measurement + tag combinations) to the blocks containing their data. This means looking up data for a specific series is a seek to the index, then a seek to the data - two disk operations regardless of how much data is in the file.</div>
+<h3 id="query-execution" class="mdx-h3" data-hi-narration-block-id="p-92" data-hi-narration-clickable="false">Query Execution</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-93" data-hi-narration-clickable="false">When you query a time-series database:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="sql"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">SELECT</span><span style="color:#212B36"> mean(</span><span style="color:#299A8D">value</span><span style="color:#212B36">) </span><span style="color:#299A8D">FROM</span><span style="color:#212B36"> cpu_usage </span></span>
+<span class="line"><span style="color:#299A8D">WHERE</span><span style="color:#212B36"> host </span><span style="color:#299A8D">=</span><span style="color:#2C9C59"> 'server-1'</span><span style="color:#212B36"> </span></span>
+<span class="line"><span style="color:#299A8D">  AND</span><span style="color:#4A7C8F"> time</span><span style="color:#299A8D"> &gt;</span><span style="color:#299A8D"> now</span><span style="color:#212B36">() </span><span style="color:#299A8D">-</span><span style="color:#212B36"> 1h</span></span>
+<span class="line"><span style="color:#299A8D">GROUP BY</span><span style="color:#4A7C8F"> time</span><span style="color:#212B36">(5m)</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p">The query engine:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-94" data-hi-narration-clickable="false">
+<div class="mdx-p"><strong>Identifies relevant partitions</strong> based on the time filter. Only partitions overlapping the query time range are considered.</div>
+</li>
+<li class="mdx-li" data-hi-narration-block-id="p-95" data-hi-narration-clickable="false">
+<div class="mdx-p"><strong>Locates series</strong> by looking up the tag filter (host='server-1') in the in-memory tag index.</div>
+</li>
+<li class="mdx-li" data-hi-narration-block-id="p-96" data-hi-narration-clickable="false">
+<div class="mdx-p"><strong>Reads from buffer and disk files.</strong> The buffer has the most recent data; disk files have older data. Results are merged.</div>
+</li>
+<li class="mdx-li" data-hi-narration-block-id="p-97" data-hi-narration-clickable="false">
+<div class="mdx-p"><strong>Applies aggregations</strong> as data is read. This is a streaming operation - the database doesn't need to load all data into memory before computing the mean.</div>
+</li>
+</ol>
+<div class="mdx-p" data-hi-narration-block-id="p-98" data-hi-narration-clickable="false">The key insight is that time-series databases exploit both time locality (recent data is in memory or recent files) and series locality (related data points are stored together) to minimize disk access.</div>
+<h3 id="worked-example-multi-tag-query" class="mdx-h3" data-hi-narration-block-id="p-99" data-hi-narration-clickable="false">Worked Example: Multi-Tag Query</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-100" data-hi-narration-clickable="false">Let's trace through a complete example to see how data flows from ingestion to query results.</div>
+<h4 id="step-1-data-ingestion" class="mdx-h4" data-hi-narration-block-id="p-101" data-hi-narration-clickable="false">Step 1: Data Ingestion</h4>
+<div class="mdx-p">Imagine our monitoring system writes these data points over a few seconds:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="text"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>cpu_usage,host=server-1,region=us-west,env=prod value=45.2 1700000000000000000</span></span>
+<span class="line"><span>cpu_usage,host=server-1,region=us-west,env=prod value=47.1 1700000010000000000</span></span>
+<span class="line"><span>cpu_usage,host=server-2,region=us-west,env=prod value=62.3 1700000000000000000</span></span>
+<span class="line"><span>cpu_usage,host=server-2,region=us-west,env=prod value=61.8 1700000010000000000</span></span>
+<span class="line"><span>cpu_usage,host=server-3,region=us-east,env=prod value=38.9 1700000000000000000</span></span>
+<span class="line"><span>cpu_usage,host=server-3,region=us-east,env=prod value=39.2 1700000010000000000</span></span>
+<span class="line"><span>cpu_usage,host=server-4,region=us-east,env=staging value=71.0 1700000000000000000</span></span>
+<span class="line"><span>cpu_usage,host=server-4,region=us-east,env=staging value=73.5 1700000010000000000</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<h4 id="step-2-how-data-is-organized" class="mdx-h4" data-hi-narration-block-id="p-103" data-hi-narration-clickable="false">Step 2: How Data Is Organized</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-104" data-hi-narration-clickable="false">Each unique combination of measurement + tags creates a "series." Our data has 4 series:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="text"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>Series 1: cpu_usage,host=server-1,region=us-west,env=prod</span></span>
+<span class="line"><span>Series 2: cpu_usage,host=server-2,region=us-west,env=prod</span></span>
+<span class="line"><span>Series 3: cpu_usage,host=server-3,region=us-east,env=prod</span></span>
+<span class="line"><span>Series 4: cpu_usage,host=server-4,region=us-east,env=staging</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p">In the data file, data for each series is stored together in compressed blocks. Here's what it looks like on disk, with all our compression tricks applied:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="text"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>┌─────────────────────────────────────────────────────────────────────────┐</span></span>
+<span class="line"><span>│ Data File (partition for Nov 15, 2023)                                  │</span></span>
+<span class="line"><span>├─────────────────────────────────────────────────────────────────────────┤</span></span>
+<span class="line"><span>│ Block 0: Series 1 (server-1, us-west, prod)                             │</span></span>
+<span class="line"><span>│                                                                         │</span></span>
+<span class="line"><span>│   Raw timestamps:    [1700000000000000000, 1700000010000000000] (16 bytes)</span></span>
+<span class="line"><span>│   Stored as:         base=1700000000, delta=10, Δ-of-Δ=[0]       (3 bytes)</span></span>
+<span class="line"><span>│                                                                         │</span></span>
+<span class="line"><span>│   Raw values:        [45.2, 47.1]                                (16 bytes)</span></span>
+<span class="line"><span>│   Stored as:         [45.2, XOR-diff]                           (10 bytes)</span></span>
+<span class="line"><span>│                                                                         │</span></span>
+<span class="line"><span>├─────────────────────────────────────────────────────────────────────────┤</span></span>
+<span class="line"><span>│ Block 1: Series 2 (server-2, us-west, prod)                             │</span></span>
+<span class="line"><span>│   Raw:    ts=[1700000000, 1700000010], vals=[62.3, 61.8]        (32 bytes)</span></span>
+<span class="line"><span>│   Stored: ts=base+Δ+[0], vals=[62.3, XOR-diff]                  (13 bytes)</span></span>
+<span class="line"><span>├─────────────────────────────────────────────────────────────────────────┤</span></span>
+<span class="line"><span>│ Block 2: Series 3 (server-3, us-east, prod)                             │</span></span>
+<span class="line"><span>│   Raw:    ts=[1700000000, 1700000010], vals=[38.9, 39.2]        (32 bytes)</span></span>
+<span class="line"><span>│   Stored: ts=base+Δ+[0], vals=[38.9, XOR-diff]                  (13 bytes)</span></span>
+<span class="line"><span>├─────────────────────────────────────────────────────────────────────────┤</span></span>
+<span class="line"><span>│ Block 3: Series 4 (server-4, us-east, staging)                          │</span></span>
+<span class="line"><span>│   Raw:    ts=[1700000000, 1700000010], vals=[71.0, 73.5]        (32 bytes)</span></span>
+<span class="line"><span>│   Stored: ts=base+Δ+[0], vals=[71.0, XOR-diff]                  (13 bytes)</span></span>
+<span class="line"><span>├─────────────────────────────────────────────────────────────────────────┤</span></span>
+<span class="line"><span>│ INDEX                                                                   │</span></span>
+<span class="line"><span>│   "cpu_usage,host=server-1,region=us-west,env=prod"  → Block 0          │</span></span>
+<span class="line"><span>│   "cpu_usage,host=server-2,region=us-west,env=prod"  → Block 1          │</span></span>
+<span class="line"><span>│   "cpu_usage,host=server-3,region=us-east,env=prod"  → Block 2          │</span></span>
+<span class="line"><span>│   "cpu_usage,host=server-4,region=us-east,env=staging" → Block 3        │</span></span>
+<span class="line"><span>└─────────────────────────────────────────────────────────────────────────┘</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p">Block 0 shows the full breakdown; the other blocks use a compact notation. Notice how each block stores ~13 bytes instead of 32 bytes - a 60% reduction just from these two techniques and this only becomes more significant as the data volume grows.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-106" data-hi-narration-clickable="false">The database also maintains an in-memory <strong>tag index</strong> that maps tag values to series. If this looks familiar, it's essentially an inverted index - the same data structure that powers <a href="/learn/system-design/deep-dives/elasticsearch" target="_blank" rel="noopener noreferrer" class="mdx-a">Elasticsearch</a>. Instead of mapping words to documents, we're mapping tag values to series.</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="text"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>Tag Index (in memory):</span></span>
+<span class="line"><span>┌─────────────────────────────────────────────────────────────────────────┐</span></span>
+<span class="line"><span>│ region=us-west  → [Series 1, Series 2]                                  │</span></span>
+<span class="line"><span>│ region=us-east  → [Series 3, Series 4]                                  │</span></span>
+<span class="line"><span>│ env=prod        → [Series 1, Series 2, Series 3]                        │</span></span>
+<span class="line"><span>│ env=staging     → [Series 4]                                            │</span></span>
+<span class="line"><span>│ host=server-1   → [Series 1]                                            │</span></span>
+<span class="line"><span>│ host=server-2   → [Series 2]                                            │</span></span>
+<span class="line"><span>│ host=server-3   → [Series 3]                                            │</span></span>
+<span class="line"><span>│ host=server-4   → [Series 4]                                            │</span></span>
+<span class="line"><span>└─────────────────────────────────────────────────────────────────────────┘</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<h4 id="step-3-executing-a-multi-tag-query" class="mdx-h4" data-hi-narration-block-id="p-107" data-hi-narration-clickable="false">Step 3: Executing a Multi-Tag Query</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-108" data-hi-narration-clickable="false">Now let's query: "What's the average CPU usage for production servers in us-west?"</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="sql"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">SELECT</span><span style="color:#212B36"> mean(</span><span style="color:#299A8D">value</span><span style="color:#212B36">) </span><span style="color:#299A8D">FROM</span><span style="color:#212B36"> cpu_usage </span></span>
+<span class="line"><span style="color:#299A8D">WHERE</span><span style="color:#212B36"> region </span><span style="color:#299A8D">=</span><span style="color:#2C9C59"> 'us-west'</span><span style="color:#299A8D"> AND</span><span style="color:#212B36"> env </span><span style="color:#299A8D">=</span><span style="color:#2C9C59"> 'prod'</span></span>
+<span class="line"><span style="color:#299A8D">  AND</span><span style="color:#4A7C8F"> time</span><span style="color:#299A8D"> &gt;=</span><span style="color:#F4A261"> 1700000000000000000</span><span style="color:#299A8D"> AND</span><span style="color:#4A7C8F"> time</span><span style="color:#299A8D"> &lt;=</span><span style="color:#F4A261"> 1700000010000000000</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-110" data-hi-narration-clickable="false">Here's how the database processes this:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="text"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>Query: region='us-west' AND env='prod'</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>Step 1: Consult the tag index</span></span>
+<span class="line"><span>         region=us-west → [Series 1, Series 2]</span></span>
+<span class="line"><span>         env=prod       → [Series 1, Series 2, Series 3]</span></span>
+<span class="line"><span>         </span></span>
+<span class="line"><span>Step 2: Intersect the sets</span></span>
+<span class="line"><span>         [Series 1, Series 2] ∩ [Series 1, Series 2, Series 3] </span></span>
+<span class="line"><span>         = [Series 1, Series 2]</span></span>
+<span class="line"><span>         </span></span>
+<span class="line"><span>Step 3: Look up block locations in file index</span></span>
+<span class="line"><span>         Series 1 → Block 0</span></span>
+<span class="line"><span>         Series 2 → Block 1</span></span>
+<span class="line"><span>         </span></span>
+<span class="line"><span>Step 4: Read only blocks 0 and 1 from disk (skip blocks 2, 3!)</span></span>
+<span class="line"><span>         Block 0: timestamps [1700000000, 1700000010], values [45.2, 47.1]</span></span>
+<span class="line"><span>         Block 1: timestamps [1700000000, 1700000010], values [62.3, 61.8]</span></span>
+<span class="line"><span>         </span></span>
+<span class="line"><span>Step 5: Apply time filter (all points match in this case)</span></span>
+<span class="line"><span>         </span></span>
+<span class="line"><span>Step 6: Compute aggregation</span></span>
+<span class="line"><span>         mean([45.2, 47.1, 62.3, 61.8]) = 54.1</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<h4 id="what-made-this-fast" class="mdx-h4" data-hi-narration-block-id="p-111" data-hi-narration-clickable="false">What Made This Fast?</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-112" data-hi-narration-clickable="false">The tag index let us identify matching series without scanning any data. We read exactly 2 blocks from disk, skipping the 2 blocks for us-east servers entirely. The data within each block was already organized by series, so no sorting or filtering within blocks was needed.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-113" data-hi-narration-clickable="false">Compare this to a naive approach in Postgres:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="sql"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">-- PostgreSQL equivalent</span></span>
+<span class="line"><span style="color:#212B36">SELECT </span><span style="color:#2675FF">AVG</span><span style="color:#212B36">(</span><span style="color:#299A8D">value</span><span style="color:#212B36">) </span><span style="color:#299A8D">FROM</span><span style="color:#212B36"> metrics </span></span>
+<span class="line"><span style="color:#299A8D">WHERE</span><span style="color:#212B36"> region </span><span style="color:#299A8D">=</span><span style="color:#2C9C59"> 'us-west'</span><span style="color:#299A8D"> AND</span><span style="color:#212B36"> env </span><span style="color:#299A8D">=</span><span style="color:#2C9C59"> 'prod'</span></span>
+<span class="line"><span style="color:#299A8D">  AND</span><span style="color:#4A7C8F"> timestamp</span><span style="color:#299A8D"> BETWEEN</span><span style="color:#2C9C59"> '2023-11-15 00:00:00'</span><span style="color:#299A8D"> AND</span><span style="color:#2C9C59"> '2023-11-15 00:00:10'</span><span style="color:#212B36">;</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p">Even with indexes on region and env, Postgres would need to:</div>
+<ol class="mdx-ol">
+<li class="mdx-li">Use the indexes to find matching row IDs</li>
+<li class="mdx-li">Fetch each row from potentially scattered locations on disk</li>
+<li class="mdx-li">Extract the value column from each row</li>
+<li class="mdx-li">Compute the average</li>
+</ol>
+<div class="mdx-p" data-hi-narration-block-id="p-114" data-hi-narration-clickable="false">With millions of rows, those scattered disk reads kill performance. The columnar, series-oriented storage in a time-series database means the data you need is physically co-located. Our writes are optimized to assist our reads!</div>
+<h3 id="where-things-break" class="mdx-h3" data-hi-narration-block-id="p-115" data-hi-narration-clickable="false">Where Things Break</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-116" data-hi-narration-clickable="false">These advantages are not without their challenges. A particularly poignant example is the cardinality problem.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-117" data-hi-narration-clickable="false">Cardinality refers to the number of unique tag combinations. If you have 1,000 hosts and 50 metric names, that's 50,000 series. Manageable. But what if you add a tag for user_id with 10 million unique users? Suddenly you have 500 billion potential series.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-118" data-hi-narration-clickable="false">Why is this a problem? Time-series databases maintain an in-memory index of all series. Each unique tag combination needs an entry. With billions of series, you run out of memory. Queries also slow down because the index becomes massive.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-119" data-hi-narration-clickable="false">This is why user IDs, request IDs, or any high-cardinality value can only be stored as fields, not tags. In essence, we can write them but we lose all the performance benefits of the time-series database in reading them.</div>
+<h2 id="summary" class="mdx-h2" data-hi-narration-block-id="p-120" data-hi-narration-clickable="false">Summary</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-121" data-hi-narration-clickable="false">The cardinality problem puts a fine point on the lesson of time-series databases: if we can make some strong assumptions about our data (low-cardinality tags, highly regular data, low deltas between points), we can build a system which exploits each of these properties to achieve a massive improvement in performance. But as soon as our assumptions are violated, we lose all of the benefits and our system becomes worse than a general-purpose database for the task.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-122" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">This is where most candidates will stumble. By not understanding the data assumptions of a database, they'll wander in to propose a solution which actually performs worse (or not at all) for a task they're asked to solve. Understanding these data assumptions and trademarks in the hallmarks of a staff+ candidate. If you find yourself uncertain, falling back to what you know rather than winging it with a technology you don't is the better strategy.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-123" data-hi-narration-clickable="false">To summarize what we've covered, time series databases exploit a number of fundamental patterns to achieve their performance benefits, and these patterns are not exclusive to time series problems:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-124" data-hi-narration-clickable="false">Append-only storage turns random I/O into sequential I/O</li>
+<li class="mdx-li" data-hi-narration-block-id="p-125" data-hi-narration-clickable="false">LSM trees enable high write throughput by deferring organization to background compaction</li>
+<li class="mdx-li" data-hi-narration-block-id="p-126" data-hi-narration-clickable="false">Delta encoding and specialized compression exploit the structure of time-series data</li>
+<li class="mdx-li" data-hi-narration-block-id="p-127" data-hi-narration-clickable="false">Time-based partitioning localizes writes and makes retention trivial</li>
+<li class="mdx-li" data-hi-narration-block-id="p-128" data-hi-narration-clickable="false">Bloom filters eliminate unnecessary disk reads when checking SSTables</li>
+<li class="mdx-li" data-hi-narration-block-id="p-129" data-hi-narration-clickable="false">Downsampling and rollups trade precision for storage efficiency on historical data</li>
+<li class="mdx-li" data-hi-narration-block-id="p-130" data-hi-narration-clickable="false">Block-level metadata enables pruning during queries</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-131" data-hi-narration-clickable="false">In doing so, we achieve some practical performance benefits that order 10-100x better than a general-purpose database for their target workload.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-132" data-hi-narration-clickable="false">So the next time you see a system handling millions of events per second, you'll know it's not magic. It's append-only logs, LSM trees, clever compression, Bloom filters, rollups, and careful data modeling.</div>
+<div class="MuiBox-root mui-10b10ta"><div class="flex flex-row items-center gap-3 mb-3"><div class="heroicon-sw-2 MuiBox-root mui-tbago3"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"></path></svg></div><div><h6 class="MuiTypography-root MuiTypography-h6 mui-jyzq54">Test Your Knowledge</h6><p class="MuiTypography-root MuiTypography-body2 mui-14ou361">Answer the question below to find your gaps.</p></div></div><div class="flex flex-row items-baseline gap-3 mb-1 "><p class="MuiTypography-root MuiTypography-body2 mui-nk2f70">Question 1 of 15</p></div><div class="MuiBox-root mui-1muw576"><div class="mdx-p">What happens during the compaction phase of an LSM tree?</div></div><div class="MuiBox-root mui-0"><div class="grid grid-cols-1 gap-2 mb-4"><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">1</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Data blocks are compressed using delta encoding techniques</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">2</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">The memtable is flushed to disk as a sorted SSTable file</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">3</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Smaller SSTables are merged, removing duplicates and tombstones</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">4</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">The write-ahead log is truncated after writes are confirmed</div></div></div></div></div></div></div></div></div></div></div></div><!--$--><!--/$--></div></div></main>
+</body>
+</html>

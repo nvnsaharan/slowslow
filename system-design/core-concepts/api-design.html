@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API Design</title>
+<meta name="source-url" content="https://www.hellointerview.com/learn/system-design/core-concepts/api-design">
+<script>
+(function () {
+  var theme;
+  try { theme = localStorage.getItem('course-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #666666;
+    --faint: #888888;
+    --border: #e1e4e8;
+    --border-strong: #d0d7de;
+    --code-bg: #f6f8fa;
+    --inline-code-bg: #f0f1f3;
+    --link: #0969da;
+    --accent: #10857a;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121212;
+    --fg: #e6e6e6;
+    --muted: #aaaaaa;
+    --faint: #999999;
+    --border: #333333;
+    --border-strong: #3a3a3a;
+    --code-bg: #1e1e1e;
+    --inline-code-bg: #252525;
+    --link: #6cb2ff;
+    --accent: #34b3a6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    max-width: 46rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--fg);
+    background: var(--bg);
+  }
+  h1, h2, h3, h4, h5, h6 { line-height: 1.3; margin: 2em 0 0.6em; }
+  h1 { font-size: 2rem; margin-top: 0.5em; }
+  img, svg, video { max-width: 100%; height: auto; }
+  figure { margin: 1.5em 0; text-align: center; }
+  figcaption { font-size: 0.875rem; color: var(--muted); }
+  pre {
+    padding: 1em;
+    overflow-x: auto;
+    border-radius: 8px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    background: var(--inline-code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  table { border-collapse: collapse; width: 100%; margin: 1.5em 0; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--border-strong); padding: 0.5em 0.75em; text-align: left; }
+  th { background: var(--code-bg); }
+  blockquote { margin: 1.5em 0; padding: 0.5em 1.25em; border-left: 4px solid var(--border-strong); color: var(--muted); }
+  a { color: var(--link); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+  .lesson-source { font-size: 0.8125rem; color: var(--faint); margin-bottom: 2rem; }
+
+  #theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+  #theme-toggle:hover { border-color: var(--accent); }
+
+</style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Toggle light/dark theme"></button>
+<script>
+(function () {
+  var btn = document.getElementById('theme-toggle');
+  function refresh() { btn.textContent = document.documentElement.dataset.theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19'; }
+  btn.addEventListener('click', function () {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('course-theme', next); } catch (e) {}
+    refresh();
+  });
+  refresh();
+})();
+</script>
+<p class="lesson-source">Saved for offline reading from <a href="https://www.hellointerview.com/learn/system-design/core-concepts/api-design">https://www.hellointerview.com/learn/system-design/core-concepts/api-design</a></p>
+<main class="flex-1 min-w-0 overflow-y-auto print-main"><div class="flex flex-col bg-nav-bg-paper"><div class="px-4 md:px-6 max-w-7xl mx-auto py-3 w-full print-main-content" style="min-height:calc(100vh - 48px - 0px);transition:min-height 0.3s ease-in-out;background-color:var(--nav-bg-paper)"><div class="grid grid-cols-7 gap-12 md:gap-0 mx-auto max-w-5xl"><div class="col-span-7 w-full max-w-4xl md:pr-6 xl:col-span-5"><div class="relative"><div id="markdown" class="mui-4tqezl"><div class="chrome"><div class="flex flex-col gap-2"><div class="flex flex-col relative"><div class="flex items-center justify-between   "><h6 class="MuiTypography-root MuiTypography-h6 mui-pkyqy5">Core Concepts</h6></div><div class="flex flex-col md:flex-row md:items-start md:justify-between md:gap-4"><div class="flex items-center gap-2"><h1 class="MuiTypography-root MuiTypography-h2 mui-xhvznl">API Design</h1><div class="MuiBox-root mui-yrscm7"></div></div></div><p class="MuiTypography-root MuiTypography-body2 mui-19x8mt2" data-hi-narration-block-id="p-0" data-hi-narration-clickable="false">Learn about API design for system design interviews</p></div></div><hr class="MuiDivider-root MuiDivider-fullWidth mui-18s6yq7"></div>
+<div class="mdx-p" data-hi-narration-block-id="p-1" data-hi-narration-clickable="false">In system design interviews, you'll want to define how clients interact with your system as part of the <a href="/learn/system-design/in-a-hurry/delivery#api-or-system-interface-5-minutes" target="_blank" rel="noopener noreferrer" class="mdx-a">API step</a> in the <a href="/learn/system-design/in-a-hurry/delivery" target="_blank" rel="noopener noreferrer" class="mdx-a">Delivery framework</a>.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-2" data-hi-narration-clickable="false">API design follows predictable patterns. You'll pick a protocol, define your resources, and specify how clients pass data and get responses back. This article won't make you a master in API design, but it should cover all the basics needed to impress in this 5-minute period of your system design interview.</div>
+<div class="callout callout-warning my-6" data-hi-narration-block-id="p-3" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Before we go deep here, I want to make one thing super clear: most interviewers don't care deeply about your API design being perfect. They want to see that you can design a reasonable API and move on to the more complex parts of your system.</div><div class="mdx-p">That said, if you're interviewing for frontend or product roles, API design matters more since you'll be working closely with APIs daily. Also, for junior roles, there's less expectation on your ability to design distributed systems, so there may be more time spent in the interview on APIs.</div></div></div></div>
+<h2 id="api-types" class="mdx-h2" data-hi-narration-block-id="p-4" data-hi-narration-clickable="false">API Types</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-5" data-hi-narration-clickable="false">In an interview, you'll typically choose between three main API protocols:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-6" data-hi-narration-clickable="false">
+<div class="mdx-p"><strong><span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">REST</span> (Representational State Transfer)</strong> - REST uses standard HTTP methods (GET, POST, PUT, DELETE) to manipulate resources identified by URLs. For standard CRUD operations in web and mobile applications, REST maps naturally to your database operations and HTTP semantics, making it the go-to protocol for most web services. This should be your default choice.</div>
+</li>
+<li class="mdx-li" data-hi-narration-block-id="p-7" data-hi-narration-clickable="false">
+<div class="mdx-p"><strong>GraphQL</strong> - Unlike REST's fixed endpoints, GraphQL uses a single endpoint with a query language that lets clients specify exactly what data they need. Think about a mobile app that needs only basic user information versus a web dashboard that displays comprehensive analytics - with REST, you'd either create multiple endpoints or force clients to fetch more data than they need, but GraphQL lets each client request exactly what it needs in a single query. If your interviewer mentions "flexible data fetching" or talks about avoiding over-fetching and under-fetching, they're signaling you to consider GraphQL.</div>
+</li>
+<li class="mdx-li" data-hi-narration-block-id="p-8" data-hi-narration-clickable="false">
+<div class="mdx-p"><strong>RPC (Remote Procedure Call)</strong> - RPC protocols like gRPC use binary serialization and HTTP/2 for efficient communication between services. While REST treats everything as resources, RPC lets you think in terms of actions and procedures - when your user service needs to quickly validate permissions with your auth service, an RPC call like <span class="mdx-code">checkPermission(userId, resource)</span> is more natural than trying to model this as a REST resource. If the interviewer specifically mentions microservices or internal APIs, consider RPC for those high-performance connections. Use RPC when performance is critical (see <a href="/learn/system-design/core-concepts/networking-essentials" target="_blank" rel="noopener noreferrer" class="mdx-a">Networking Essentials</a> for deeper protocol details).</div>
+</li>
+</ol>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-9" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Default to REST unless you have a specific reason not to. It's well-understood, has great tooling, and works for 90% of use cases. If you're unsure, just say "I'll use REST APIs" and move on.</div></div></div></div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-10" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">For real-time features like notifications, chat, or live updates, you'll need different protocols like <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">WebSockets</span> or Server-Sent Events. These aren't traditional APIs - they're persistent connections. But they're important to know and you can learn all about them in our <a href="/learn/system-design/deep-dives/realtime-updates" target="_blank" rel="noopener noreferrer" class="mdx-a">Real-time Updates Pattern</a>.</div></div></div></div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/cfm9z3mlfwis.0udf3y5ph31tw-a5d21905.svg" alt="API Types Flowchart" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">API Types Flowchart</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-11" data-hi-narration-clickable="false">Let's go through each of these one-by-one and call out what matters in your interview.</div>
+<h3 id="rest" class="mdx-h3" data-hi-narration-block-id="p-12" data-hi-narration-clickable="false">REST</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-13" data-hi-narration-clickable="false">Since REST is your default choice, let's spend most of our time here understanding how to design REST APIs that work well in system design interviews.</div>
+<h4 id="resource-modeling" class="mdx-h4" data-hi-narration-block-id="p-14" data-hi-narration-clickable="false">Resource Modeling</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-15" data-hi-narration-clickable="false">The foundation of good REST API design is identifying your resources correctly. If you've followed the <a href="/learn/system-design/in-a-hurry/delivery" target="_blank" rel="noopener noreferrer" class="mdx-a">delivery framework</a>, resources are just your <a href="/learn/system-design/in-a-hurry/delivery#core-entities-2-minutes" target="_blank" rel="noopener noreferrer" class="mdx-a">core entities</a>.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-16" data-hi-narration-clickable="false">Take Ticketmaster as an example. Your core entities might be events, venues, tickets, and bookings. These naturally map to REST resources:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="bash"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#2675FF">GET</span><span style="color:#212B36"> /events                    # Get all events</span></span>
+<span class="line"><span style="color:#2675FF">GET</span><span style="color:#212B36"> /events/{id}               # Get a specific event</span></span>
+<span class="line"><span style="color:#2675FF">GET</span><span style="color:#212B36"> /venues/{id}               # Get a specific venue</span></span>
+<span class="line"><span style="color:#2675FF">GET</span><span style="color:#212B36"> /events/{id}/tickets       # Get available tickets for an event</span></span>
+<span class="line"><span style="color:#2675FF">POST</span><span style="color:#212B36"> /events/{id}/bookings     # Create a new booking for an event</span></span>
+<span class="line"><span style="color:#2675FF">GET</span><span style="color:#212B36"> /bookings/{id}             # Get a specific booking</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-18" data-hi-narration-clickable="false">Importantly, REST resources should represent <em>things</em> in your system, not <em>actions</em>. Instead of thinking about what users can do (like "book" or "purchase"), think about what exists in your system (events, venues, tickets, bookings).</div>
+<div class="callout callout-info my-6" data-hi-narration-block-id="p-19" data-hi-narration-clickable="false"><div class="MuiBox-root mui-r83s7g"><div class="MuiBox-root mui-14185gn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Resources should always be plural nouns, i.e., bookings, events, tickets, etc. Most interviewers don't care about this, but some do, and it's easy enough to get right, so you might as well.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-20" data-hi-narration-clickable="false">When handling relationships between resources, you have two main approaches. You can nest resources when there's a clear parent-child relationship, like <span class="mdx-code">/events/{id}/tickets</span> for all tickets belonging to a specific event. Alternatively, you can keep resources flat and use query parameters for filtering, like <span class="mdx-code">/tickets?event_id=123</span>.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-21" data-hi-narration-clickable="false">The key difference is whether the relationship is required or optional. Use path parameters (or nested resources) when the value is required - like <span class="mdx-code">/events/{id}/tickets</span> where you always need to specify which event's tickets you want. Use query parameters when the filter is optional - like <span class="mdx-code">/tickets?event_id=123&amp;section=VIP</span> where you might want all tickets, or tickets filtered by event, or tickets filtered by both event and section.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-22" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">In interviews, this distinction helps you make the right choice quickly. If the relationship is always required for the query to make sense, use a path parameter. If it's an optional filter among many possible filters, use a query parameter. The interviewer cares more about whether you can identify the right resources than perfect URL structure, but showing this understanding demonstrates good API design intuition.</div></div></div></div>
+<h4 id="http-methods" class="mdx-h4" data-hi-narration-block-id="p-23" data-hi-narration-clickable="false">HTTP Methods</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-24" data-hi-narration-clickable="false">Once you've identified your resources, you need to decide how clients interact with them. HTTP provides a set of methods (verbs) that map naturally to common operations, and understanding when to use each one is crucial for interviews.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-25" data-hi-narration-clickable="false"><strong>GET</strong> is for retrieving data without changing anything. Use GET for <span class="mdx-code">/events/{id}</span> to fetch event details or <span class="mdx-code">/events</span> to list all events.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-26" data-hi-narration-clickable="false"><strong>POST</strong> creates new resources. When a user books tickets, you'd POST to <span class="mdx-code">/events/{id}/bookings</span> with the booking details in the request body. The server assigns an ID and returns the newly created booking. POST is neither safe nor <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">idempotent</span>. In other words, calling it multiple times creates multiple bookings.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-27" data-hi-narration-clickable="false"><strong>PUT</strong> replaces an entire resource with what you send, or creates it if it doesn't exist. If you're updating a user's profile completely, PUT to <span class="mdx-code">/users/{id}</span> with the full user object. Unlike POST, PUT is idempotent, so sending the same data multiple times results in the same final state.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-28" data-hi-narration-clickable="false"><strong>PATCH</strong> updates part of a resource. When a user changes just their email address, PATCH to <span class="mdx-code">/users/{id}</span> with only the email field. Unlike PUT, PATCH is not guaranteed to be idempotent - the result depends on how you implement it. A PATCH that says "set email to X" is idempotent, but a PATCH that says "append to list" is not.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-29" data-hi-narration-clickable="false"><strong>DELETE</strong> removes a resource. DELETE <span class="mdx-code">/bookings/{id}</span> cancels a booking. It's idempotent because repeated calls leave the server in the same state (the resource stays deleted), even if the response codes differ (first call might return 204, subsequent calls might return 404).</div>
+<div class="mdx-p" data-hi-narration-block-id="p-30" data-hi-narration-clickable="false">The key here is idempotency, meaning whether repeated requests leave the server in the same state. GET, PUT, and DELETE are idempotent because calling them multiple times doesn't change the final result. POST and PATCH are not guaranteed to be idempotent, which matters when networks fail and clients retry requests. You don't want duplicate bookings from a retry.</div>
+<h4 id="passing-data-to-apis" class="mdx-h4" data-hi-narration-block-id="p-31" data-hi-narration-clickable="false">Passing Data to APIs</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-32" data-hi-narration-clickable="false">API endpoints need input to tell the server what to do. This can be which resources to fetch, what data to update in the database, or how to filter results. Understanding where to put different types of input is crucial for designing clean, intuitive APIs.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-33" data-hi-narration-clickable="false">You have three main options for passing data to your REST API, and each serves a different purpose.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-34" data-hi-narration-clickable="false"><strong>Path parameters</strong> identify which specific resource you're working with. When you want to get event details, you put the event ID in the path: <span class="mdx-code">/events/123</span>. The ID is part of the URL structure itself, making it clear that you're asking for a specific event, not a collection of events. Use path parameters when the value is required to identify the resource - without it, the request doesn't make sense.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-35" data-hi-narration-clickable="false"><strong>Query parameters</strong> filter, sort, or modify how you retrieve resources. When you want to search for events in a specific city or date range, you use query parameters: <span class="mdx-code">/events?city=NYC&amp;date=2024-01-01</span>. These are optional - you could ask for all events without any filters, or apply multiple filters together. Query parameters work well for pagination too: <span class="mdx-code">/events?page=2&amp;limit=20</span>. Note that the first option is separated via a <span class="mdx-code">?</span> and all subsequent parameters are separated by <span class="mdx-code">&amp;</span>.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-36" data-hi-narration-clickable="false"><strong>Request body</strong> contains the actual data you're sending to create or update resources. When a user books tickets, you POST to <span class="mdx-code">/events/{id}/bookings</span> with the booking details in the request body. Things like how many tickets, seating preferences, and so on. The request body is where you put complex data structures and anything that might be too large or sensitive for a URL.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-37" data-hi-narration-clickable="false">Each type of input serves a different role in the API's contract. Path parameters are structural, they determine which endpoint you're hitting. Query parameters are modifiers, they change how the endpoint behaves. Request body is payload, it's the data you're actually working with.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-38" data-hi-narration-clickable="false">Here's a practical example. If you're building a booking system and a user wants to book VIP tickets for a specific event, you'd structure it like this:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="bash"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#2675FF">POST</span><span style="color:#212B36"> /events/123/bookings?notify=true</span></span>
+<span class="line"><span style="color:#2C9C59">{</span></span>
+<span class="line"><span style="color:#2675FF">  "tickets": [</span></span>
+<span class="line"><span style="color:#2675FF">    {"section": "VIP", "quantity": 2},</span></span>
+<span class="line"><span style="color:#2675FF">    {"section": "General", "quantity": 1}</span></span>
+<span class="line"><span style="color:#2675FF">  ],</span></span>
+<span class="line"><span style="color:#2675FF">  "payment_method": "credit_card"</span></span>
+<span class="line"><span style="color:#2675FF">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-40" data-hi-narration-clickable="false">The event ID (123) is in the path because you need to specify which event you're booking. The notification preference is a query parameter because it's optional behavior. The actual booking details go in the request body because they're the core data you're creating.</div>
+<h4 id="returning-data" class="mdx-h4" data-hi-narration-block-id="p-41" data-hi-narration-clickable="false">Returning Data</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-42" data-hi-narration-clickable="false">An API response is made up of two parts:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-43" data-hi-narration-clickable="false">The status code, which indicates whether the request was successful or not.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-44" data-hi-narration-clickable="false">The response body, which contains the data you're returning to the client (typically JSON)</li>
+</ol>
+<div class="mdx-p" data-hi-narration-block-id="p-45" data-hi-narration-clickable="false">For status codes, stick to the common ones: 200 for success, 201 for created resources, 400 for bad requests, 401 for authentication required, 404 for not found, and 500 for server errors.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-46" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Don't overthink this in interviews - interviewers care more about whether you understand the difference between client errors (4xx) and server errors (5xx) than memorizing every status code. Even using X's to obscure the status code is typically totally fine.</div></div></div></div>
+<h3 id="graphql" class="mdx-h3" data-hi-narration-block-id="p-47" data-hi-narration-clickable="false">GraphQL</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-48" data-hi-narration-clickable="false">GraphQL emerged from Facebook in 2012 to solve a specific problem: their mobile app needed different data than their web app, but they were stuck with REST endpoints that returned fixed data structures. The mobile team kept asking for new endpoints or modifications to existing ones and this was slowing down development on both sides.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-49" data-hi-narration-clickable="false">With REST, you typically have two unpleasant choices when different clients need different data. You can create multiple endpoints for different use cases, leading to endpoint proliferation and maintenance headaches. Or you can make your endpoints return everything any client might need, leading to over-fetching where mobile clients download megabytes of data they don't use.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-50" data-hi-narration-clickable="false">GraphQL consolidates resource endpoints into a single endpoint that accepts queries describing exactly what data you want. The client specifies the shape of the response, and the server returns data in that exact format.</div>
+<h4 id="how-graphql-works" class="mdx-h4" data-hi-narration-block-id="p-51" data-hi-narration-clickable="false">How GraphQL Works</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-52" data-hi-narration-clickable="false">Here's a simple example using our Ticketmaster scenario. Instead of separate REST endpoints for events, venues, and tickets, you'd have a single GraphQL endpoint that can handle queries like this:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="graphql"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>query {</span></span>
+<span class="line"><span>  event(id: "123") {</span></span>
+<span class="line"><span>    name</span></span>
+<span class="line"><span>    date</span></span>
+<span class="line"><span>    venue {</span></span>
+<span class="line"><span>      name</span></span>
+<span class="line"><span>      address</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>    tickets {</span></span>
+<span class="line"><span>      section</span></span>
+<span class="line"><span>      price</span></span>
+<span class="line"><span>      available</span></span>
+<span class="line"><span>    }</span></span>
+<span class="line"><span>  }</span></span>
+<span class="line"><span>}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-54" data-hi-narration-clickable="false">The server returns exactly what you asked for, nothing more, nothing less. If the mobile app only needs event names and dates, it can request just those fields. If the web dashboard needs comprehensive event details with venue information and ticket availability, it can request all of that in a single query.</div>
+<h4 id="when-to-use-graphql-in-interviews" class="mdx-h4" data-hi-narration-block-id="p-55" data-hi-narration-clickable="false">When to Use GraphQL in Interviews</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-56" data-hi-narration-clickable="false">GraphQL is the right choice when you have diverse clients with different data needs. If your interviewer mentions scenarios like "the mobile app needs different data than the web app" or asks about "avoiding over-fetching and under-fetching," they're likely looking for you to bring up GraphQL.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-57" data-hi-narration-clickable="false">It's also a good choice when frontend teams need to iterate quickly without backend changes. With REST, adding a new field to a mobile screen often requires backend changes and API deployments. With GraphQL, the frontend team can request additional fields as long as they exist in the schema.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-58" data-hi-narration-clickable="false">However, GraphQL adds complexity. You need to implement query parsing, schema validation, and often sophisticated caching strategies. For most system design interviews, REST is simpler and more straightforward unless the problem specifically calls for GraphQL's flexibility.</div>
+<h4 id="graphql-schema-design" class="mdx-h4" data-hi-narration-block-id="p-59" data-hi-narration-clickable="false">GraphQL Schema Design</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-60" data-hi-narration-clickable="false">If you do choose GraphQL, you'll need to think differently about design. Instead of REST's resource endpoints, you design a schema that defines your data types and their relationships.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-61" data-hi-narration-clickable="false">For our Ticketmaster example, you'd start by modeling your core entities as GraphQL types:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="graphql"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>type Event {</span></span>
+<span class="line"><span>  id: ID!</span></span>
+<span class="line"><span>  name: String!</span></span>
+<span class="line"><span>  date: DateTime!</span></span>
+<span class="line"><span>  venue: Venue!</span></span>
+<span class="line"><span>  tickets: [Ticket!]!</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>type Venue {</span></span>
+<span class="line"><span>  id: ID!</span></span>
+<span class="line"><span>  name: String!</span></span>
+<span class="line"><span>  address: String!</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>type Query {</span></span>
+<span class="line"><span>  event(id: ID!): Event</span></span>
+<span class="line"><span>  events(limit: Int, after: String): [Event!]!</span></span>
+<span class="line"><span>}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-63" data-hi-narration-clickable="false">The key difference from REST is that you define relationships directly in the schema. An Event has a Venue, and clients can traverse that relationship in a single query.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-64" data-hi-narration-clickable="false">But this flexibility creates the <strong>N+1 problem</strong>, the biggest GraphQL gotcha. When a client queries events with their venues, you might execute one query for events, then N separate queries for each venue. With 100 events, that's 101 database queries instead of 2. The solution is batching/dataloader patterns that group related queries together, but it adds complexity you don't have with REST.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-65" data-hi-narration-clickable="false">GraphQL also handles authorization differently. Instead of securing entire endpoints like REST, you secure individual fields. A user might see an event's name and date but not the venue data. You can control this at the field level in your schema resolvers.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-66" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">In interviews, mention GraphQL when you see clear over-fetching or under-fetching problems, but don't default to it. Most interviewers appreciate that you know about GraphQL, but they usually prefer to see you solve the core architectural challenges with simpler tools first.</div></div></div></div>
+<h3 id="rpc" class="mdx-h3" data-hi-narration-block-id="p-67" data-hi-narration-clickable="false">RPC</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-68" data-hi-narration-clickable="false">RPC (Remote Procedure Call) is a communication paradigm that allows a client to call a procedure on a server and wait for a response without the client having to understand the underlying network details. Protocols like gRPC use binary serialization and HTTP/2, making them faster than traditional JSON-over-HTTP REST APIs for service communication.</div>
+<h4 id="how-rpc-works" class="mdx-h4" data-hi-narration-block-id="p-69" data-hi-narration-clickable="false">How RPC Works</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-70" data-hi-narration-clickable="false">Unlike REST's resource-oriented approach, RPC is action-oriented. You're essentially calling functions across a network as if they were local functions in your codebase. Here's how the same Ticketmaster operations might look with RPC:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="bash"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#2675FF">//</span><span style="color:#212B36"> Instead of GET /events/123</span></span>
+<span class="line"><span style="color:#2675FF">getEvent(eventId:</span><span style="color:#212B36"> "123")</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#2675FF">//</span><span style="color:#212B36"> Instead of POST /events/123/bookings</span></span>
+<span class="line"><span style="color:#2675FF">createBooking(eventId:</span><span style="color:#212B36"> "123", userId: "456", tickets: [...])</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#2675FF">//</span><span style="color:#212B36"> Instead of GET /events/123/tickets</span></span>
+<span class="line"><span style="color:#2675FF">getAvailableTickets(eventId:</span><span style="color:#212B36"> "123", section: "VIP")</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-72" data-hi-narration-clickable="false">The most popular RPC protocol today is <a href="https://grpc.io/" target="_blank" rel="noopener noreferrer" class="mdx-a">gRPC</a>, which uses Protocol Buffers for serialization and HTTP/2 for transport. This combo is much faster than REST's JSON-over-HTTP approach, especially for service-to-service communication. Another notable RPC framework is <a href="https://thrift.apache.org/" target="_blank" rel="noopener noreferrer" class="mdx-a">Apache Thrift</a>, originally developed at Facebook and now open source, which supports multiple programming languages and serialization formats.</div>
+<h4 id="protocol-buffers-and-type-safety" class="mdx-h4" data-hi-narration-block-id="p-73" data-hi-narration-clickable="false">Protocol Buffers and Type Safety</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-74" data-hi-narration-clickable="false">gRPC uses Protocol Buffers (protobuf) to define service contracts. You write a <span class="mdx-code">.proto</span> file that describes your service methods and data structures:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="protobuf"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>service TicketService {</span></span>
+<span class="line"><span>  rpc GetEvent(GetEventRequest) returns (Event);</span></span>
+<span class="line"><span>  rpc CreateBooking(CreateBookingRequest) returns (Booking);</span></span>
+<span class="line"><span>  rpc GetAvailableTickets(GetTicketsRequest) returns (TicketList);</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>message GetEventRequest {</span></span>
+<span class="line"><span>  string event_id = 1;</span></span>
+<span class="line"><span>}</span></span>
+<span class="line"><span></span></span>
+<span class="line"><span>message Event {</span></span>
+<span class="line"><span>  string id = 1;</span></span>
+<span class="line"><span>  string name = 2;</span></span>
+<span class="line"><span>  int64 date = 3;</span></span>
+<span class="line"><span>  Venue venue = 4;</span></span>
+<span class="line"><span>}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-76" data-hi-narration-clickable="false">From this single definition, gRPC generates client and server code in multiple programming languages. This means your Go backend service and your Java payment service can communicate with compile-time type safety, catching mismatches before deployment.</div>
+<h4 id="when-to-use-rpc-in-interviews" class="mdx-h4" data-hi-narration-block-id="p-77" data-hi-narration-clickable="false">When to Use RPC in Interviews</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-78" data-hi-narration-clickable="false">RPC shines in microservice architectures where services need to communicate frequently and efficiently. If your interviewer mentions internal service communication, high-performance requirements, or polyglot environments (different services in different languages), RPC is likely a good choice.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-79" data-hi-narration-clickable="false">Consider RPC when:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-80" data-hi-narration-clickable="false"><strong>Performance is critical</strong>: Binary serialization and HTTP/2 make RPC significantly faster than JSON REST</li>
+<li class="mdx-li" data-hi-narration-block-id="p-81" data-hi-narration-clickable="false"><strong>Type safety matters</strong>: Generated client code prevents many runtime errors</li>
+<li class="mdx-li" data-hi-narration-block-id="p-82" data-hi-narration-clickable="false"><strong>Service-to-service communication</strong>: Internal APIs between your own services don't need REST's resource semantics</li>
+<li class="mdx-li" data-hi-narration-block-id="p-83" data-hi-narration-clickable="false"><strong>Streaming is needed</strong>: gRPC supports bidirectional streaming for real-time features</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-84" data-hi-narration-clickable="false">For our Ticketmaster example, you might use REST APIs for your public endpoints that mobile apps and web clients consume, but use gRPC for internal communication between your booking service, payment service, and inventory service.</div>
+<div class="callout callout-info my-6" data-hi-narration-block-id="p-85" data-hi-narration-clickable="false"><div class="MuiBox-root mui-r83s7g"><div class="MuiBox-root mui-14185gn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Unless explicitly asked, you won't typically outline your internal APIs during the <a href="/learn/system-design/in-a-hurry/delivery#api-or-system-interface-5-minutes" target="_blank" rel="noopener noreferrer" class="mdx-a">API step</a> of the interview. Instead, focus on just the user facing APIs here. At most, you'll call out that internal services communicate over RPC during your high-level design.</div></div></div></div>
+<h2 id="common-api-patterns" class="mdx-h2" data-hi-narration-block-id="p-86" data-hi-narration-clickable="false">Common API Patterns</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-87" data-hi-narration-clickable="false">Regardless of whether you choose REST, GraphQL, or RPC, there are some patterns that apply across all API types. These are worth knowing since they come up in most real-world systems.</div>
+<h3 id="pagination" class="mdx-h3" data-hi-narration-block-id="p-88" data-hi-narration-clickable="false">Pagination</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-89" data-hi-narration-clickable="false">When you're dealing with large datasets, you can't return everything at once. Imagine an API that returns all events ever created, that could be millions of records which would be many gigabytes of data.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-90" data-hi-narration-clickable="false">Instead, you need pagination to break large result sets into manageable chunks. There are two main approaches to pagination: offset-based and cursor-based.</div>
+<h4 id="offset-based-pagination" class="mdx-h4" data-hi-narration-block-id="p-91" data-hi-narration-clickable="false">Offset-based Pagination</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-92" data-hi-narration-clickable="false">Offset-based pagination is the simplest approach and used by most websites. You specify how many records to skip and how many to return: <span class="mdx-code">/events?offset=20&amp;limit=10</span> gets records 21-30. This is intuitive and easy to implement, but it has problems with large datasets. If someone adds a new event while you're paginating through results, you might see duplicates or miss records as the data shifts.</div>
+<h4 id="cursor-based-pagination" class="mdx-h4" data-hi-narration-block-id="p-93" data-hi-narration-clickable="false">Cursor-based Pagination</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-94" data-hi-narration-clickable="false">Cursor-based pagination solves this by using a pointer to a specific record instead of counting from the beginning. Here's how it works in practice:</div>
+<div class="mdx-p" data-hi-narration-block-id="p-95" data-hi-narration-clickable="false">First request: <span class="mdx-code">/events?limit=10</span>
+Response includes the events plus a cursor pointing to the last record:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="json"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>{</span></span>
+<span class="line"><span>  "events": [...],</span></span>
+<span class="line"><span>  "next_cursor": "cmd9atj3p000007ky19w1dpy2"</span></span>
+<span class="line"><span>}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p">Next request: <span class="mdx-code">/events?cursor=cmd9atj3p000007ky19w1dpy2&amp;limit=10</span></div>
+<div class="mdx-p" data-hi-narration-block-id="p-96" data-hi-narration-clickable="false">The cursor is typically an encoded reference to a specific record (like an ID or timestamp). This is more stable because it's not affected by new records being added, but it's harder to implement features like "jump to page 5." In the example, <span class="mdx-code">cmd9atj3p000007ky19w1dpy2</span> is the id of the last event in the first page.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-97" data-hi-narration-clickable="false">For interviews, offset-based pagination is usually fine unless you're dealing with real-time data or the interviewer specifically asks about high-volume scenarios. Most interviewers care more about whether you remembered to include pagination than which specific approach you choose.</div>
+<h3 id="versioning-strategies" class="mdx-h3" data-hi-narration-block-id="p-98" data-hi-narration-clickable="false">Versioning Strategies</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-99" data-hi-narration-clickable="false">APIs evolve over time, and you need a strategy for handling changes without breaking existing clients. This is particularly important for public APIs where you can't control when clients update their code.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-100" data-hi-narration-clickable="false">The most common approach is <strong>URL versioning</strong>, where you include the version number in the path: <span class="mdx-code">/v1/events</span> or <span class="mdx-code">/v2/events</span>. This is explicit and easy to understand. Clients know exactly which version they're using just by looking at the URL. It's also simple to implement since you can route different versions to different code paths.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-101" data-hi-narration-clickable="false"><strong>Header versioning</strong> puts the version in an HTTP header instead: <span class="mdx-code">Accept-Version: v2</span> or <span class="mdx-code">API-Version: 2</span>. This keeps URLs cleaner and follows HTTP standards better, but it's less obvious to developers and harder to test in browsers.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-102" data-hi-narration-clickable="false">For interviews, URL versioning is usually the safer choice because it's more widely understood and easier to explain quickly. Unless the interviewer specifically asks about header versioning, stick with the URL approach.</div>
+<div class="callout callout-info my-6" data-hi-narration-block-id="p-103" data-hi-narration-clickable="false"><div class="MuiBox-root mui-r83s7g"><div class="MuiBox-root mui-14185gn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">You'll see that in our breakdowns we don't even include versioning in the API design. This is more a product of it just not being important to most interviewers rather than a statement that it's not important in practice (it is).</div></div></div></div>
+<h2 id="security-considerations" class="mdx-h2" data-hi-narration-block-id="p-104" data-hi-narration-clickable="false">Security Considerations</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-105" data-hi-narration-clickable="false">Security is often treated as an afterthought in interviews, but demonstrating security awareness can set you apart. You don't need to design a bulletproof security system, but showing that you understand basic API security principles signals that you think about production-ready systems.</div>
+<h3 id="authentication-and-authorization" class="mdx-h3" data-hi-narration-block-id="p-106" data-hi-narration-clickable="false">Authentication and Authorization</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-107" data-hi-narration-clickable="false">The first question your API needs to answer is: "Who is making this request, and are they allowed to do what they're asking?"</div>
+<div class="mdx-p" data-hi-narration-block-id="p-108" data-hi-narration-clickable="false"><strong>Authentication</strong> verifies identity - proving the user is who they claim to be. <strong>Authorization</strong> verifies permissions - checking if that authenticated user is allowed to perform the specific action they're requesting.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-109" data-hi-narration-clickable="false">For our Ticketmaster example, authentication might verify that the request comes from user "<a href="mailto:john@example.com" target="_blank" rel="noopener noreferrer" class="mdx-a">john@example.com</a>", while authorization checks if John is allowed to cancel the specific booking he's trying to cancel (he should only be able to cancel his own bookings, not everyone's).</div>
+<h4 id="api-keys-vs-jwt-tokens" class="mdx-h4" data-hi-narration-block-id="p-110" data-hi-narration-clickable="false">API Keys vs JWT Tokens</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-111" data-hi-narration-clickable="false">When designing authentication for your API, you'll typically choose between two main approaches depending on who will be using your API and how they'll access it.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-112" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">For most (but not all), interviews, authentication and authorization are not a focus. My advice would be to call out which endpoints require the user be authenticated and say that you'd rely on a <a href="https://jwt.io/" target="_blank" rel="noopener noreferrer" class="mdx-a">JWT</a> or store the user's session in a database to authenticate the user.</div></div></div></div>
+<h5 id="api-keys" class="mdx-h5" data-hi-narration-block-id="p-113" data-hi-narration-clickable="false">API Keys</h5>
+<div class="mdx-p" data-hi-narration-block-id="p-114" data-hi-narration-clickable="false">API keys are long, randomly generated strings that act like passwords for applications rather than humans. When a client makes a request, they include their API key in the Authorization header, and your server looks up that key to identify which application is making the request.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-115" data-hi-narration-clickable="false">Here's how they work: you generate a unique API key for each client (like <span class="mdx-code">sk_live_abc123def456...</span>), store it in your database along with any permissions or rate limits for that client, and then verify each incoming request by looking up the key. They're perfect for server-to-server communication where you control both sides. When your booking service needs to call your payment service, an API key is straightforward and effective. They also make sense when you're exposing your endpoints to 3rd party developers who need programmatic access to your system.</div>
+<div class="callout callout-warning my-6" data-hi-narration-block-id="p-116" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">If you're building a user-facing product with user-facing APIs, API keys are almost never the right choice. Users shouldn't be managing long cryptographic strings, and API keys don't expire or carry user context the way user sessions need to.</div></div></div></div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="bash"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#2675FF">GET</span><span style="color:#212B36"> /events</span></span>
+<span class="line"><span style="color:#2675FF">Authorization:</span><span style="color:#212B36"> Bearer sk_live_abc123...</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<h5 id="jwt-json-web-tokens" class="mdx-h5" data-hi-narration-block-id="p-118" data-hi-narration-clickable="false">JWT (JSON Web Tokens)</h5>
+<div class="mdx-p" data-hi-narration-block-id="p-119" data-hi-narration-clickable="false">JWT tokens, on the other hand, encode user information directly into the token itself rather than storing session state on your server. When a user logs in successfully, your server creates a JWT containing their user ID, permissions, and an expiration time, then signs the entire token with a secret key.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-120" data-hi-narration-clickable="false">Conveniently, when that JWT comes back with future requests, you can verify it's authentic by checking the signature, and you can read the user information directly from the token without any database lookups. The token itself carries all the context you need to authorize the request.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-121" data-hi-narration-clickable="false">JWTs work particularly well for distributed systems because any service with access to the verification key can validate tokens independently. If your mobile app sends a JWT to your API gateway, the gateway can verify the user's identity and forward the request to your booking service with confidence.</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="json"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>// JWT payload</span></span>
+<span class="line"><span>{</span></span>
+<span class="line"><span>  "user_id": "123",</span></span>
+<span class="line"><span>  "email": "john@example.com",</span></span>
+<span class="line"><span>  "role": "customer",</span></span>
+<span class="line"><span>  "exp": 1640995200</span></span>
+<span class="line"><span>}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-123" data-hi-narration-clickable="false">Use API keys for internal service communication and external developer access. Use JWT tokens for user sessions in web and mobile applications. JWT tokens can be stateless (no database lookup required) and can carry user context, making them ideal for user-facing applications.</div>
+<h4 id="role-based-access-control-rbac" class="mdx-h4" data-hi-narration-block-id="p-124" data-hi-narration-clickable="false">Role-Based Access Control (RBAC)</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-125" data-hi-narration-clickable="false">Real systems have different types of users with different permissions. In our Ticketmaster system, customers can book tickets and view their bookings, venue managers can create events and view sales reports, and system admins can access everything.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-126" data-hi-narration-clickable="false">RBAC assigns roles to users and permissions to roles:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="bash"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#2675FF">Roles:</span></span>
+<span class="line"><span style="color:#2675FF">-</span><span style="color:#212B36"> customer: can book tickets, view own bookings</span></span>
+<span class="line"><span style="color:#2675FF">-</span><span style="color:#212B36"> venue_manager: can create events, view sales for their venues</span></span>
+<span class="line"><span style="color:#2675FF">-</span><span style="color:#212B36"> admin: can access everything</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#2675FF">User:</span><span style="color:#212B36"> john@example.com → Role: customer</span></span>
+<span class="line"><span style="color:#2675FF">User:</span><span style="color:#212B36"> manager@venue.com → Role: venue_manager</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-128" data-hi-narration-clickable="false">In your API design, you'd check both authentication and authorization:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="bash"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#2675FF">GET</span><span style="color:#212B36"> /bookings/{id}</span></span>
+<span class="line"><span style="color:#2675FF">1.</span><span style="color:#212B36"> Is the user authenticated? (valid JWT token)</span></span>
+<span class="line"><span style="color:#2675FF">2.</span><span style="color:#212B36"> Is the user authorized? (owns this booking OR is admin)</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-130" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">At most, in an interview you'd just mention which endpoints can be accessed by which roles, though more times than not this distinction is not relevant.</div></div></div></div>
+<h3 id="rate-limiting-and-throttling" class="mdx-h3" data-hi-narration-block-id="p-131" data-hi-narration-clickable="false">Rate Limiting and Throttling</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-132" data-hi-narration-clickable="false">Rate limiting prevents abuse by restricting how many requests a client can make in a given time period. This protects your system from both malicious attacks and accidental overuse.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-133" data-hi-narration-clickable="false">Common strategies include:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-134" data-hi-narration-clickable="false"><strong>Per-user limits</strong>: 1000 requests per hour per authenticated user</li>
+<li class="mdx-li" data-hi-narration-block-id="p-135" data-hi-narration-clickable="false"><strong>Per-IP limits</strong>: 100 requests per hour for unauthenticated requests</li>
+<li class="mdx-li" data-hi-narration-block-id="p-136" data-hi-narration-clickable="false"><strong>Endpoint-specific limits</strong>: 10 booking attempts per minute to prevent ticket scalping</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-137" data-hi-narration-clickable="false">You typically implement rate limiting at the API gateway level or using middleware in your application. When limits are exceeded, return a <span class="mdx-code">429 Too Many Requests</span> status code.</div>
+<div class="callout callout-info my-6" data-hi-narration-block-id="p-138" data-hi-narration-clickable="false"><div class="MuiBox-root mui-r83s7g"><div class="MuiBox-root mui-14185gn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">In interviews, mentioning rate limiting shows you understand production concerns, but don't spend time designing the specific algorithms unless asked. A simple "we'll implement rate limiting to prevent abuse" is usually sufficient.</div></div></div></div>
+<h2 id="conclusion" class="mdx-h2" data-hi-narration-block-id="p-139" data-hi-narration-clickable="false">Conclusion</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-140" data-hi-narration-clickable="false">API design in system design interviews is about demonstrating solid engineering judgment, not creating perfect specifications. Focus on choosing the right protocol for your use case (usually REST), modeling your resources clearly, and showing you understand the basics of authentication and security.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-141" data-hi-narration-clickable="false">It's all about balance in an interview. Spend enough time to show you can design a reasonable API, but don't get bogged down in details when there are bigger architectural challenges to tackle. Your interviewer wants to see that you can build systems that work, not that you've memorized every HTTP status code. In practice, candidates mess up more often by spending too much time on API design than by underinvesting. Do your best to not spend more than 5 minutes outlining your APIs in the interview.</div>
+<div class="my-6"><div class="MuiBox-root mui-10b10ta"><div class="flex flex-row items-center gap-3 mb-3"><div class="heroicon-sw-2 MuiBox-root mui-tbago3"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"></path></svg></div><div><h6 class="MuiTypography-root MuiTypography-h6 mui-jyzq54">Test Your Knowledge</h6><p class="MuiTypography-root MuiTypography-body2 mui-14ou361">Answer the question below to find your gaps.</p></div></div><div class="flex flex-row items-baseline gap-3 mb-1 "><p class="MuiTypography-root MuiTypography-body2 mui-nk2f70">Question 1 of 15</p></div><div class="MuiBox-root mui-1muw576"><div class="mdx-p">Which API protocol should you default to in system design interviews?</div></div><div class="MuiBox-root mui-0"><div class="grid grid-cols-1 gap-2 mb-4"><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">1</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">GraphQL</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">2</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">REST</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">3</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">gRPC</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">4</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">WebSockets</div></div></div></div></div></div></div></div><div class="MuiBox-root mui-17f8lpp"><div class="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-0 chrome"><div class="flex flex-row items-center gap-3 md:gap-3 w-full md:w-auto"><div class="heroicon-sw-2 MuiBox-root mui-14uhju3"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"></path></svg></div><div><h6 class="MuiTypography-root MuiTypography-h6 mui-xebfs0">Quick Reference</h6><p class="MuiTypography-root MuiTypography-body2 mui-vleovk">Get a quick-reference sheet for this topic, perfect for last-minute review.</p></div></div><a class="self-stretch md:self-center" style="text-decoration:none" href="/learn/system-design/core-concepts/api-design/quick-reference"></a></div></div></div></div></div></div></div><!--$--><!--/$--></div></div></main>
+</body>
+</html>

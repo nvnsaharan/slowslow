@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Introduction</title>
+<meta name="source-url" content="https://www.hellointerview.com/learn/low-level-design">
+<script>
+(function () {
+  var theme;
+  try { theme = localStorage.getItem('course-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #666666;
+    --faint: #888888;
+    --border: #e1e4e8;
+    --border-strong: #d0d7de;
+    --code-bg: #f6f8fa;
+    --inline-code-bg: #f0f1f3;
+    --link: #0969da;
+    --accent: #10857a;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121212;
+    --fg: #e6e6e6;
+    --muted: #aaaaaa;
+    --faint: #999999;
+    --border: #333333;
+    --border-strong: #3a3a3a;
+    --code-bg: #1e1e1e;
+    --inline-code-bg: #252525;
+    --link: #6cb2ff;
+    --accent: #34b3a6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    max-width: 46rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--fg);
+    background: var(--bg);
+  }
+  h1, h2, h3, h4, h5, h6 { line-height: 1.3; margin: 2em 0 0.6em; }
+  h1 { font-size: 2rem; margin-top: 0.5em; }
+  img, svg, video { max-width: 100%; height: auto; }
+  figure { margin: 1.5em 0; text-align: center; }
+  figcaption { font-size: 0.875rem; color: var(--muted); }
+  pre {
+    padding: 1em;
+    overflow-x: auto;
+    border-radius: 8px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    background: var(--inline-code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  table { border-collapse: collapse; width: 100%; margin: 1.5em 0; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--border-strong); padding: 0.5em 0.75em; text-align: left; }
+  th { background: var(--code-bg); }
+  blockquote { margin: 1.5em 0; padding: 0.5em 1.25em; border-left: 4px solid var(--border-strong); color: var(--muted); }
+  a { color: var(--link); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+  .lesson-source { font-size: 0.8125rem; color: var(--faint); margin-bottom: 2rem; }
+
+  #theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+  #theme-toggle:hover { border-color: var(--accent); }
+
+</style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Toggle light/dark theme"></button>
+<script>
+(function () {
+  var btn = document.getElementById('theme-toggle');
+  function refresh() { btn.textContent = document.documentElement.dataset.theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19'; }
+  btn.addEventListener('click', function () {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('course-theme', next); } catch (e) {}
+    refresh();
+  });
+  refresh();
+})();
+</script>
+<p class="lesson-source">Saved for offline reading from <a href="https://www.hellointerview.com/learn/low-level-design">https://www.hellointerview.com/learn/low-level-design</a></p>
+<main class="flex-1 min-w-0 overflow-y-auto print-main"><div class="flex flex-col bg-nav-bg-paper"><div class="px-4 md:px-6 max-w-7xl mx-auto py-3 w-full print-main-content" style="min-height:calc(100vh - 48px - 0px);transition:min-height 0.3s ease-in-out;background-color:var(--nav-bg-paper)"><div><div class="grid grid-cols-7 gap-12 md:gap-0 mx-auto max-w-5xl"><div class="col-span-7 w-full max-w-4xl md:pr-6 xl:col-span-5"><div class="relative"><div id="markdown" class="mui-4tqezl"><div class="chrome"><div class="flex flex-col gap-2"><div class="flex flex-col relative"><div class="flex items-center justify-between   "><h6 class="MuiTypography-root MuiTypography-h6 mui-pkyqy5">Low-Level Design in a Hurry</h6></div><div class="flex flex-col md:flex-row md:items-start md:justify-between md:gap-4"><div class="flex items-center gap-2"><h1 class="MuiTypography-root MuiTypography-h2 mui-xhvznl">Introduction</h1><div class="MuiBox-root mui-yrscm7"></div></div></div><p class="MuiTypography-root MuiTypography-body2 mui-19x8mt2">Learn low level design fast. All the essentials needed to pass a low level design interview, built by FAANG hiring managers and staff engineers.</p></div></div><hr class="MuiDivider-root MuiDivider-fullWidth mui-18s6yq7"></div>
+<div class="mdx-p" data-hi-narration-block-id="p-0" data-hi-narration-clickable="false">Low-level design interviews test your ability to structure code for a self-contained problem. You'll be given a system - a <a href="/learn/low-level-design/problem-breakdowns/connect-four" target="_blank" rel="noopener noreferrer" class="mdx-a">connect-four game</a>, an <a href="/learn/low-level-design/problem-breakdowns/elevator" target="_blank" rel="noopener noreferrer" class="mdx-a">elevator controller</a>, a <a href="/learn/low-level-design/problem-breakdowns/parking-lot" target="_blank" rel="noopener noreferrer" class="mdx-a">parking lot system</a>, etc. - and asked to design the classes, interfaces, and relationships that make it work.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-1" data-hi-narration-clickable="false">The focus of the interview is on code organization: What are the right objects? How do they interact? What methods do they expose? Can the design be extended without rewriting everything?</div>
+<div class="callout callout-info my-6" data-hi-narration-block-id="p-2" data-hi-narration-clickable="false"><div class="MuiBox-root mui-r83s7g"><div class="MuiBox-root mui-14185gn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">You may hear this called "Object-Oriented Design" (OOD) instead of "Low-Level Design" (LLD). They're the same interview, just a different name. If your recruiter mentions either, this is the guide for you.</div></div></div></div>
+<h2 id="what-is-this-guide" class="mdx-h2" data-hi-narration-block-id="p-3" data-hi-narration-clickable="false">What is this guide?</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-4" data-hi-narration-clickable="false">This is a practical guide to low-level design interviews, written by interviewers and engineers with decades of experience in big tech. It’s focused on modern, practical strategies for performing well in real interviews, rather than how software design appears in a classroom.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-5" data-hi-narration-clickable="false">Most LLD content online reads like a textbook. It teaches abstract principles, exhaustive pattern catalogs, and heavily academic versions of object-oriented design. Much of it is outdated, and almost none of it is optimized for making fast, correct decisions in an interview.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-6" data-hi-narration-clickable="false">We deliberately avoid outdated overfitting to classical OOP. Modern production systems favor composition over <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">inheritance</span>, simple state over deep hierarchies, and pragmatism over pattern worship. You’ll still learn the patterns that matter, but only the ones that actually show up in real interviews and real codebases.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-7" data-hi-narration-clickable="false">LLD interviews vary widely across companies, regions, and levels. Rather than trying to cover every edge case, we teach to the mode. You’ll learn the approach that works across the widest range of interviews, with clear callouts where expectations meaningfully differ.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-8" data-hi-narration-clickable="false">We start by defining a <a href="/learn/low-level-design/in-a-hurry/delivery" target="_blank" rel="noopener noreferrer" class="mdx-a">Delivery Framework</a> that we suggest you use to structure your interview.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-9" data-hi-narration-clickable="false">We then provide a refresher on the basics to help you get back up to speed on the fundamentals of object-oriented design quickly. This includes:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-10" data-hi-narration-clickable="false"><a href="/learn/low-level-design/in-a-hurry/design-principles" target="_blank" rel="noopener noreferrer" class="mdx-a">Design Principles</a></li>
+<li class="mdx-li" data-hi-narration-block-id="p-11" data-hi-narration-clickable="false"><a href="/learn/low-level-design/in-a-hurry/oop-concepts" target="_blank" rel="noopener noreferrer" class="mdx-a">Object-Oriented Concepts</a></li>
+<li class="mdx-li" data-hi-narration-block-id="p-12" data-hi-narration-clickable="false"><a href="/learn/low-level-design/in-a-hurry/patterns" target="_blank" rel="noopener noreferrer" class="mdx-a">Design Patterns</a></li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-13" data-hi-narration-clickable="false">Finally, we provide a (ever-growing) collection of <a href="/learn/low-level-design/problem-breakdowns/connect-four" target="_blank" rel="noopener noreferrer" class="mdx-a">Problem Breakdowns</a> where we walk through how we'd tackle common LLD problems from the perspective of an interviewer.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-14" data-hi-narration-clickable="false">We firmly believe you need to <strong>practice</strong> to ensure you're comfortable the day of your actual interview. A common failure mode for candidates is to have consumed a lot of material but stumble when it comes time to actually apply it. For this our guide includes worked solutions to common problems as well as our <a href="/practice/low-level-design" target="_blank" rel="noopener noreferrer" class="mdx-a">Guided Practice</a> which walks you through the steps of an LLD interview with personalized feedback.</div>
+<h2 id="what-is-the-difference-between-low-level-design-and-system-design" class="mdx-h2" data-hi-narration-block-id="p-15" data-hi-narration-clickable="false">What is the difference between Low-Level Design and System Design?</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-16" data-hi-narration-clickable="false">Despite the similar names, these interviews have almost nothing in common. <a href="/learn/system-design/in-a-hurry/introduction" target="_blank" rel="noopener noreferrer" class="mdx-a">System design</a> is about architecture at scale. You talk through traffic, storage, consistency, caching, <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">sharding</span>, and the tradeoffs behind each choice. The goal is to show how you think about large systems that serve real users. It is usually done on a shared whiteboard where you sketch boxes and arrows to represent a distributed system. There is no coding in system design and almost no discussion of classes, methods, or interfaces because the focus is on architecture, not implementation.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-17" data-hi-narration-clickable="false">For low-level design, on the other hand, you are defining objects, modeling data, and shaping the interactions that make a single feature or service work. Instead of boxes and arrows, you work through classes, methods, relationships, and state transitions.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-18" data-hi-narration-clickable="false">A simple example makes the difference obvious. If the prompt is to design a ride sharing backend, a system design interview has you sketch the major services on a whiteboard. You draw a matching service, a pricing service, a location service, a datastore, a queue, and show how data flows between them. You talk through scaling each piece, handling load spikes, keeping data consistent, and making the system reliable.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/fetd1qdv_jl7.43dem_iz1_im7-3db3b3cf.svg" alt="Uber System Design Example" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Uber System Design Example</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-19" data-hi-narration-clickable="false">In a low-level design interview, instead of drawing services, you write the code structure for a single part of the system, usually in pseudocode. For that same ride sharing example, you might design the <span class="mdx-code">Trip</span> class, the <span class="mdx-code">TripState</span> enum, the <span class="mdx-code">PricingCalculator</span> interface, and how these objects collaborate. The discussion is about methods, relationships, data models, and state transitions, not how to scale the fleet to millions of users.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-20" data-hi-narration-clickable="false">The final implementation of a low-level design interview might look closer to something like this:</div>
+<div class="my-6 MuiBox-root mui-lzjfwc"><div class="MuiBox-root mui-136gx4j"><div class="MuiBox-root mui-avdosu"><div class="MuiTabs-root mui-qcn7n3"><div class="MuiButtonBase-root MuiTabScrollButton-root MuiTabScrollButton-horizontal Mui-disabled MuiTabs-scrollButtons mui-1gh31go"></div><div style="width:99px;height:99px;position:absolute;top:-9999px;overflow:scroll" class="MuiTabs-scrollableX MuiTabs-hideScrollbar mui-i8yde5"></div><div style="margin-bottom: 0px;" class="MuiTabs-scroller MuiTabs-hideScrollbar MuiTabs-scrollableX mui-b8szdl"><div role="tablist" class="MuiTabs-list MuiTabs-flexContainer mui-17do188"></div><span class="MuiTabs-indicator mui-1zf8bx" style="left: 0px; width: 87.0703px;"></span></div><div class="MuiButtonBase-root MuiTabScrollButton-root MuiTabScrollButton-horizontal Mui-disabled MuiTabs-scrollButtons mui-1gh31go"></div></div></div><div class="MuiBox-root mui-yi0x7b"><div class="flex items-center gap-0 mb-0"><div class="MuiFormControl-root mui-882m9p"><div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root mui-s1farw"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="language-select-label" class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall mui-1jilzfn">Python</div><fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline mui-5v2ak0"><legend class="mui-w1u3ce"><span>Language</span></legend></fieldset></div></div></div></div></div><div class="MuiBox-root mui-1nigps4"><div class="MuiBox-root mui-357n2r" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">from</span><span style="color:#212B36"> enum </span><span style="color:#299A8D">import</span><span style="color:#212B36"> Enum</span></span>
+<span class="line"><span style="color:#299A8D">from</span><span style="color:#212B36"> dataclasses </span><span style="color:#299A8D">import</span><span style="color:#212B36"> dataclass</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Trip:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, id: str, rider: </span><span style="color:#2C9C59">"User"</span><span style="color:#212B36">, pickup: </span><span style="color:#2C9C59">"Location"</span><span style="color:#212B36">, dropoff: </span><span style="color:#2C9C59">"Location"</span><span style="color:#212B36">):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.id = id</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.rider = rider</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.driver = </span><span style="color:#F4A261">None</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.pickup_location = pickup</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.dropoff_location = dropoff</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.state = TripState.REQUESTED</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.fare = </span><span style="color:#F4A261">0.0</span></span>
+<span class="line"><span style="color:#212B36">    </span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> assign_driver(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, driver: </span><span style="color:#2C9C59">"Driver"</span><span style="color:#212B36">):</span></span>
+<span class="line"><span style="color:#299A8D">        if</span><span style="color:#299A8D"> self</span><span style="color:#212B36">.state != TripState.REQUESTED:</span></span>
+<span class="line"><span style="color:#299A8D">            raise</span><span style="color:#212B36"> ValueError(</span><span style="color:#2C9C59">f"Cannot assign driver to trip in state: {self.state}"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.driver = driver</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.state = TripState.DRIVER_ASSIGNED</span></span>
+<span class="line"><span style="color:#212B36">    </span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> start_trip(</span><span style="color:#299A8D">self</span><span style="color:#212B36">):</span></span>
+<span class="line"><span style="color:#299A8D">        if</span><span style="color:#299A8D"> self</span><span style="color:#212B36">.state != TripState.DRIVER_ASSIGNED:</span></span>
+<span class="line"><span style="color:#299A8D">            raise</span><span style="color:#212B36"> ValueError(</span><span style="color:#2C9C59">f"Cannot start trip in state: {self.state}"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.state = TripState.IN_PROGRESS</span></span>
+<span class="line"><span style="color:#212B36">    </span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> complete_trip(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, calculator: </span><span style="color:#2C9C59">"PricingCalculator"</span><span style="color:#212B36">):</span></span>
+<span class="line"><span style="color:#299A8D">        if</span><span style="color:#299A8D"> self</span><span style="color:#212B36">.state != TripState.IN_PROGRESS:</span></span>
+<span class="line"><span style="color:#299A8D">            raise</span><span style="color:#212B36"> ValueError(</span><span style="color:#2C9C59">f"Cannot complete trip in state: {self.state}"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.fare = calculator.calculate_fare(</span><span style="color:#299A8D">self</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.state = TripState.COMPLETED</span></span>
+<span class="line"><span style="color:#212B36">    </span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> cancel_trip(</span><span style="color:#299A8D">self</span><span style="color:#212B36">):</span></span>
+<span class="line"><span style="color:#299A8D">        if</span><span style="color:#299A8D"> self</span><span style="color:#212B36">.state == TripState.COMPLETED:</span></span>
+<span class="line"><span style="color:#299A8D">            raise</span><span style="color:#212B36"> ValueError(</span><span style="color:#2C9C59">"Cannot cancel completed trip"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.state = TripState.CANCELLED</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre></div></div></div></div></div>
+<div class="callout callout-warning my-6" data-hi-narration-block-id="p-21" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">This is an illustrative example, don't treat this as a complete implementation.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-22" data-hi-narration-clickable="false">System design is the map. Low level design is the blueprint for a building on the map.</div>
+<h2 id="variants-of-low-level-design-interviews" class="mdx-h2" data-hi-narration-block-id="p-23" data-hi-narration-clickable="false">Variants of Low-Level Design Interviews</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-24" data-hi-narration-clickable="false">LLD interviews follow the same core idea everywhere, but the format shifts enough that you should know the big patterns depending on where you are interviewing.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-25" data-hi-narration-clickable="false">The first major difference is whether the interview expects pseudocode or real code. US Big Tech leans toward partial code in a real language. You write class definitions, method signatures, and a bit of logic in something that looks like Java, Python or C++, even if you are not compiling it. For interviews in India or Asia, the expectation is closer to structured pseudocode. You outline the classes and interactions without committing to exact syntax. In our breakdowns, we stick to pseudocode for clarity, but include full implementations in common languages at the end for reference.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-26" data-hi-narration-clickable="false"><a href="/learn/low-level-design/in-a-hurry/patterns" target="_blank" rel="noopener noreferrer" class="mdx-a">Design patterns</a>, like the Factory or Strategy patterns, are another point of variation. At Big Tech, interviewers care more about the reasoning than the vocabulary. You only bring up a pattern when it naturally applies. Smaller and mid-size companies in India and Asia ask about patterns more directly and are more likely to expect you to call them out. You do not need to force them into your answer, but you should recognize when a common pattern is the cleanest fit.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-27" data-hi-narration-clickable="false">Ambiguity also varies by region. Requirements tend to be vaguer in India and Asia. You are expected to ask a few grounding questions, extract the constraints, and drive the solution. US interviews are slightly more defined, but the same principle holds. Interviewers want to see how you establish scope before you start designing.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-28" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">These differences are meaningful enough that we want you to be aware, but they should not have a significant impact on your preparation. In order to know exactly what your target company is expecting, just ask! Your recruiter and/or interviewer will be happy to give you a clear answer.</div></div></div></div>
+<h2 id="interview-assessment" class="mdx-h2" data-hi-narration-block-id="p-29" data-hi-narration-clickable="false">Interview Assessment</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-30" data-hi-narration-clickable="false">While each company uses its own scoring rubric, LLD interviews tend to evaluate the same core skills. Interviewers want to see whether you can turn a small, well-scoped problem into a clean, maintainable code structure. They are testing your ability to decompose a system, express clear classes, and design code that a real team would want to work with.</div>
+<h3 id="problem-analysis" class="mdx-h3" data-hi-narration-block-id="p-31" data-hi-narration-clickable="false">Problem Analysis</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-32" data-hi-narration-clickable="false">Interviewers start by checking whether you understand what you are building. Strong candidates extract the key entities and responsibilities, ask a few clarifying questions to lock down scope, and frame the problem before touching code. What interviews don't want to see is you jumping right into code without understanding the problem thoroughly first.</div>
+<h3 id="class-design" class="mdx-h3" data-hi-narration-block-id="p-33" data-hi-narration-clickable="false">Class Design</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-34" data-hi-narration-clickable="false">Once the problem is scoped, interviewers look at how you design the main classes and how they interact. This includes choosing the right responsibilities, shaping method signatures, defining clear ownership, and keeping boundaries clean. Good class design makes the rest of the interview feel natural. Weak class design makes everything downstream harder.</div>
+<h3 id="code-quality" class="mdx-h3" data-hi-narration-block-id="p-35" data-hi-narration-clickable="false">Code Quality</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-36" data-hi-narration-clickable="false">This combines the fundamentals of good object-oriented design with the structure and hygiene of real code. Interviewers want to see <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">encapsulation</span>, well-managed state, sensible use of composition or inheritance, and clear <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">separation of concerns</span>. They also look at naming, consistency, and dependency direction. Even in pseudocode, the goal is code that reflects disciplined thinking rather than ad hoc decisions.</div>
+<h3 id="extensibility-and-maintainability" class="mdx-h3" data-hi-narration-block-id="p-37" data-hi-narration-clickable="false">Extensibility and Maintainability</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-38" data-hi-narration-clickable="false">Most interviews include a small follow-up requirement. The goal is to see whether your design can absorb new functionality without being rewritten. Strong candidates build flexible structures with clean boundaries. The focus is on practicality. Interviewers reward designs that adapt easily, not designs that anticipate every possible future.</div>
+<h3 id="communication" class="mdx-h3" data-hi-narration-block-id="p-39" data-hi-narration-clickable="false">Communication</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-40" data-hi-narration-clickable="false">Interviewers want to see a clear narrative, thoughtful reasoning, and the ability to adjust when the interviewer probes. A structured explanation often signals confidence and maturity more than perfectly written code. This one should be easy, just talk out loud and walk them through your thought process as you go.</div>
+<h2 id="feedback-and-suggestions" class="mdx-h2" data-hi-narration-block-id="p-41" data-hi-narration-clickable="false">Feedback and Suggestions</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-42" data-hi-narration-clickable="false">We update this guide continually based on your feedback. If you have questions, comments, or suggestions, feel free to leave them below.</div></div></div></div></div></div><!--$--><!--/$--></div></div></main>
+</body>
+</html>

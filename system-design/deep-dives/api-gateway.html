@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>API Gateway</title>
+<meta name="source-url" content="https://www.hellointerview.com/learn/system-design/deep-dives/api-gateway">
+<script>
+(function () {
+  var theme;
+  try { theme = localStorage.getItem('course-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #666666;
+    --faint: #888888;
+    --border: #e1e4e8;
+    --border-strong: #d0d7de;
+    --code-bg: #f6f8fa;
+    --inline-code-bg: #f0f1f3;
+    --link: #0969da;
+    --accent: #10857a;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121212;
+    --fg: #e6e6e6;
+    --muted: #aaaaaa;
+    --faint: #999999;
+    --border: #333333;
+    --border-strong: #3a3a3a;
+    --code-bg: #1e1e1e;
+    --inline-code-bg: #252525;
+    --link: #6cb2ff;
+    --accent: #34b3a6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    max-width: 46rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--fg);
+    background: var(--bg);
+  }
+  h1, h2, h3, h4, h5, h6 { line-height: 1.3; margin: 2em 0 0.6em; }
+  h1 { font-size: 2rem; margin-top: 0.5em; }
+  img, svg, video { max-width: 100%; height: auto; }
+  figure { margin: 1.5em 0; text-align: center; }
+  figcaption { font-size: 0.875rem; color: var(--muted); }
+  pre {
+    padding: 1em;
+    overflow-x: auto;
+    border-radius: 8px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    background: var(--inline-code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  table { border-collapse: collapse; width: 100%; margin: 1.5em 0; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--border-strong); padding: 0.5em 0.75em; text-align: left; }
+  th { background: var(--code-bg); }
+  blockquote { margin: 1.5em 0; padding: 0.5em 1.25em; border-left: 4px solid var(--border-strong); color: var(--muted); }
+  a { color: var(--link); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+  .lesson-source { font-size: 0.8125rem; color: var(--faint); margin-bottom: 2rem; }
+
+  #theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+  #theme-toggle:hover { border-color: var(--accent); }
+
+</style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Toggle light/dark theme"></button>
+<script>
+(function () {
+  var btn = document.getElementById('theme-toggle');
+  function refresh() { btn.textContent = document.documentElement.dataset.theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19'; }
+  btn.addEventListener('click', function () {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('course-theme', next); } catch (e) {}
+    refresh();
+  });
+  refresh();
+})();
+</script>
+<p class="lesson-source">Saved for offline reading from <a href="https://www.hellointerview.com/learn/system-design/deep-dives/api-gateway">https://www.hellointerview.com/learn/system-design/deep-dives/api-gateway</a></p>
+<main class="flex-1 min-w-0 overflow-y-auto print-main"><div class="flex flex-col bg-nav-bg-paper"><div class="px-4 md:px-6 max-w-7xl mx-auto py-3 w-full print-main-content" style="min-height:calc(100vh - 48px - 0px);transition:min-height 0.3s ease-in-out;background-color:var(--nav-bg-paper)"><div class="grid grid-cols-7 gap-12 md:gap-0 mx-auto max-w-5xl"><div class="col-span-7 w-full max-w-4xl md:pr-6 xl:col-span-5"><div class="relative"><div id="markdown" class="mui-4tqezl"><div class="chrome"><div class="flex flex-col gap-2"><div class="flex flex-col relative"><div class="flex items-center justify-between   "><h6 class="MuiTypography-root MuiTypography-h6 mui-pkyqy5">Key Technologies</h6></div><div class="flex flex-col md:flex-row md:items-start md:justify-between md:gap-4"><div class="flex items-center gap-2"><h1 class="MuiTypography-root MuiTypography-h2 mui-xhvznl">API Gateway</h1><div class="MuiBox-root mui-yrscm7"></div></div></div><p class="MuiTypography-root MuiTypography-body2 mui-19x8mt2">Learn when and how to effectively incorporate API Gateways into your system design interviews.</p></div></div><hr class="MuiDivider-root MuiDivider-fullWidth mui-18s6yq7"></div>
+<h2 id="what-is-an-api-gateway" class="mdx-h2">What is an API Gateway?</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-2" data-hi-narration-clickable="false">There's a good chance you've interacted with an API Gateway today, even if you didn't realize it. They're a core component in modern architectures, especially with the rise of microservices.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-3" data-hi-narration-clickable="false">Think of it as the front desk at a luxury hotel. Just as hotel guests don't need to know where the housekeeping office or maintenance room is located, clients shouldn't need to know about the internal structure of your microservices.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-4" data-hi-narration-clickable="false">An API Gateway serves as a single entry point for all client requests, managing and routing them to appropriate backend services. Just as a hotel front desk handles check-ins, room assignments, and guest requests, an API Gateway manages centralized middleware like authentication, routing, and request handling.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-5" data-hi-narration-clickable="false">The evolution of API Gateways parallels the rise of microservices architecture. As monolithic applications were broken down into smaller, specialized services, the need for a centralized point of control became evident. Without an API Gateway, clients would need to know about and communicate with multiple services directly – imagine hotel guests having to track down individual staff members for each request.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-6" data-hi-narration-clickable="false">API gateways are thin, relatively simple components that serve a clear purpose. In this deep dive, we'll focus on what you need to know for system design interviews without overcomplicating things.</div>
+<h2 id="core-responsibilities" class="mdx-h2" data-hi-narration-block-id="p-7" data-hi-narration-clickable="false">Core Responsibilities</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-8" data-hi-narration-clickable="false">The gateway's primary function is request routing – determining which backend service should handle each incoming request. But this isn't all they do.</div>
+<div class="callout callout-info my-4" data-hi-narration-block-id="p-9" data-hi-narration-clickable="false"><div class="MuiBox-root mui-r83s7g"><div class="MuiBox-root mui-14185gn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Funny enough, I'll often have candidates introduce a gateway in a system design interview and emphasize that it will do all this middleware stuff but never mention the core reason they need it -- request routing.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-10" data-hi-narration-clickable="false">Nowadays, API gateways are also used to handle cross-cutting concerns or middleware like authentication, rate limiting, caching, SSL termination, and more.</div>
+<h3 id="tracing-a-request" class="mdx-h3" data-hi-narration-block-id="p-11" data-hi-narration-clickable="false">Tracing a Request</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-12" data-hi-narration-clickable="false">Let's walk through a request from start to finish. Incoming requests come into the API Gateway from clients, usually via HTTP but they can be gRPC or any other protocol. From there, the gateway will apply any middleware you've configured and then route the request to the appropriate backend service.</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-13" data-hi-narration-clickable="false">Request validation</li>
+<li class="mdx-li" data-hi-narration-block-id="p-14" data-hi-narration-clickable="false">API Gateway applies middleware (auth, rate limiting, etc.)</li>
+<li class="mdx-li" data-hi-narration-block-id="p-15" data-hi-narration-clickable="false">API Gateway routes the request to the appropriate backend service</li>
+<li class="mdx-li" data-hi-narration-block-id="p-16" data-hi-narration-clickable="false">Backend service processes the request and returns a response</li>
+<li class="mdx-li" data-hi-narration-block-id="p-17" data-hi-narration-clickable="false">API Gateway transforms the response and returns it to the client</li>
+<li class="mdx-li" data-hi-narration-block-id="p-18" data-hi-narration-clickable="false">Optionally cache the response for future requests</li>
+</ol>
+<div class="mdx-p" data-hi-narration-block-id="p-19" data-hi-narration-clickable="false">Let's take a closer look at each step.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/9urgbkm2i4g_.35qyzt7t6u8mb-bcb898b9.svg" alt="API Gateway Request Flow" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">API Gateway Request Flow</span></div></div></div></div>
+<h4 id="1-request-validation" class="mdx-h4" data-hi-narration-block-id="p-20" data-hi-narration-clickable="false">1) Request Validation</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-21" data-hi-narration-clickable="false">Before doing anything else, the API Gateway checks if incoming requests are properly formatted and contain all the required information. This validation includes checking that the request URL is valid, required headers are present, and the request body (if any) matches the expected format.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-22" data-hi-narration-clickable="false">This early validation is important because it helps catch obvious issues before they reach your backend services. For example, if a mobile app sends a malformed JSON payload or forgets to include a required API key, there's no point in routing that request further into your system. The gateway can quickly reject it and send back a helpful error message, saving your backend services from wasting time and resources on requests that were never going to succeed.</div>
+<h4 id="2-middleware" class="mdx-h4" data-hi-narration-block-id="p-23" data-hi-narration-clickable="false">2) Middleware</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-24" data-hi-narration-clickable="false">API Gateways can be configured to handle various middleware tasks. For example, you might want to:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-25" data-hi-narration-clickable="false">Authenticate requests using JWT tokens</li>
+<li class="mdx-li" data-hi-narration-block-id="p-26" data-hi-narration-clickable="false">Limit request rates to prevent abuse</li>
+<li class="mdx-li" data-hi-narration-block-id="p-27" data-hi-narration-clickable="false">Terminate SSL connections</li>
+<li class="mdx-li" data-hi-narration-block-id="p-28" data-hi-narration-clickable="false">Log and monitor traffic</li>
+<li class="mdx-li" data-hi-narration-block-id="p-29" data-hi-narration-clickable="false">Compress responses</li>
+<li class="mdx-li" data-hi-narration-block-id="p-30" data-hi-narration-clickable="false">Handle CORS headers</li>
+<li class="mdx-li" data-hi-narration-block-id="p-31" data-hi-narration-clickable="false">Whitelist/blacklist IPs</li>
+<li class="mdx-li" data-hi-narration-block-id="p-32" data-hi-narration-clickable="false">Validate request sizes</li>
+<li class="mdx-li" data-hi-narration-block-id="p-33" data-hi-narration-clickable="false">Handle response timeouts</li>
+<li class="mdx-li" data-hi-narration-block-id="p-34" data-hi-narration-clickable="false">Version APIs</li>
+<li class="mdx-li" data-hi-narration-block-id="p-35" data-hi-narration-clickable="false">Throttle traffic</li>
+<li class="mdx-li" data-hi-narration-block-id="p-36" data-hi-narration-clickable="false">Integrate with service discovery</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-37" data-hi-narration-clickable="false">Of these, the most popular and relevant to system design interviews are authentication, rate limiting, and ip whitelisting/blacklisting. If you do opt to mention middleware, just make sure it's with a purpose and that you don't spend too much time here.</div>
+<div class="callout callout-tip my-4" data-hi-narration-block-id="p-38" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">My suggestion when introducing a API Gateway to your design is to simply mention, "I'll add a API Gateway to handle routing and basic middleware" and move on.</div></div></div></div>
+<h4 id="3-routing" class="mdx-h4" data-hi-narration-block-id="p-39" data-hi-narration-clickable="false">3) Routing</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-40" data-hi-narration-clickable="false">The gateway maintains a routing table that maps incoming requests to backend services. This mapping is typically based on a combination of:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-41" data-hi-narration-clickable="false">URL paths (e.g., <span class="mdx-code">/users/*</span> routes to the user service)</li>
+<li class="mdx-li" data-hi-narration-block-id="p-42" data-hi-narration-clickable="false">HTTP methods (e.g., <span class="mdx-code">GET</span>, <span class="mdx-code">POST</span>, etc.)</li>
+<li class="mdx-li" data-hi-narration-block-id="p-43" data-hi-narration-clickable="false">Query parameters</li>
+<li class="mdx-li" data-hi-narration-block-id="p-44" data-hi-narration-clickable="false">Request headers</li>
+</ul>
+<div class="mdx-p">For example, a simple routing configuration might look like:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="yaml"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span>routes:</span></span>
+<span class="line"><span>  - path: /users/*</span></span>
+<span class="line"><span>    service: user-service</span></span>
+<span class="line"><span>    port: 8080</span></span>
+<span class="line"><span>  - path: /orders/*</span></span>
+<span class="line"><span>    service: order-service</span></span>
+<span class="line"><span>    port: 8081</span></span>
+<span class="line"><span>  - path: /payments/*</span></span>
+<span class="line"><span>    service: payment-service</span></span>
+<span class="line"><span>    port: 8082</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-46" data-hi-narration-clickable="false">The gateway will quickly look up which backend service to send the request to based on the path, method, query parameters, and headers and send the request onward accordingly.</div>
+<h4 id="4-backend-communication" class="mdx-h4" data-hi-narration-block-id="p-47" data-hi-narration-clickable="false">4) Backend Communication</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-48" data-hi-narration-clickable="false">While most services communicate via HTTP, in some cases your backend services might use a different protocol like gRPC for internal communication. When this happens, the API Gateway can handle translating between protocols, though this is relatively uncommon in practice.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-49" data-hi-narration-clickable="false">The gateway would, thus, transform the request into the appropriate protocol before sending it to the backend service. This is nice because it allows your services to use whatever protocol or format is most efficient without clients needing to know about it.</div>
+<h4 id="5-response-transformation" class="mdx-h4" data-hi-narration-block-id="p-50" data-hi-narration-clickable="false">5) Response Transformation</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-51" data-hi-narration-clickable="false">The gateway will transform the response from the backend service into the format requested by the client. This transformation layer allows your internal services to use whatever protocol or format is most efficient, while presenting a clean, consistent API to clients.</div>
+<div class="mdx-p">For example:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="javascript"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic">// Client sends a HTTP GET request</span></span>
+<span class="line"><span style="color:#212B36">GET </span><span style="color:#299A8D">/</span><span style="color:#212B36">users</span><span style="color:#299A8D">/</span><span style="color:#F4A261">123</span><span style="color:#299A8D">/</span><span style="color:#212B36">profile</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">// API Gateway transforms this into an internal gRPC call</span></span>
+<span class="line"><span style="color:#212B36">userService</span><span style="color:#299A8D">.</span><span style="color:#2675FF">getProfile</span><span style="color:#637381">(</span><span style="color:#212B36">{ </span><span style="color:#637381">userId:</span><span style="color:#2C9C59"> "123"</span><span style="color:#212B36"> }</span><span style="color:#637381">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">// Gateway transforms the gRPC response into JSON and returns it to the client over HTTP</span></span>
+<span class="line"><span style="color:#212B36">{</span></span>
+<span class="line"><span style="color:#2C9C59">  "userId"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"123"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "name"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"John Doe"</span><span style="color:#637381">,</span></span>
+<span class="line"><span style="color:#2C9C59">  "email"</span><span style="color:#212B36">: </span><span style="color:#2C9C59">"john@example.com"</span></span>
+<span class="line"><span style="color:#212B36">}</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<h4 id="6-caching" class="mdx-h4" data-hi-narration-block-id="p-53" data-hi-narration-clickable="false">6) Caching</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-54" data-hi-narration-clickable="false">Before sending the response back to the client, the gateway can optionally cache the response. This is useful for frequently accessed data that doesn't change often and, importantly, is not user specific. If your expectation is that a given API request will return the same result for a given input, caching it makes sense.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-55" data-hi-narration-clickable="false">The API Gateway can implement various caching strategies too. For example:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-56" data-hi-narration-clickable="false"><strong>Full Response Caching</strong>: Cache entire responses for frequently accessed endpoints</li>
+<li class="mdx-li" data-hi-narration-block-id="p-57" data-hi-narration-clickable="false"><strong>Partial Caching</strong>: Cache specific parts of responses that change infrequently</li>
+<li class="mdx-li" data-hi-narration-block-id="p-58" data-hi-narration-clickable="false"><strong>Cache Invalidation</strong>: Use <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">TTL</span> or event-based invalidation</li>
+</ol>
+<div class="mdx-p" data-hi-narration-block-id="p-59" data-hi-narration-clickable="false">In each case, you can either cache the response in memory or in a distributed cache like Redis.</div>
+<h2 id="scaling-an-api-gateway" class="mdx-h2" data-hi-narration-block-id="p-60" data-hi-narration-clickable="false">Scaling an API Gateway</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-61" data-hi-narration-clickable="false">When discussing API Gateway scaling in interviews, there are two main dimensions to consider: handling increased load and managing global distribution.</div>
+<h3 id="horizontal-scaling" class="mdx-h3" data-hi-narration-block-id="p-62" data-hi-narration-clickable="false">Horizontal Scaling</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-63" data-hi-narration-clickable="false">The most straightforward approach to handling increased load is horizontal scaling. API Gateways are typically stateless, making them ideal candidates for horizontal scaling. You can add more gateway instances behind a load balancer to distribute incoming requests.</div>
+<div class="callout callout-info my-4" data-hi-narration-block-id="p-64" data-hi-narration-clickable="false"><div class="MuiBox-root mui-r83s7g"><div class="MuiBox-root mui-14185gn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">While API Gateways are primarily known for routing and middleware functionality, they often include load balancing capabilities. However, it's important to understand the distinction:</div><ul class="mdx-ul">
+<li class="mdx-li"><strong>Client-to-Gateway Load Balancing</strong>: This is typically handled by a dedicated load balancer in front of your API Gateway instances (like AWS ELB or NGINX).</li>
+<li class="mdx-li"><strong>Gateway-to-Service Load Balancing</strong>: The API Gateway itself can perform load balancing across multiple instances of backend services.</li>
+</ul></div></div></div>
+<div class="callout callout-tip my-4" data-hi-narration-block-id="p-67" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">This can typically be abstracted away during an interview. Drawing a single box to handle "API Gateway and Load Balancer" is usually sufficient. You don't want to get bogged down in the details of your entry points as they're more likely to be a distraction from the core functionality of your system.</div></div></div></div>
+<h3 id="global-distribution" class="mdx-h3" data-hi-narration-block-id="p-68" data-hi-narration-clickable="false">Global Distribution</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-69" data-hi-narration-clickable="false">Another option that works well particularly for large applications with users spread across the globe is to deploy API Gateways closer to your users, similar to how you would deploy a CDN. This typically involves:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-70" data-hi-narration-clickable="false"><strong>Regional Deployments</strong>: Deploy gateway instances in multiple geographic regions</li>
+<li class="mdx-li" data-hi-narration-block-id="p-71" data-hi-narration-clickable="false"><strong>DNS-based Routing</strong>: Use GeoDNS to route users to the nearest gateway</li>
+<li class="mdx-li" data-hi-narration-block-id="p-72" data-hi-narration-clickable="false"><strong>Configuration Synchronization</strong>: Ensure routing rules and policies are consistent across regions</li>
+</ol>
+<h2 id="popular-api-gateways" class="mdx-h2" data-hi-narration-block-id="p-73" data-hi-narration-clickable="false">Popular API Gateways</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-74" data-hi-narration-clickable="false">Let's take a look at some of the most popular API Gateways.</div>
+<h3 id="managed-services" class="mdx-h3" data-hi-narration-block-id="p-75" data-hi-narration-clickable="false">Managed Services</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-76" data-hi-narration-clickable="false">Cloud providers offer fully managed API Gateway solutions that integrate well with their ecosystems. This is by far the easiest option but also the most expensive.</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-77" data-hi-narration-clickable="false">
+<div class="mdx-p"><strong><a href="https://aws.amazon.com/api-gateway/" target="_blank" rel="noopener noreferrer" class="mdx-a">AWS API Gateway</a></strong></div>
+<ul class="mdx-ul">
+<li class="mdx-li">Seamless integration with AWS services</li>
+<li class="mdx-li">Supports <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">REST</span> and <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">WebSocket</span> APIs</li>
+<li class="mdx-li">Built-in features like:<!-- -->
+<ul class="mdx-ul">
+<li class="mdx-li">Request throttling</li>
+<li class="mdx-li">API keys and usage plans</li>
+<li class="mdx-li">AWS Lambda integration</li>
+<li class="mdx-li">CloudWatch monitoring</li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="mdx-li" data-hi-narration-block-id="p-78" data-hi-narration-clickable="false">
+<div class="mdx-p"><strong><a href="https://azure.microsoft.com/en-us/products/api-management/" target="_blank" rel="noopener noreferrer" class="mdx-a">Azure API Management</a></strong></div>
+<ul class="mdx-ul">
+<li class="mdx-li">Strong OAuth and OpenID Connect support</li>
+<li class="mdx-li">Policy-based configuration</li>
+<li class="mdx-li">Developer portal for API documentation</li>
+</ul>
+</li>
+<li class="mdx-li" data-hi-narration-block-id="p-79" data-hi-narration-clickable="false">
+<div class="mdx-p"><strong><a href="https://cloud.google.com/endpoints" target="_blank" rel="noopener noreferrer" class="mdx-a">Google Cloud Endpoints</a></strong></div>
+<ul class="mdx-ul">
+<li class="mdx-li">Deep integration with GCP services</li>
+<li class="mdx-li">Strong gRPC support</li>
+<li class="mdx-li">Automatic OpenAPI documentation</li>
+</ul>
+</li>
+</ol>
+<h3 id="open-source-solutions" class="mdx-h3">Open Source Solutions</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-81" data-hi-narration-clickable="false">For teams wanting more control or running on-premises:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-82" data-hi-narration-clickable="false">
+<div class="mdx-p"><strong><a href="https://konghq.com/" target="_blank" rel="noopener noreferrer" class="mdx-a">Kong</a></strong></div>
+<ul class="mdx-ul">
+<li class="mdx-li">Built on NGINX</li>
+<li class="mdx-li">Extensive plugin ecosystem</li>
+<li class="mdx-li">Supports both traditional and service mesh deployments</li>
+</ul>
+</li>
+<li class="mdx-li" data-hi-narration-block-id="p-83" data-hi-narration-clickable="false">
+<div class="mdx-p"><strong><a href="https://tyk.io/" target="_blank" rel="noopener noreferrer" class="mdx-a">Tyk</a></strong></div>
+<ul class="mdx-ul">
+<li class="mdx-li">Native support for GraphQL</li>
+<li class="mdx-li">Built-in API analytics</li>
+<li class="mdx-li">Multi-data center capabilities</li>
+</ul>
+</li>
+<li class="mdx-li" data-hi-narration-block-id="p-84" data-hi-narration-clickable="false">
+<div class="mdx-p"><strong><a href="https://www.express-gateway.io/" target="_blank" rel="noopener noreferrer" class="mdx-a">Express Gateway</a></strong></div>
+<ul class="mdx-ul">
+<li class="mdx-li">JavaScript/Node.js based</li>
+<li class="mdx-li">Lightweight and developer-friendly</li>
+<li class="mdx-li">Good for Node.js microservices</li>
+</ul>
+</li>
+</ol>
+<h2 id="when-to-propose-an-api-gateway" class="mdx-h2" data-hi-narration-block-id="p-85" data-hi-narration-clickable="false">When to Propose an API Gateway</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-86" data-hi-narration-clickable="false">Ok cool, but when should you use an API Gateway in your interview?</div>
+<div class="mdx-p" data-hi-narration-block-id="p-87" data-hi-narration-clickable="false">The TLDR is: use it when you have a microservices architecture and don't use it when you have a simple client-server architecture.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-88" data-hi-narration-clickable="false">With a microservices architecture, an API Gateway becomes almost essential. Without one, clients would need to know about and communicate with multiple services directly, leading to tighter coupling and more complex client code. The gateway provides a clean separation between your internal service architecture and your external API surface.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-89" data-hi-narration-clickable="false">However, it's equally important to recognize when an API Gateway might be overkill. For simple monolithic applications or systems with a single client type, introducing an API Gateway adds unnecessary complexity.</div>
+<div class="callout callout-warning my-4" data-hi-narration-block-id="p-90" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">I've mentioned this throughout, but I want it to be super clear. While it's important to understand every component you introduce into your design, the API Gateway is not the most interesting. There is a far greater chance that you are making a mistake by spending too much time on it than not enough.</div><div class="mdx-p">Get it down, say it will handle routing and middleware, and move on.</div></div></div></div>
+<div class="MuiBox-root mui-10b10ta"><div class="flex flex-row items-center gap-3 mb-3"><div class="heroicon-sw-2 MuiBox-root mui-tbago3"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"></path></svg></div><div><h6 class="MuiTypography-root MuiTypography-h6 mui-jyzq54">Test Your Knowledge</h6><p class="MuiTypography-root MuiTypography-body2 mui-14ou361">Answer the question below to find your gaps.</p></div></div><div class="flex flex-row items-baseline gap-3 mb-1 "><p class="MuiTypography-root MuiTypography-body2 mui-nk2f70">Question 1 of 15</p></div><div class="MuiBox-root mui-1muw576"><div class="mdx-p">What is the primary function of an API Gateway?</div></div><div class="MuiBox-root mui-0"><div class="grid grid-cols-1 gap-2 mb-4"><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">1</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">User interface rendering and client-side hydration</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">2</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Routing requests to backend services</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">3</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Data storage and persistence</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">4</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Database query optimization</div></div></div></div></div></div></div></div></div></div></div></div><!--$--><!--/$--></div></div></main>
+</body>
+</html>

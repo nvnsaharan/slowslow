@@ -1,0 +1,618 @@
+[
+  {
+    "title": "How to Prepare for System Design Interviews",
+    "url": "https://www.hellointerview.com/learn/system-design/in-a-hurry/how-to-prepare",
+    "category": "In A Hurry",
+    "savedAt": "2026-07-16T07:14:35.758Z",
+    "path": "output/system-design/in-a-hurry/how-to-prepare.html"
+  },
+  {
+    "title": "Delivery Framework",
+    "url": "https://www.hellointerview.com/learn/system-design/in-a-hurry/delivery",
+    "category": "In A Hurry",
+    "savedAt": "2026-07-16T07:14:35.759Z",
+    "path": "output/system-design/in-a-hurry/delivery.html"
+  },
+  {
+    "title": "Introduction",
+    "url": "https://www.hellointerview.com/learn/system-design/in-a-hurry/introduction",
+    "category": "In A Hurry",
+    "savedAt": "2026-07-16T07:14:36.053Z",
+    "path": "output/system-design/in-a-hurry/introduction.html"
+  },
+  {
+    "title": "Core Concepts",
+    "url": "https://www.hellointerview.com/learn/system-design/in-a-hurry/core-concepts",
+    "category": "In A Hurry",
+    "savedAt": "2026-07-16T07:14:35.878Z",
+    "path": "output/system-design/in-a-hurry/core-concepts.html"
+  },
+  {
+    "title": "Common Patterns",
+    "url": "https://www.hellointerview.com/learn/system-design/in-a-hurry/patterns",
+    "category": "In A Hurry",
+    "savedAt": "2026-07-16T07:14:36.009Z",
+    "path": "output/system-design/in-a-hurry/patterns.html"
+  },
+  {
+    "title": "Key Technologies",
+    "url": "https://www.hellointerview.com/learn/system-design/in-a-hurry/key-technologies",
+    "category": "In A Hurry",
+    "savedAt": "2026-07-16T07:14:35.936Z",
+    "path": "output/system-design/in-a-hurry/key-technologies.html"
+  },
+  {
+    "title": "API Design",
+    "url": "https://www.hellointerview.com/learn/system-design/core-concepts/api-design",
+    "category": "Core Concepts",
+    "savedAt": "2026-07-16T07:14:36.109Z",
+    "path": "output/system-design/core-concepts/api-design.html"
+  },
+  {
+    "title": "Data Modeling",
+    "url": "https://www.hellointerview.com/learn/system-design/core-concepts/data-modeling",
+    "category": "Core Concepts",
+    "savedAt": "2026-07-16T07:14:36.204Z",
+    "path": "output/system-design/core-concepts/data-modeling.html"
+  },
+  {
+    "title": "Networking Essentials",
+    "url": "https://www.hellointerview.com/learn/system-design/core-concepts/networking-essentials",
+    "category": "Core Concepts",
+    "savedAt": "2026-07-16T07:14:36.253Z",
+    "path": "output/system-design/core-concepts/networking-essentials.html"
+  },
+  {
+    "title": "Sharding",
+    "url": "https://www.hellointerview.com/learn/system-design/core-concepts/sharding",
+    "category": "Core Concepts",
+    "savedAt": "2026-07-16T07:14:36.294Z",
+    "path": "output/system-design/core-concepts/sharding.html"
+  },
+  {
+    "title": "Caching",
+    "url": "https://www.hellointerview.com/learn/system-design/core-concepts/caching",
+    "category": "Core Concepts",
+    "savedAt": "2026-07-16T07:14:36.337Z",
+    "path": "output/system-design/core-concepts/caching.html"
+  },
+  {
+    "title": "Consistent Hashing",
+    "url": "https://www.hellointerview.com/learn/system-design/core-concepts/consistent-hashing",
+    "category": "Core Concepts",
+    "savedAt": "2026-07-16T07:14:36.392Z",
+    "path": "output/system-design/core-concepts/consistent-hashing.html"
+  },
+  {
+    "title": "CAP Theorem",
+    "url": "https://www.hellointerview.com/learn/system-design/core-concepts/cap-theorem",
+    "category": "Core Concepts",
+    "savedAt": "2026-07-16T07:14:36.392Z",
+    "path": "output/system-design/core-concepts/cap-theorem.html"
+  },
+  {
+    "title": "Numbers to Know",
+    "url": "https://www.hellointerview.com/learn/system-design/core-concepts/numbers-to-know",
+    "category": "Core Concepts",
+    "savedAt": "2026-07-16T07:14:36.498Z",
+    "path": "output/system-design/core-concepts/numbers-to-know.html"
+  },
+  {
+    "title": "Database Indexing",
+    "url": "https://www.hellointerview.com/learn/system-design/core-concepts/db-indexing",
+    "category": "Core Concepts",
+    "savedAt": "2026-07-16T07:14:37.511Z",
+    "path": "output/system-design/core-concepts/db-indexing.html"
+  },
+  {
+    "title": "Dropbox",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/dropbox",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:37.890Z",
+    "path": "output/system-design/problem-breakdowns/dropbox.html"
+  },
+  {
+    "title": "Bitly",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/bitly",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:37.890Z",
+    "path": "output/system-design/problem-breakdowns/bitly.html"
+  },
+  {
+    "title": "Ticketmaster",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/ticketmaster",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:38.238Z",
+    "path": "output/system-design/problem-breakdowns/ticketmaster.html"
+  },
+  {
+    "title": "Local Delivery Service",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/gopuff",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:37.890Z",
+    "path": "output/system-design/problem-breakdowns/gopuff.html"
+  },
+  {
+    "title": "FB News Feed",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/fb-news-feed",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:38.239Z",
+    "path": "output/system-design/problem-breakdowns/fb-news-feed.html"
+  },
+  {
+    "title": "WhatsApp",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/whatsapp",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:38.498Z",
+    "path": "output/system-design/problem-breakdowns/whatsapp.html"
+  },
+  {
+    "title": "Tinder",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/tinder",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:38.438Z",
+    "path": "output/system-design/problem-breakdowns/tinder.html"
+  },
+  {
+    "title": "Rate Limiter",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/distributed-rate-limiter",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:38.559Z",
+    "path": "output/system-design/problem-breakdowns/distributed-rate-limiter.html"
+  },
+  {
+    "title": "YouTube",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/youtube",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:38.745Z",
+    "path": "output/system-design/problem-breakdowns/youtube.html"
+  },
+  {
+    "title": "FB Live Comments",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/fb-live-comments",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:38.805Z",
+    "path": "output/system-design/problem-breakdowns/fb-live-comments.html"
+  },
+  {
+    "title": "YouTube Top K",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/top-k",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:38.929Z",
+    "path": "output/system-design/problem-breakdowns/top-k.html"
+  },
+  {
+    "title": "Uber",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/uber",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:38.868Z",
+    "path": "output/system-design/problem-breakdowns/uber.html"
+  },
+  {
+    "title": "Breakdowns of Popular System Design Questions",
+    "url": "https://www.hellointerview.com/learn/system-design/in-a-hurry/problem-breakdowns",
+    "category": "In A Hurry",
+    "savedAt": "2026-07-16T07:14:38.115Z",
+    "path": "output/system-design/in-a-hurry/problem-breakdowns.html"
+  },
+  {
+    "title": "Web Crawler",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/web-crawler",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:38.929Z",
+    "path": "output/system-design/problem-breakdowns/web-crawler.html"
+  },
+  {
+    "title": "Ad Click Aggregator",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/ad-click-aggregator",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:39.135Z",
+    "path": "output/system-design/problem-breakdowns/ad-click-aggregator.html"
+  },
+  {
+    "title": "LeetCode",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/leetcode",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:38.558Z",
+    "path": "output/system-design/problem-breakdowns/leetcode.html"
+  },
+  {
+    "title": "FB Post Search",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/fb-post-search",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:39.292Z",
+    "path": "output/system-design/problem-breakdowns/fb-post-search.html"
+  },
+  {
+    "title": "Strava",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/strava",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:39.362Z",
+    "path": "output/system-design/problem-breakdowns/strava.html"
+  },
+  {
+    "title": "Distributed Cache",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/distributed-cache",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:39.528Z",
+    "path": "output/system-design/problem-breakdowns/distributed-cache.html"
+  },
+  {
+    "title": "Online Auction",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/online-auction",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:40.913Z",
+    "path": "output/system-design/problem-breakdowns/online-auction.html"
+  },
+  {
+    "title": "News Aggregator",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/google-news",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:41.036Z",
+    "path": "output/system-design/problem-breakdowns/google-news.html"
+  },
+  {
+    "title": "Yelp",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/yelp",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:40.725Z",
+    "path": "output/system-design/problem-breakdowns/yelp.html"
+  },
+  {
+    "title": "Robinhood",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/robinhood",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:41.165Z",
+    "path": "output/system-design/problem-breakdowns/robinhood.html"
+  },
+  {
+    "title": "Instagram",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/instagram",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:40.826Z",
+    "path": "output/system-design/problem-breakdowns/instagram.html"
+  },
+  {
+    "title": "Job Scheduler",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/job-scheduler",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:41.240Z",
+    "path": "output/system-design/problem-breakdowns/job-scheduler.html"
+  },
+  {
+    "title": "Price Tracking Service",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/camelcamelcamel",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:41.706Z",
+    "path": "output/system-design/problem-breakdowns/camelcamelcamel.html"
+  },
+  {
+    "title": "Online Chess",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/online-chess",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:41.495Z",
+    "path": "output/system-design/problem-breakdowns/online-chess.html"
+  },
+  {
+    "title": "ChatGPT",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/chatgpt",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:41.875Z",
+    "path": "output/system-design/problem-breakdowns/chatgpt.html"
+  },
+  {
+    "title": "Payment System",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/payment-system",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:41.810Z",
+    "path": "output/system-design/problem-breakdowns/payment-system.html"
+  },
+  {
+    "title": "Dealing with Contention",
+    "url": "https://www.hellointerview.com/learn/system-design/patterns/dealing-with-contention",
+    "category": "Patterns",
+    "savedAt": "2026-07-16T07:14:41.941Z",
+    "path": "output/system-design/patterns/dealing-with-contention.html"
+  },
+  {
+    "title": "Google Docs",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/google-docs",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:41.348Z",
+    "path": "output/system-design/problem-breakdowns/google-docs.html"
+  },
+  {
+    "title": "Scaling Reads",
+    "url": "https://www.hellointerview.com/learn/system-design/patterns/scaling-reads",
+    "category": "Patterns",
+    "savedAt": "2026-07-16T07:14:42.250Z",
+    "path": "output/system-design/patterns/scaling-reads.html"
+  },
+  {
+    "title": "Real-time Updates",
+    "url": "https://www.hellointerview.com/learn/system-design/patterns/realtime-updates",
+    "category": "Patterns",
+    "savedAt": "2026-07-16T07:14:42.000Z",
+    "path": "output/system-design/patterns/realtime-updates.html"
+  },
+  {
+    "title": "Handling Large Blobs",
+    "url": "https://www.hellointerview.com/learn/system-design/patterns/large-blobs",
+    "category": "Patterns",
+    "savedAt": "2026-07-16T07:14:42.150Z",
+    "path": "output/system-design/patterns/large-blobs.html"
+  },
+  {
+    "title": "Managing Long Running Tasks",
+    "url": "https://www.hellointerview.com/learn/system-design/patterns/long-running-tasks",
+    "category": "Patterns",
+    "savedAt": "2026-07-16T07:14:42.414Z",
+    "path": "output/system-design/patterns/long-running-tasks.html"
+  },
+  {
+    "title": "Redis",
+    "url": "https://www.hellointerview.com/learn/system-design/deep-dives/redis",
+    "category": "Deep Dives",
+    "savedAt": "2026-07-16T07:14:42.361Z",
+    "path": "output/system-design/deep-dives/redis.html"
+  },
+  {
+    "title": "Elasticsearch",
+    "url": "https://www.hellointerview.com/learn/system-design/deep-dives/elasticsearch",
+    "category": "Deep Dives",
+    "savedAt": "2026-07-16T07:14:42.413Z",
+    "path": "output/system-design/deep-dives/elasticsearch.html"
+  },
+  {
+    "title": "Kafka",
+    "url": "https://www.hellointerview.com/learn/system-design/deep-dives/kafka",
+    "category": "Deep Dives",
+    "savedAt": "2026-07-16T07:14:42.660Z",
+    "path": "output/system-design/deep-dives/kafka.html"
+  },
+  {
+    "title": "API Gateway",
+    "url": "https://www.hellointerview.com/learn/system-design/deep-dives/api-gateway",
+    "category": "Deep Dives",
+    "savedAt": "2026-07-16T07:14:42.520Z",
+    "path": "output/system-design/deep-dives/api-gateway.html"
+  },
+  {
+    "title": "Cassandra",
+    "url": "https://www.hellointerview.com/learn/system-design/deep-dives/cassandra",
+    "category": "Deep Dives",
+    "savedAt": "2026-07-16T07:14:43.053Z",
+    "path": "output/system-design/deep-dives/cassandra.html"
+  },
+  {
+    "title": "DynamoDB",
+    "url": "https://www.hellointerview.com/learn/system-design/deep-dives/dynamodb",
+    "category": "Deep Dives",
+    "savedAt": "2026-07-16T07:14:42.760Z",
+    "path": "output/system-design/deep-dives/dynamodb.html"
+  },
+  {
+    "title": "PostgreSQL",
+    "url": "https://www.hellointerview.com/learn/system-design/deep-dives/postgres",
+    "category": "Deep Dives",
+    "savedAt": "2026-07-16T07:14:42.659Z",
+    "path": "output/system-design/deep-dives/postgres.html"
+  },
+  {
+    "title": "Flink",
+    "url": "https://www.hellointerview.com/learn/system-design/deep-dives/flink",
+    "category": "Deep Dives",
+    "savedAt": "2026-07-16T07:14:42.895Z",
+    "path": "output/system-design/deep-dives/flink.html"
+  },
+  {
+    "title": "ZooKeeper",
+    "url": "https://www.hellointerview.com/learn/system-design/deep-dives/zookeeper",
+    "category": "Deep Dives",
+    "savedAt": "2026-07-16T07:14:43.111Z",
+    "path": "output/system-design/deep-dives/zookeeper.html"
+  },
+  {
+    "title": "Proximity Search",
+    "url": "https://www.hellointerview.com/learn/system-design/deep-dives/proximity-search",
+    "category": "Deep Dives",
+    "savedAt": "2026-07-16T07:14:43.231Z",
+    "path": "output/system-design/deep-dives/proximity-search.html"
+  },
+  {
+    "title": "Time Series Databases",
+    "url": "https://www.hellointerview.com/learn/system-design/deep-dives/time-series-databases",
+    "category": "Deep Dives",
+    "savedAt": "2026-07-16T07:14:42.990Z",
+    "path": "output/system-design/deep-dives/time-series-databases.html"
+  },
+  {
+    "title": "Metrics Monitoring",
+    "url": "https://www.hellointerview.com/learn/system-design/problem-breakdowns/metrics-monitoring",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:41.564Z",
+    "path": "output/system-design/problem-breakdowns/metrics-monitoring.html"
+  },
+  {
+    "title": "Data Structures for Big Data",
+    "url": "https://www.hellointerview.com/learn/system-design/deep-dives/data-structures-for-big-data",
+    "category": "Deep Dives",
+    "savedAt": "2026-07-16T07:14:43.537Z",
+    "path": "output/system-design/deep-dives/data-structures-for-big-data.html"
+  },
+  {
+    "title": "Vote for what we break down next",
+    "url": "https://www.hellointerview.com/learn/system-design/in-a-hurry/vote",
+    "category": "In A Hurry",
+    "savedAt": "2026-07-16T07:14:43.139Z",
+    "path": "output/system-design/in-a-hurry/vote.html"
+  },
+  {
+    "title": "Vector Databases",
+    "url": "https://www.hellointerview.com/learn/system-design/deep-dives/vector-databases",
+    "category": "Deep Dives",
+    "savedAt": "2026-07-16T07:14:43.201Z",
+    "path": "output/system-design/deep-dives/vector-databases.html"
+  },
+  {
+    "title": "Introduction",
+    "url": "https://www.hellointerview.com/learn/low-level-design/in-a-hurry/introduction",
+    "category": "In A Hurry",
+    "savedAt": "2026-07-16T07:14:43.282Z",
+    "path": "output/low-level-design/in-a-hurry/introduction.html"
+  },
+  {
+    "title": "Delivery Framework",
+    "url": "https://www.hellointerview.com/learn/low-level-design/in-a-hurry/delivery",
+    "category": "In A Hurry",
+    "savedAt": "2026-07-16T07:14:43.380Z",
+    "path": "output/low-level-design/in-a-hurry/delivery.html"
+  },
+  {
+    "title": "Design Principles",
+    "url": "https://www.hellointerview.com/learn/low-level-design/in-a-hurry/design-principles",
+    "category": "In A Hurry",
+    "savedAt": "2026-07-16T07:14:43.379Z",
+    "path": "output/low-level-design/in-a-hurry/design-principles.html"
+  },
+  {
+    "title": "OOP Concepts",
+    "url": "https://www.hellointerview.com/learn/low-level-design/in-a-hurry/oop-concepts",
+    "category": "In A Hurry",
+    "savedAt": "2026-07-16T07:14:43.379Z",
+    "path": "output/low-level-design/in-a-hurry/oop-concepts.html"
+  },
+  {
+    "title": "Design Patterns",
+    "url": "https://www.hellointerview.com/learn/low-level-design/in-a-hurry/patterns",
+    "category": "In A Hurry",
+    "savedAt": "2026-07-16T07:14:43.536Z",
+    "path": "output/low-level-design/in-a-hurry/patterns.html"
+  },
+  {
+    "title": "Introduction",
+    "url": "https://www.hellointerview.com/learn/low-level-design/concurrency/intro",
+    "category": "Concurrency",
+    "savedAt": "2026-07-16T07:14:43.536Z",
+    "path": "output/low-level-design/concurrency/intro.html"
+  },
+  {
+    "title": "Correctness",
+    "url": "https://www.hellointerview.com/learn/low-level-design/concurrency/correctness",
+    "category": "Concurrency",
+    "savedAt": "2026-07-16T07:14:43.721Z",
+    "path": "output/low-level-design/concurrency/correctness.html"
+  },
+  {
+    "title": "Coordination",
+    "url": "https://www.hellointerview.com/learn/low-level-design/concurrency/coordination",
+    "category": "Concurrency",
+    "savedAt": "2026-07-16T07:14:43.721Z",
+    "path": "output/low-level-design/concurrency/coordination.html"
+  },
+  {
+    "title": "Scarcity",
+    "url": "https://www.hellointerview.com/learn/low-level-design/concurrency/scarcity",
+    "category": "Concurrency",
+    "savedAt": "2026-07-16T07:14:43.721Z",
+    "path": "output/low-level-design/concurrency/scarcity.html"
+  },
+  {
+    "title": "Connect Four",
+    "url": "https://www.hellointerview.com/learn/low-level-design/problem-breakdowns/connect-four",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:44.002Z",
+    "path": "output/low-level-design/problem-breakdowns/connect-four.html"
+  },
+  {
+    "title": "Introduction",
+    "url": "https://www.hellointerview.com/learn/system-design",
+    "category": "System Design",
+    "savedAt": "2026-07-16T07:14:43.282Z",
+    "path": "output/system-design.html"
+  },
+  {
+    "title": "Elevator",
+    "url": "https://www.hellointerview.com/learn/low-level-design/problem-breakdowns/elevator",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:44.002Z",
+    "path": "output/low-level-design/problem-breakdowns/elevator.html"
+  },
+  {
+    "title": "Amazon Locker",
+    "url": "https://www.hellointerview.com/learn/low-level-design/problem-breakdowns/amazon-locker",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:44.466Z",
+    "path": "output/low-level-design/problem-breakdowns/amazon-locker.html"
+  },
+  {
+    "title": "Parking Lot",
+    "url": "https://www.hellointerview.com/learn/low-level-design/problem-breakdowns/parking-lot",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:44.605Z",
+    "path": "output/low-level-design/problem-breakdowns/parking-lot.html"
+  },
+  {
+    "title": "Movie Ticket Booking",
+    "url": "https://www.hellointerview.com/learn/low-level-design/problem-breakdowns/bookmyshow",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:44.186Z",
+    "path": "output/low-level-design/problem-breakdowns/bookmyshow.html"
+  },
+  {
+    "title": "Logging Service",
+    "url": "https://www.hellointerview.com/learn/low-level-design/problem-breakdowns/logging-service",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:44.265Z",
+    "path": "output/low-level-design/problem-breakdowns/logging-service.html"
+  },
+  {
+    "title": "Rate Limiter",
+    "url": "https://www.hellointerview.com/learn/low-level-design/problem-breakdowns/rate-limiter",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:44.470Z",
+    "path": "output/low-level-design/problem-breakdowns/rate-limiter.html"
+  },
+  {
+    "title": "Inventory Management",
+    "url": "https://www.hellointerview.com/learn/low-level-design/problem-breakdowns/inventory-management",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:44.465Z",
+    "path": "output/low-level-design/problem-breakdowns/inventory-management.html"
+  },
+  {
+    "title": "Vote for what we break down next",
+    "url": "https://www.hellointerview.com/learn/low-level-design/vote",
+    "category": "Low Level Design",
+    "savedAt": "2026-07-16T07:14:44.529Z",
+    "path": "output/low-level-design/vote.html"
+  },
+  {
+    "title": "Introduction",
+    "url": "https://www.hellointerview.com/learn/low-level-design",
+    "category": "Low Level Design",
+    "savedAt": "2026-07-16T07:14:44.565Z",
+    "path": "output/low-level-design.html"
+  },
+  {
+    "title": "File System",
+    "url": "https://www.hellointerview.com/learn/low-level-design/problem-breakdowns/file-system",
+    "category": "Problem Breakdowns",
+    "savedAt": "2026-07-16T07:14:44.360Z",
+    "path": "output/low-level-design/problem-breakdowns/file-system.html"
+  },
+  {
+    "title": "Multi-step Processes",
+    "url": "https://www.hellointerview.com/learn/system-design/patterns/multi-step-processes",
+    "category": "Patterns",
+    "savedAt": "2026-07-16T07:14:42.588Z",
+    "path": "output/system-design/patterns/multi-step-processes.html"
+  },
+  {
+    "title": "Scaling Writes",
+    "url": "https://www.hellointerview.com/learn/system-design/patterns/scaling-writes",
+    "category": "Patterns",
+    "savedAt": "2026-07-16T07:14:42.152Z",
+    "path": "output/system-design/patterns/scaling-writes.html"
+  }
+]

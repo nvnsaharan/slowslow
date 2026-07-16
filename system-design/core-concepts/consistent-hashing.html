@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Consistent Hashing</title>
+<meta name="source-url" content="https://www.hellointerview.com/learn/system-design/core-concepts/consistent-hashing">
+<script>
+(function () {
+  var theme;
+  try { theme = localStorage.getItem('course-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #666666;
+    --faint: #888888;
+    --border: #e1e4e8;
+    --border-strong: #d0d7de;
+    --code-bg: #f6f8fa;
+    --inline-code-bg: #f0f1f3;
+    --link: #0969da;
+    --accent: #10857a;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121212;
+    --fg: #e6e6e6;
+    --muted: #aaaaaa;
+    --faint: #999999;
+    --border: #333333;
+    --border-strong: #3a3a3a;
+    --code-bg: #1e1e1e;
+    --inline-code-bg: #252525;
+    --link: #6cb2ff;
+    --accent: #34b3a6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    max-width: 46rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--fg);
+    background: var(--bg);
+  }
+  h1, h2, h3, h4, h5, h6 { line-height: 1.3; margin: 2em 0 0.6em; }
+  h1 { font-size: 2rem; margin-top: 0.5em; }
+  img, svg, video { max-width: 100%; height: auto; }
+  figure { margin: 1.5em 0; text-align: center; }
+  figcaption { font-size: 0.875rem; color: var(--muted); }
+  pre {
+    padding: 1em;
+    overflow-x: auto;
+    border-radius: 8px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    background: var(--inline-code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  table { border-collapse: collapse; width: 100%; margin: 1.5em 0; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--border-strong); padding: 0.5em 0.75em; text-align: left; }
+  th { background: var(--code-bg); }
+  blockquote { margin: 1.5em 0; padding: 0.5em 1.25em; border-left: 4px solid var(--border-strong); color: var(--muted); }
+  a { color: var(--link); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+  .lesson-source { font-size: 0.8125rem; color: var(--faint); margin-bottom: 2rem; }
+
+  #theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+  #theme-toggle:hover { border-color: var(--accent); }
+
+</style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Toggle light/dark theme"></button>
+<script>
+(function () {
+  var btn = document.getElementById('theme-toggle');
+  function refresh() { btn.textContent = document.documentElement.dataset.theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19'; }
+  btn.addEventListener('click', function () {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('course-theme', next); } catch (e) {}
+    refresh();
+  });
+  refresh();
+})();
+</script>
+<p class="lesson-source">Saved for offline reading from <a href="https://www.hellointerview.com/learn/system-design/core-concepts/consistent-hashing">https://www.hellointerview.com/learn/system-design/core-concepts/consistent-hashing</a></p>
+<main class="flex-1 min-w-0 overflow-y-auto print-main"><div class="flex flex-col bg-nav-bg-paper"><div class="px-4 md:px-6 max-w-7xl mx-auto py-3 w-full print-main-content" style="min-height:calc(100vh - 48px - 0px);transition:min-height 0.3s ease-in-out;background-color:var(--nav-bg-paper)"><div class="grid grid-cols-7 gap-12 md:gap-0 mx-auto max-w-5xl"><div class="col-span-7 w-full max-w-4xl md:pr-6 xl:col-span-5"><div class="relative"><div id="markdown" class="mui-4tqezl"><div class="chrome"><div class="flex flex-col gap-2"><div class="flex flex-col relative"><div class="flex items-center justify-between   "><h6 class="MuiTypography-root MuiTypography-h6 mui-pkyqy5">Core Concepts</h6></div><div class="flex flex-col md:flex-row md:items-start md:justify-between md:gap-4"><div class="flex items-center gap-2"><h1 class="MuiTypography-root MuiTypography-h2 mui-xhvznl">Consistent Hashing</h1><div class="MuiBox-root mui-yrscm7"></div></div></div><p class="MuiTypography-root MuiTypography-body2 mui-19x8mt2" data-hi-narration-block-id="p-0" data-hi-narration-clickable="false" data-hi-narration-active="true" data-hi-narration-playing="false">What problem does consistent hashing solve, how does it work, and how can you use it in an interview.</p></div></div><hr class="MuiDivider-root MuiDivider-fullWidth mui-18s6yq7"></div>
+<div class="mdx-p" data-hi-narration-block-id="p-1" data-hi-narration-clickable="false">While preparing for system design interviews I'm sure you've come across consistent hashing. It's a foundational algorithm in distributed systems that is used to distribute data across a cluster of servers.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-2" data-hi-narration-clickable="false">There are quite literally thousands of resources online that explain it, yet somehow I find the majority are overly academic.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-3" data-hi-narration-clickable="false">In this deep dive, we'll give a hyper focused overview of consistent hashing, including the problem it solves, how it works, and how you can use it in your interviews.</div>
+<h2 id="consistent-hashing-via-an-example" class="mdx-h2" data-hi-narration-block-id="p-4" data-hi-narration-clickable="false">Consistent Hashing via an Example</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-5" data-hi-narration-clickable="false">Let's build up our intuition via a motivating example.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-6" data-hi-narration-clickable="false">Imagine you're designing a ticketing system like TicketMaster. Initially, your system is simple:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-7" data-hi-narration-clickable="false">One database storing all event data</li>
+<li class="mdx-li" data-hi-narration-block-id="p-8" data-hi-narration-clickable="false">Clients making requests to fetch event information</li>
+<li class="mdx-li" data-hi-narration-block-id="p-9" data-hi-narration-clickable="false">Everything works smoothly at first</li>
+</ul>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/hxu2qcuu0ilh.0ke4y1r6opcss-86809874.svg" alt="Client Server Database" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Client Server Database</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-10" data-hi-narration-clickable="false">But success brings challenges. As your platform grows popular and hosts more events, a single database can no longer handle the load. You need to distribute your data across multiple databases – a process called <a href="/learn/system-design/core-concepts/sharding" target="_blank" rel="noopener noreferrer" class="mdx-a">sharding</a>.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/d79abc8d0om9.0rglhcl744h6w-d80cd577.svg" alt="Sharding" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Sharding</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-11" data-hi-narration-clickable="false">The question we need to answer is: <strong>How do we know which events to store on which database instance?</strong></div>
+<h3 id="first-attempt-simple-modulo-hashing" class="mdx-h3" data-hi-narration-block-id="p-12" data-hi-narration-clickable="false">First Attempt: Simple Modulo Hashing</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-13" data-hi-narration-clickable="false">The most straightforward approach to distribute data across multiple databases is modulo hashing.</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-14" data-hi-narration-clickable="false">First, we take the event ID and run it through a hash function, which converts it into a number</li>
+<li class="mdx-li" data-hi-narration-block-id="p-15" data-hi-narration-clickable="false">Then, we take that number and perform the modulo operation (%) with the number of databases</li>
+<li class="mdx-li" data-hi-narration-block-id="p-16" data-hi-narration-clickable="false">The result tells us which database should store that event</li>
+</ol>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/wpvmxzwjqecm.1z7cg7fbua4xg-882cbe97.svg" alt="Modulo Hashing" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Modulo Hashing</span></div></div></div></div>
+<div class="mdx-p">In code, it looks like this:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#212B36">database_id = hash(event_id) % number_of_databases</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-18" data-hi-narration-clickable="false">For a concrete example with 3 databases:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="bash"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#2675FF">Event</span><span style="color:#919EAB;font-style:italic"> #1234 → hash(1234) % 3 = 1 → Database 1</span></span>
+<span class="line"><span style="color:#2675FF">Event</span><span style="color:#919EAB;font-style:italic"> #5678 → hash(5678) % 3 = 0 → Database 0</span></span>
+<span class="line"><span style="color:#2675FF">Event</span><span style="color:#919EAB;font-style:italic"> #9012 → hash(9012) % 3 = 2 → Database 2</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-19" data-hi-narration-clickable="false">Great! This works well, until you run into a few problems.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-20" data-hi-narration-clickable="false">The first problem comes when you want to add a fourth database instance. To do so, you naively think that all you need to do is run the modulo operation with 4 instead of 3.</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#212B36">database_id = hash(event_id) % </span><span style="color:#F4A261">4</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-22" data-hi-narration-clickable="false">You change the code, and push to production but then your database activity goes through the roof! Not just for the fourth database instance either, but for all of them.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-23" data-hi-narration-clickable="false">What happened was the change in the hash function did not only impact data that should be stored on the new instance, but it changed which database instance almost <em>every</em> event was stored on.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/assmxucki1rj.0p-i9qiss4026-a667857c.svg" alt="Issue adding a Node" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Issue adding a Node</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-24" data-hi-narration-clickable="false">For example, event #1234 used to map to database 1, but now, <span class="mdx-code">hash(1234) % 4 = 0</span> so that data instead needs to be moved to database 0.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-25" data-hi-narration-clickable="false">This means the data needs to be moved from database 1 to database 0. This isn't an isolated case - most of your data needs to be redistributed across all database instances, causing massive unnecessary data movement. This causes huge spikes in database load and means users are either unable to access data or they experience slow response times.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-26" data-hi-narration-clickable="false">Let's look at another problem with simple modulo hashing.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-27" data-hi-narration-clickable="false">Imagine a database went down. This could be due to anything from a hardware failure to a software bug. In any case, we need to remove it from the pool of databases and redistribute the data across the remaining instances until we can pull a new one online.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-28" data-hi-narration-clickable="false">Our hash function now changes from <span class="mdx-code">database_id = hash(event_id) % 3</span> to <span class="mdx-code">database_id = hash(event_id) % 2</span> and we run into the exact same redistribution problem we had before.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/ad4zdhodkvou.0hc6-13vqc_fd-fac06883.svg" alt="Issue removing a Node" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Issue removing a Node</span></div></div></div></div>
+<!-- -->
+<div class="mdx-p" data-hi-narration-block-id="p-29" data-hi-narration-clickable="false">Clearly simple modulo hashing isn't cutting it. Enter, <strong>Consistent Hashing</strong>.</div>
+<h3 id="consistent-hashing" class="mdx-h3">Consistent Hashing</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-31" data-hi-narration-clickable="false">Consistent hashing is a technique that solves the problem of data redistribution when adding or removing a instance in a distributed system. The key insight is to arrange both our data and our databases in a circular space, often called a "hash ring."</div>
+<div class="mdx-p" data-hi-narration-block-id="p-32" data-hi-narration-clickable="false">Here's how it works:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-33" data-hi-narration-clickable="false">We first create a hash ring with a fixed number of points. To keep it simple, let's say 100.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-34" data-hi-narration-clickable="false">We then place our database nodes on the hash ring. In the case where we have 4 databases, we could put them at points 0, 25, 50, and 75.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-35" data-hi-narration-clickable="false">In order to know which database an event should be stored on, we first hash the event ID like we did before, but instead of using modulo, we just find the hash value on the ring and then move clockwise until we find a database instance.</li>
+</ol>
+<!-- -->
+<div class="callout callout-warning my-6" data-hi-narration-block-id="p-36" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">In reality, a hash ring usually has a hash space of 0 to 2^32 - 1 not 0-100, but the concept is the same.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-37" data-hi-narration-clickable="false">How did this solve our problem? Let's look at what happens when we add or remove a database:</div>
+<div class="mdx-p" data-hi-narration-block-id="p-38" data-hi-narration-clickable="false"><strong>Adding a Database (Database 5)</strong>
+Let's say we add a fifth database at position 90 on our ring. Now:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-39" data-hi-narration-clickable="false">Only events that hash to positions between 75 and 90 need to move</li>
+<li class="mdx-li" data-hi-narration-block-id="p-40" data-hi-narration-clickable="false">These events were previously going to DB1 (at position 0)</li>
+<li class="mdx-li" data-hi-narration-block-id="p-41" data-hi-narration-clickable="false">All other events stay exactly where they are!</li>
+</ul>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/timvd3-xev8n.3atsz08dmw67v-aabaa017.svg" alt="Hash Ring with DB5 added" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Hash Ring with DB5 added</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-42" data-hi-narration-clickable="false">Whereas before almost all data needed to be redistributed, with consistent hashing, we're only moving about 60% of the events that were on DB1 (the 75-90 range, which is 15 out of DB1's 25-unit span), or roughly 15% of all our events.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-43" data-hi-narration-clickable="false"><strong>Removing a Database</strong>
+Similarly, if Database 2 (at position 25) fails:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-44" data-hi-narration-clickable="false">Only events that were mapped to Database 2 need to move</li>
+<li class="mdx-li" data-hi-narration-block-id="p-45" data-hi-narration-clickable="false">These events will now map to Database 3 (at position 50)</li>
+<li class="mdx-li" data-hi-narration-block-id="p-46" data-hi-narration-clickable="false">Everything else stays put</li>
+</ul>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/kuuypx3z3c-g.3935pl87w1djg-7bedb55b.svg" alt="Hash Ring with DB2 removed" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Hash Ring with DB2 removed</span></div></div></div></div>
+<h4 id="virtual-nodes" class="mdx-h4" data-hi-narration-block-id="p-47" data-hi-narration-clickable="false">Virtual Nodes</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-48" data-hi-narration-clickable="false">We've made good progress, but there is still just one problem. In our example above where we removed database 2, we had to move all events that were stored on database 2 to database 3. Now database 3 has 2x the load of database 1 and database 4. We'd much prefer if we could spread the load more evenly so database 3 wasn't overloaded.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-49" data-hi-narration-clickable="false">The solution is to use what are called "virtual nodes". Instead of putting each database at just one point on the ring, we put it at multiple points by hashing different variations of the database name.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/c4qxq-8fzc_w.3zu-s0zd1-05j-c4b19040.svg" alt="Hash Ring with Virtual Nodes" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Hash Ring with Virtual Nodes</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-50" data-hi-narration-clickable="false">For example, instead of just hashing "DB1" to get position 0, we hash "DB1-vn1", "DB1-vn2", "DB1-vn3", etc., which might give us positions 20, 35, 65 and so on. We do this for each database, which results in the virtual nodes being naturally intermixed around the ring.</div>
+<!-- -->
+<div class="mdx-p" data-hi-narration-block-id="p-51" data-hi-narration-clickable="false">Now when Database 2 fails:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-52" data-hi-narration-clickable="false">The events that were mapped to "DB2-vn1" will be redistributed to Database 1</li>
+<li class="mdx-li" data-hi-narration-block-id="p-53" data-hi-narration-clickable="false">The events that were mapped to "DB2-vn2" will go to Database 3</li>
+<li class="mdx-li" data-hi-narration-block-id="p-54" data-hi-narration-clickable="false">The events that were mapped to "DB2-vn3" will go to Database 4</li>
+<li class="mdx-li" data-hi-narration-block-id="p-55" data-hi-narration-clickable="false">And so on...</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-56" data-hi-narration-clickable="false">This means the load from the failed database gets distributed much more evenly across all remaining databases instead of overwhelming just one neighbor. The more virtual nodes you use per database, the more evenly distributed the load becomes.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-57" data-hi-narration-clickable="false">Virtual nodes also help when adding a new database. Without virtual nodes, a new node only takes load from its single clockwise neighbor. With virtual nodes, the new node's virtual positions are spread around the ring, so it absorbs a small chunk of data from multiple existing nodes. This gives you a much more balanced cluster from the start, rather than only relieving one overloaded neighbor.</div>
+<h3 id="addressing-hot-spots" class="mdx-h3" data-hi-narration-block-id="p-58" data-hi-narration-clickable="false">Addressing Hot Spots</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-59" data-hi-narration-clickable="false">Even with virtual nodes distributing data evenly, hot spots can still occur. A hot spot is when one node gets a disproportionate amount of traffic because certain keys are far more popular than others. Think of a ticketing system where a Taylor Swift concert generates 100x the reads of any other event.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-60" data-hi-narration-clickable="false">Consistent hashing doesn't solve this on its own since it distributes keys evenly, not traffic. Here are a few strategies that real systems use:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-61" data-hi-narration-clickable="false">Read replicas: Replicate popular keys across multiple nodes and load-balance reads among them. This is the most common approach.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-62" data-hi-narration-clickable="false">Key-space salting: Append a random suffix to <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">hot keys</span> (e.g., <span class="mdx-code">taylor-swift-{0..9}</span>) so they hash to different nodes. Reads then scatter across those nodes and get aggregated.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-63" data-hi-narration-clickable="false">Adaptive rebalancing: Monitor traffic in real-time and move specific key ranges off overloaded nodes. This is operationally complex but some systems (like DynamoDB) do it automatically.</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-64" data-hi-narration-clickable="false">In an interview, the key distinction to make is: virtual nodes prevent structural imbalance (uneven key distribution), while <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">replication</span> and key salting prevent workload imbalance (uneven traffic).</div>
+<h3 id="data-movement-in-practice" class="mdx-h3" data-hi-narration-block-id="p-65" data-hi-narration-clickable="false">Data Movement in Practice</h3>
+<div class="callout callout-info my-6" data-hi-narration-block-id="p-66" data-hi-narration-clickable="false"><div class="MuiBox-root mui-r83s7g"><div class="MuiBox-root mui-14185gn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Consistent hashing tells you where data should live, but it doesn't magically teleport terabytes of data when a node goes down. In practice, most distributed databases use replication alongside consistent hashing to handle failures without moving data at all.</div><div class="mdx-p">For example, DynamoDB replicates each partition across three availability zones. When a primary node fails, a replica is promoted via a consensus algorithm like Raft, and no data needs to move. Cassandra works similarly, replicating data to N consecutive nodes on the ring so reads can be served from surviving replicas.</div><div class="mdx-p">Data movement really only happens during planned membership changes like adding capacity or permanently replacing a node to restore the replication factor. Even then, consistent hashing ensures only a bounded fraction of keys need to be re-replicated, not the entire dataset.</div></div></div></div>
+<h2 id="consistent-hashing-in-the-real-world" class="mdx-h2" data-hi-narration-block-id="p-67" data-hi-narration-clickable="false">Consistent Hashing in the Real World</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-68" data-hi-narration-clickable="false">While our example focused on scaling a database, note that consistent hashing applies to any scenarios where you need to distribute data across a cluster of servers. This cluster could be databases, sure, but they could also be caches, message brokers, or even just a set of application servers.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-69" data-hi-narration-clickable="false">We see consistent hashing (or variations of it) used in many heavily relied on, scaled, systems. For example:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-70" data-hi-narration-clickable="false"><a href="https://www.hellointerview.com/learn/system-design/deep-dives/cassandra" target="_blank" rel="noopener noreferrer" class="mdx-a">Apache Cassandra</a>: Uses consistent hashing to distribute data across the ring</li>
+<li class="mdx-li" data-hi-narration-block-id="p-71" data-hi-narration-clickable="false"><a href="https://www.hellointerview.com/learn/system-design/deep-dives/dynamodb" target="_blank" rel="noopener noreferrer" class="mdx-a">Amazon's DynamoDB</a>: Uses consistent hashing under the hood for partition placement</li>
+<li class="mdx-li" data-hi-narration-block-id="p-72" data-hi-narration-clickable="false"><a href="https://en.wikipedia.org/wiki/Content_delivery_network" target="_blank" rel="noopener noreferrer" class="mdx-a">Content Delivery Networks (CDNs)</a>: Use consistent hashing to determine which edge server should cache specific content</li>
+</ol>
+<div class="callout callout-info my-6" data-hi-narration-block-id="p-73" data-hi-narration-clickable="false"><div class="MuiBox-root mui-r83s7g"><div class="MuiBox-root mui-14185gn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Not every distributed system uses consistent hashing. Redis Cluster, for example, uses a fixed hash slot approach instead. It divides the key space into 16,384 slots using <span class="mdx-code">CRC16(key) mod 16384</span> and assigns ranges of slots to nodes. This is simpler to reason about, though it requires more coordination when rebalancing. The choice between consistent hashing and fixed hash slots is a real design trade-off you might discuss in an interview.</div></div></div></div>
+<h2 id="when-to-use-consistent-hashing-in-an-interview" class="mdx-h2" data-hi-narration-block-id="p-74" data-hi-narration-clickable="false">When to use Consistent Hashing in an Interview</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-75" data-hi-narration-clickable="false">Most modern distributed systems handle <a href="/learn/system-design/core-concepts/sharding" target="_blank" rel="noopener noreferrer" class="mdx-a">sharding</a> and data distribution for you. When designing a system using DynamoDB, Cassandra, etc you typically just need to mention that these systems use consistent hashing (or a form of it) under the hood to handle scaling.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-76" data-hi-narration-clickable="false">However, consistent hashing becomes a crucial topic in infrastructure-focused interviews where you're asked to design distributed systems from scratch. Here are the common scenarios:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-77" data-hi-narration-clickable="false">Design a distributed database</li>
+<li class="mdx-li" data-hi-narration-block-id="p-78" data-hi-narration-clickable="false">Design a distributed cache</li>
+<li class="mdx-li" data-hi-narration-block-id="p-79" data-hi-narration-clickable="false">Design a distributed message broker</li>
+</ol>
+<div class="mdx-p" data-hi-narration-block-id="p-80" data-hi-narration-clickable="false">In these deep infrastructure interviews, you should be prepared to explain several key concepts:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-81" data-hi-narration-clickable="false">Why consistent hashing beats simple modulo-based <a href="/learn/system-design/core-concepts/sharding" target="_blank" rel="noopener noreferrer" class="mdx-a">sharding</a> for data distribution</li>
+<li class="mdx-li" data-hi-narration-block-id="p-82" data-hi-narration-clickable="false">How virtual nodes improve load balancing across the cluster</li>
+<li class="mdx-li" data-hi-narration-block-id="p-83" data-hi-narration-clickable="false">Strategies for handling node failures and additions</li>
+<li class="mdx-li" data-hi-narration-block-id="p-84" data-hi-narration-clickable="false">How hot spots arise and techniques to mitigate them (replication, key salting)</li>
+<li class="mdx-li" data-hi-narration-block-id="p-85" data-hi-narration-clickable="false">The relationship between consistent hashing and replication for fault tolerance</li>
+</ol>
+<div class="mdx-p" data-hi-narration-block-id="p-86" data-hi-narration-clickable="false">The key is recognizing when to go deep versus when to simply acknowledge that existing solutions handle this complexity for you. Most system design interviews fall into the latter category!</div>
+<h2 id="conclusion" class="mdx-h2" data-hi-narration-block-id="p-87" data-hi-narration-clickable="false">Conclusion</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-88" data-hi-narration-clickable="false">Consistent hashing is one of those algorithms that revolutionized distributed systems by solving a seemingly simple problem: how to distribute data across servers while minimizing redistribution when the number of servers changes.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-89" data-hi-narration-clickable="false">While the implementation details can get complex, the core concept is beautifully simple - arrange everything in a circle and walk clockwise. This elegant solution is now built into many of the distributed systems we use daily, from DynamoDB to Cassandra.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-90" data-hi-narration-clickable="false">One thing to keep in mind: the term "consistent hashing" gets used loosely in practice. As Martin Kleppmann points out in Designing Data-Intensive Applications, some systems that claim to use consistent hashing actually use variations like hash-based partitioning with fixed slot ranges. The core principle of minimizing data movement during rebalancing is what matters, even if the exact implementation differs from the textbook ring approach.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-91" data-hi-narration-clickable="false">In your next system design interview, remember: you usually don't need to implement consistent hashing yourself. Just know when it's being used under the hood, and save the deep dive for those infrastructure-heavy questions where it really matters.</div>
+<div class="my-6"><div class="MuiBox-root mui-10b10ta"><div class="flex flex-row items-center gap-3 mb-3"><div class="heroicon-sw-2 MuiBox-root mui-tbago3"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"></path></svg></div><div><h6 class="MuiTypography-root MuiTypography-h6 mui-jyzq54">Test Your Knowledge</h6><p class="MuiTypography-root MuiTypography-body2 mui-14ou361">Answer the question below to find your gaps.</p></div></div><div class="flex flex-row items-baseline gap-3 mb-1 "><p class="MuiTypography-root MuiTypography-body2 mui-nk2f70">Question 1 of 15</p></div><div class="MuiBox-root mui-1muw576"><div class="mdx-p">What is the main problem that consistent hashing solves?</div></div><div class="MuiBox-root mui-0"><div class="grid grid-cols-1 gap-2 mb-4"><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">1</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Slow database queries due to inefficient indexing</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">2</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Minimizing data movement when nodes change</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">3</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Improving data compression</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">4</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Reducing memory usage</div></div></div></div></div></div></div></div><div class="MuiBox-root mui-17f8lpp"><div class="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-0 chrome"><div class="flex flex-row items-center gap-3 md:gap-3 w-full md:w-auto"><div class="heroicon-sw-2 MuiBox-root mui-14uhju3"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"></path></svg></div><div><h6 class="MuiTypography-root MuiTypography-h6 mui-xebfs0">Quick Reference</h6><p class="MuiTypography-root MuiTypography-body2 mui-vleovk">Get a quick-reference sheet for this topic, perfect for last-minute review.</p></div></div><a class="self-stretch md:self-center" style="text-decoration:none" href="/learn/system-design/core-concepts/consistent-hashing/quick-reference"></a></div></div></div></div></div></div></div><!--$--><!--/$--></div></div></main>
+</body>
+</html>

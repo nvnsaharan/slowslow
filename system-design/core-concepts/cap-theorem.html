@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CAP Theorem</title>
+<meta name="source-url" content="https://www.hellointerview.com/learn/system-design/core-concepts/cap-theorem">
+<script>
+(function () {
+  var theme;
+  try { theme = localStorage.getItem('course-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #666666;
+    --faint: #888888;
+    --border: #e1e4e8;
+    --border-strong: #d0d7de;
+    --code-bg: #f6f8fa;
+    --inline-code-bg: #f0f1f3;
+    --link: #0969da;
+    --accent: #10857a;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121212;
+    --fg: #e6e6e6;
+    --muted: #aaaaaa;
+    --faint: #999999;
+    --border: #333333;
+    --border-strong: #3a3a3a;
+    --code-bg: #1e1e1e;
+    --inline-code-bg: #252525;
+    --link: #6cb2ff;
+    --accent: #34b3a6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    max-width: 46rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--fg);
+    background: var(--bg);
+  }
+  h1, h2, h3, h4, h5, h6 { line-height: 1.3; margin: 2em 0 0.6em; }
+  h1 { font-size: 2rem; margin-top: 0.5em; }
+  img, svg, video { max-width: 100%; height: auto; }
+  figure { margin: 1.5em 0; text-align: center; }
+  figcaption { font-size: 0.875rem; color: var(--muted); }
+  pre {
+    padding: 1em;
+    overflow-x: auto;
+    border-radius: 8px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    background: var(--inline-code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  table { border-collapse: collapse; width: 100%; margin: 1.5em 0; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--border-strong); padding: 0.5em 0.75em; text-align: left; }
+  th { background: var(--code-bg); }
+  blockquote { margin: 1.5em 0; padding: 0.5em 1.25em; border-left: 4px solid var(--border-strong); color: var(--muted); }
+  a { color: var(--link); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+  .lesson-source { font-size: 0.8125rem; color: var(--faint); margin-bottom: 2rem; }
+
+  #theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+  #theme-toggle:hover { border-color: var(--accent); }
+
+</style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Toggle light/dark theme"></button>
+<script>
+(function () {
+  var btn = document.getElementById('theme-toggle');
+  function refresh() { btn.textContent = document.documentElement.dataset.theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19'; }
+  btn.addEventListener('click', function () {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('course-theme', next); } catch (e) {}
+    refresh();
+  });
+  refresh();
+})();
+</script>
+<p class="lesson-source">Saved for offline reading from <a href="https://www.hellointerview.com/learn/system-design/core-concepts/cap-theorem">https://www.hellointerview.com/learn/system-design/core-concepts/cap-theorem</a></p>
+<main class="flex-1 min-w-0 overflow-y-auto print-main"><div class="flex flex-col bg-nav-bg-paper"><div class="px-4 md:px-6 max-w-7xl mx-auto py-3 w-full print-main-content" style="min-height:calc(100vh - 48px - 0px);transition:min-height 0.3s ease-in-out;background-color:var(--nav-bg-paper)"><div class="grid grid-cols-7 gap-12 md:gap-0 mx-auto max-w-5xl"><div class="col-span-7 w-full max-w-4xl md:pr-6 xl:col-span-5"><div class="relative"><div id="markdown" class="mui-4tqezl"><div class="chrome"><div class="flex flex-col gap-2"><div class="flex flex-col relative"><div class="flex items-center justify-between   "><h6 class="MuiTypography-root MuiTypography-h6 mui-pkyqy5">Core Concepts</h6></div><div class="flex flex-col md:flex-row md:items-start md:justify-between md:gap-4"><div class="flex items-center gap-2"><h1 class="MuiTypography-root MuiTypography-h2 mui-xhvznl">CAP Theorem</h1><div class="MuiBox-root mui-yrscm7"></div></div></div><p class="MuiTypography-root MuiTypography-body2 mui-19x8mt2">Master the fundamental tradeoffs between consistency and availability in distributed systems.</p></div></div><hr class="MuiDivider-root MuiDivider-fullWidth mui-18s6yq7"></div>
+<div class="mdx-p" data-hi-narration-block-id="p-1" data-hi-narration-clickable="false">CAP theorem is routinely a point of confusion for candidates, but it is foundational to how you approach your design in an interview.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-2" data-hi-narration-clickable="false">We'll explain what it is, how it works, and the practical tradeoffs you need to make when considering CAP theorem during the non-functional requirements phase of a system design interview.</div>
+<h2 id="what-is-cap-theorem" class="mdx-h2" data-hi-narration-block-id="p-3" data-hi-narration-clickable="false">What is CAP Theorem?</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-4" data-hi-narration-clickable="false">At its core, CAP theorem states that in a distributed system, you can only have two out of three of the following properties:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-5" data-hi-narration-clickable="false"><strong>Consistency</strong>: All nodes see the same data at the same time. When a write is made to one node, all subsequent reads from any node will return that updated value.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-6" data-hi-narration-clickable="false"><strong>Availability</strong>: Every request to a non-failing node receives a response, without the guarantee that it contains the most recent version of the data.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-7" data-hi-narration-clickable="false"><strong>Partition Tolerance</strong>: The system continues to operate despite arbitrary message loss or failure of part of the system (i.e., network partitions between nodes).</li>
+</ul>
+<div class="callout callout-warning my-6" data-hi-narration-block-id="p-8" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Note that consistency in the context of the CAP theorem is quite different from the consistency guaranteed by <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">ACID</span> databases. Confusing, I know.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-9" data-hi-narration-clickable="false">Here's the key insight that makes CAP theorem much simpler to reason about in interviews: In any distributed system, partition tolerance is a must. Network failures will happen, and your system needs to handle them.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-10" data-hi-narration-clickable="false">This means that in practice, CAP theorem really boils down to a single choice: Do you prioritize consistency or availability when a network partition occurs?</div>
+<div class="mdx-p" data-hi-narration-block-id="p-11" data-hi-narration-clickable="false">Let's explore what this means through a practical example.</div>
+<h2 id="understanding-cap-theorem-through-an-example" class="mdx-h2" data-hi-narration-block-id="p-12" data-hi-narration-clickable="false">Understanding CAP Theorem Through an Example</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-13" data-hi-narration-clickable="false">Imagine you're running a website with two servers - one in the USA and one in Europe. When a user updates their public profile (let's say their display name), here's what happens:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-14" data-hi-narration-clickable="false">User A connects to their closest server (USA) and updates their name</li>
+<li class="mdx-li" data-hi-narration-block-id="p-15" data-hi-narration-clickable="false">This update is replicated to the server in Europe</li>
+<li class="mdx-li" data-hi-narration-block-id="p-16" data-hi-narration-clickable="false">When User B in Europe views User A's profile, they see the updated name</li>
+</ol>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/kdciksygiusv.1b9ceu0wl0-ni-7b302f40.svg" alt="Basic Replication" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Basic Replication</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-17" data-hi-narration-clickable="false">Everything works smoothly until we encounter a network partition - the connection between our USA and Europe servers goes down. Now we have a critical decision to make:</div>
+<div class="mdx-p" data-hi-narration-block-id="p-18" data-hi-narration-clickable="false">When User B tries to view User A's profile, should we:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-19" data-hi-narration-clickable="false">Option A: Return an error because we can't guarantee the data is up-to-date (choosing consistency)</li>
+<li class="mdx-li" data-hi-narration-block-id="p-20" data-hi-narration-clickable="false">Option B: Show potentially stale data (choosing availability)</li>
+</ul>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/ui_mdimd0ffa.29o8_fa8_bcar-593f20b3.svg" alt="Network Partition" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Network Partition</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-21" data-hi-narration-clickable="false">This is where CAP theorem becomes practical - we must choose between consistency and availability.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-22" data-hi-narration-clickable="false">In the case, the answer is rather clear: we would rather show a user in Europe the old name of User A, rather than show an error. Seeing a stale name is better than seeing no name at all.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-23" data-hi-narration-clickable="false">Let's look at some other real-world examples of this choice:</div>
+<h3 id="when-to-choose-consistency" class="mdx-h3" data-hi-narration-block-id="p-24" data-hi-narration-clickable="false">When to Choose Consistency</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-25" data-hi-narration-clickable="false">Some systems absolutely require consistency, even at the cost of availability:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-26" data-hi-narration-clickable="false"><strong>Ticket Booking Systems</strong>: Imagine if User A booked seat 6A on a flight, but due to a network partition, User B sees the seat as available and books it too. You'd have two people showing up for the same seat!</li>
+<li class="mdx-li" data-hi-narration-block-id="p-27" data-hi-narration-clickable="false"><strong>E-commerce Inventory</strong>: If Amazon has one toothbrush left and the system shows it as available to multiple users during a network partition, they could oversell their inventory.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-28" data-hi-narration-clickable="false"><strong>Financial Systems</strong>: Stock trading platforms need to show accurate, up-to-date order books. Showing stale data could lead to trades at incorrect prices.</li>
+</ol>
+<h3 id="when-to-choose-availability" class="mdx-h3" data-hi-narration-block-id="p-29" data-hi-narration-clickable="false">When to Choose Availability</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-30" data-hi-narration-clickable="false">The majority of systems can tolerate some inconsistency and should prioritize availability. In these cases, eventual consistency is fine. Meaning, the system will eventually become consistent, but it may take a few seconds or minutes.</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-31" data-hi-narration-clickable="false"><strong>Social Media</strong>: If User A updates their profile picture, it's perfectly fine if User B sees the old picture for a few minutes.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-32" data-hi-narration-clickable="false"><strong>Content Platforms (like Netflix)</strong>: If someone updates a movie description, showing the old description temporarily to some users isn't catastrophic.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-33" data-hi-narration-clickable="false"><strong>Review Sites (like Yelp)</strong>: If a restaurant updates their hours, showing slightly outdated information briefly is better than showing no information at all.</li>
+</ol>
+<div class="mdx-p" data-hi-narration-block-id="p-34" data-hi-narration-clickable="false">The key question to ask yourself is: "Would it be catastrophic if users briefly saw inconsistent data?" If the answer is yes, choose consistency. If not, choose availability.</div>
+<h2 id="cap-theorem-in-system-design-interviews" class="mdx-h2" data-hi-narration-block-id="p-35" data-hi-narration-clickable="false">CAP Theorem in System Design Interviews</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-36" data-hi-narration-clickable="false">Understanding CAP theorem matters because it should be one of the first things you discuss in a system design interview as it will have a meaningful impact on how you design your system.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-37" data-hi-narration-clickable="false">In a system design interview, you typically begin by:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-38" data-hi-narration-clickable="false">Aligning on functional requirements (features)</li>
+<li class="mdx-li" data-hi-narration-block-id="p-39" data-hi-narration-clickable="false">Defining non-functional requirements (system qualities)</li>
+</ol>
+<div class="mdx-p" data-hi-narration-block-id="p-40" data-hi-narration-clickable="false">When discussing non-functional requirements, CAP theorem should be your starting point. You need to ask the all important question: "Does this system need to prioritize consistency or availability?"</div>
+<div class="mdx-p" data-hi-narration-block-id="p-41" data-hi-narration-clickable="false">If you prioritize consistency, your design might include:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-42" data-hi-narration-clickable="false"><strong>Distributed Transactions</strong>: Ensuring multiple data stores (like cache and database) remain in sync through two-phase commit protocols. This adds complexity but guarantees consistency across all nodes. This means users will likely experience higher latency as the system ensures data is consistent across all nodes.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-43" data-hi-narration-clickable="false"><strong>Single-Node Solutions</strong>: Using a single database instance to avoid propagation issues entirely. While this limits scalability, it eliminates consistency challenges by having a single source of truth.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-44" data-hi-narration-clickable="false"><strong>Technology Choices</strong>:<!-- -->
+<ul class="mdx-ul">
+<li class="mdx-li">Traditional RDBMSs (<a href="https://www.hellointerview.com/learn/system-design/deep-dives/postgres" target="_blank" rel="noopener noreferrer" class="mdx-a">PostgreSQL</a>, MySQL)</li>
+<li class="mdx-li">Google Spanner</li>
+<li class="mdx-li"><a href="https://www.hellointerview.com/learn/system-design/deep-dives/dynamodb" target="_blank" rel="noopener noreferrer" class="mdx-a">DynamoDB</a> (in strong consistency mode)</li>
+</ul>
+</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-45" data-hi-narration-clickable="false">On the other hand, if you prioritize availability, your design can include:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-46" data-hi-narration-clickable="false"><strong>Multiple Replicas</strong>: Scaling to additional read replicas with asynchronous <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">replication</span>, allowing reads to be served from any replica even if it's slightly behind. This improves read performance and availability at the cost of potential staleness.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-47" data-hi-narration-clickable="false"><strong>Change Data Capture (<span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">CDC</span>)</strong>: Using CDC to track changes in the primary database and propagate them asynchronously to replicas, caches, and other systems. This allows the primary system to remain available while updates flow through the system eventually.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-48" data-hi-narration-clickable="false"><strong>Technology Choices</strong>:<!-- -->
+<ul class="mdx-ul">
+<li class="mdx-li"><a href="https://www.hellointerview.com/learn/system-design/deep-dives/cassandra" target="_blank" rel="noopener noreferrer" class="mdx-a">Cassandra</a></li>
+<li class="mdx-li"><a href="https://www.hellointerview.com/learn/system-design/deep-dives/dynamodb" target="_blank" rel="noopener noreferrer" class="mdx-a">DynamoDB</a> (in multiple availability zone configuration)</li>
+<li class="mdx-li"><a href="https://www.hellointerview.com/learn/system-design/deep-dives/redis" target="_blank" rel="noopener noreferrer" class="mdx-a">Redis</a> clusters</li>
+</ul>
+</li>
+</ul>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-49" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Most modern distributed databases offer configuration options for both consistency and availability. The key is understanding which to choose for your use case.</div></div></div></div>
+<h2 id="advanced-cap-theorem-considerations" class="mdx-h2" data-hi-narration-block-id="p-50" data-hi-narration-clickable="false">Advanced CAP Theorem Considerations</h2>
+<div class="callout callout-warning my-6" data-hi-narration-block-id="p-51" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">If you're a junior or mid-level candidate, the previous sections are sufficient for most interviews. The following section covers more advanced concepts that might be relevant for senior and staff-level discussions.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-52" data-hi-narration-clickable="false">As systems grow in complexity, the choice between consistency and availability isn't always binary. Modern distributed systems often require nuanced approaches that vary by feature and use case. Let's explore these advanced considerations.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-53" data-hi-narration-clickable="false">Real-world systems frequently need both availability and consistency - just for different features. Let's look at two examples:</div>
+<h4 id="example-1-ticketmaster" class="mdx-h4" data-hi-narration-block-id="p-54" data-hi-narration-clickable="false">Example 1: Ticketmaster</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-55" data-hi-narration-clickable="false"><a href="https://www.hellointerview.com/learn/system-design/problem-breakdowns/ticketmaster" target="_blank" rel="noopener noreferrer" class="mdx-a">Ticketmaster</a> needs different consistency models for different features within the same system:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-56" data-hi-narration-clickable="false"><strong>Booking a seat at an event</strong>: Requires strong consistency to prevent double-booking as we discussed in the previous section.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-57" data-hi-narration-clickable="false"><strong>Viewing event details</strong>: Can prioritize availability (showing slightly outdated event descriptions is acceptable)</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-58" data-hi-narration-clickable="false">In an interview, you might say: "For this ticketing system, I'll prioritize consistency for booking transactions but optimize for availability when users are browsing and viewing events."</div>
+<h4 id="example-2-tinder" class="mdx-h4" data-hi-narration-block-id="p-59" data-hi-narration-clickable="false">Example 2: Tinder</h4>
+<div class="mdx-p" data-hi-narration-block-id="p-60" data-hi-narration-clickable="false">Similarly, <a href="https://www.hellointerview.com/learn/system-design/problem-breakdowns/tinder" target="_blank" rel="noopener noreferrer" class="mdx-a">Tinder</a> has mixed requirements:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-61" data-hi-narration-clickable="false"><strong>Matching</strong>: Needs consistency. If both users swipe right at about the same time, they should both see the match immediately.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-62" data-hi-narration-clickable="false"><strong>Viewing a users profile</strong>: Can prioritize availability. Seeing a slightly outdated profile picture is acceptable if a user just updated their image.</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-63" data-hi-narration-clickable="false">In an interview, you might say: "For this dating app, I'll prioritize consistency for matching but optimize for availability when users are viewing profiles."</div>
+<h3 id="different-levels-of-consistency" class="mdx-h3" data-hi-narration-block-id="p-64" data-hi-narration-clickable="false">Different Levels of Consistency</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-65" data-hi-narration-clickable="false">When discussing consistency in CAP theorem, people usually mean strong consistency - where all reads reflect the most recent write. However, understanding the spectrum of consistency models can help you make more nuanced design decisions:</div>
+<div class="mdx-p" data-hi-narration-block-id="p-66" data-hi-narration-clickable="false"><strong>Strong Consistency</strong>: All reads reflect the most recent write. This is the most expensive consistency model in terms of performance, but is necessary for systems that require absolute accuracy like bank account balances. This is what we have been discussing so far.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-67" data-hi-narration-clickable="false"><strong>Causal Consistency</strong>: Related events appear in the same order to all users. This ensures logical ordering of dependent actions, such as ensuring comments on a post must appear after the post itself.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-68" data-hi-narration-clickable="false"><strong>Read-your-own-writes Consistency</strong>: Users always see their own updates immediately, though other users might see older versions. This is commonly used in social media platforms where users expect to see their own profile updates right away.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-69" data-hi-narration-clickable="false"><strong>Eventual Consistency</strong>: The system will become consistent over time but may temporarily have inconsistencies. This is the most relaxed form of consistency and is often used in systems like DNS where temporary inconsistencies are acceptable. This is the default behavior of most distributed databases and what we are implicitly choosing when we prioritize availability.</div>
+<h2 id="conclusion" class="mdx-h2" data-hi-narration-block-id="p-70" data-hi-narration-clickable="false">Conclusion</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-71" data-hi-narration-clickable="false">CAP theorem is important. It sets the stage for how you approach your design in an interview and should not be overlooked.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-72" data-hi-narration-clickable="false">But it doesn't need to be complicated. Just ask yourself: "Does every read need to read the most recent write?" If the answer is yes, you need to prioritize consistency. If the answer is no, you can prioritize availability.</div>
+<div class="my-6"><div class="MuiBox-root mui-10b10ta"><div class="flex flex-row items-center gap-3 mb-3"><div class="heroicon-sw-2 MuiBox-root mui-tbago3"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"></path></svg></div><div><h6 class="MuiTypography-root MuiTypography-h6 mui-jyzq54">Test Your Knowledge</h6><p class="MuiTypography-root MuiTypography-body2 mui-14ou361">Answer the question below to find your gaps.</p></div></div><div class="flex flex-row items-baseline gap-3 mb-1 "><p class="MuiTypography-root MuiTypography-body2 mui-nk2f70">Question 1 of 15</p></div><div class="MuiBox-root mui-1muw576"><div class="mdx-p">When network partitions occur, distributed systems must choose between which two properties?</div></div><div class="MuiBox-root mui-0"><div class="grid grid-cols-1 gap-2 mb-4"><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">1</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Availability and Partition Tolerance</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">2</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Consistency and Partition Tolerance</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">3</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">All three can be maintained</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">4</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Consistency and Availability</div></div></div></div></div></div></div></div><div class="MuiBox-root mui-17f8lpp"><div class="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-0 chrome"><div class="flex flex-row items-center gap-3 md:gap-3 w-full md:w-auto"><div class="heroicon-sw-2 MuiBox-root mui-14uhju3"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"></path></svg></div><div><h6 class="MuiTypography-root MuiTypography-h6 mui-xebfs0">Quick Reference</h6><p class="MuiTypography-root MuiTypography-body2 mui-vleovk">Get a quick-reference sheet for this topic, perfect for last-minute review.</p></div></div><a class="self-stretch md:self-center" style="text-decoration:none" href="/learn/system-design/core-concepts/cap-theorem/quick-reference"></a></div></div></div></div></div></div></div><!--$--><!--/$--></div></div></main>
+</body>
+</html>

@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Caching</title>
+<meta name="source-url" content="https://www.hellointerview.com/learn/system-design/core-concepts/caching">
+<script>
+(function () {
+  var theme;
+  try { theme = localStorage.getItem('course-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #666666;
+    --faint: #888888;
+    --border: #e1e4e8;
+    --border-strong: #d0d7de;
+    --code-bg: #f6f8fa;
+    --inline-code-bg: #f0f1f3;
+    --link: #0969da;
+    --accent: #10857a;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121212;
+    --fg: #e6e6e6;
+    --muted: #aaaaaa;
+    --faint: #999999;
+    --border: #333333;
+    --border-strong: #3a3a3a;
+    --code-bg: #1e1e1e;
+    --inline-code-bg: #252525;
+    --link: #6cb2ff;
+    --accent: #34b3a6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    max-width: 46rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--fg);
+    background: var(--bg);
+  }
+  h1, h2, h3, h4, h5, h6 { line-height: 1.3; margin: 2em 0 0.6em; }
+  h1 { font-size: 2rem; margin-top: 0.5em; }
+  img, svg, video { max-width: 100%; height: auto; }
+  figure { margin: 1.5em 0; text-align: center; }
+  figcaption { font-size: 0.875rem; color: var(--muted); }
+  pre {
+    padding: 1em;
+    overflow-x: auto;
+    border-radius: 8px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    background: var(--inline-code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  table { border-collapse: collapse; width: 100%; margin: 1.5em 0; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--border-strong); padding: 0.5em 0.75em; text-align: left; }
+  th { background: var(--code-bg); }
+  blockquote { margin: 1.5em 0; padding: 0.5em 1.25em; border-left: 4px solid var(--border-strong); color: var(--muted); }
+  a { color: var(--link); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+  .lesson-source { font-size: 0.8125rem; color: var(--faint); margin-bottom: 2rem; }
+
+  #theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+  #theme-toggle:hover { border-color: var(--accent); }
+
+</style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Toggle light/dark theme"></button>
+<script>
+(function () {
+  var btn = document.getElementById('theme-toggle');
+  function refresh() { btn.textContent = document.documentElement.dataset.theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19'; }
+  btn.addEventListener('click', function () {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('course-theme', next); } catch (e) {}
+    refresh();
+  });
+  refresh();
+})();
+</script>
+<p class="lesson-source">Saved for offline reading from <a href="https://www.hellointerview.com/learn/system-design/core-concepts/caching">https://www.hellointerview.com/learn/system-design/core-concepts/caching</a></p>
+<main class="flex-1 min-w-0 overflow-y-auto print-main"><div class="flex flex-col bg-nav-bg-paper"><div class="px-4 md:px-6 max-w-7xl mx-auto py-3 w-full print-main-content" style="min-height:calc(100vh - 48px - 0px);transition:min-height 0.3s ease-in-out;background-color:var(--nav-bg-paper)"><div class="grid grid-cols-7 gap-12 md:gap-0 mx-auto max-w-5xl"><div class="col-span-7 w-full max-w-4xl md:pr-6 xl:col-span-5"><div class="relative"><div id="markdown" class="mui-4tqezl"><div class="chrome"><div class="flex flex-col gap-2"><div class="flex flex-col relative"><div class="flex items-center justify-between   "><h6 class="MuiTypography-root MuiTypography-h6 mui-pkyqy5">Core Concepts</h6></div><div class="flex flex-col md:flex-row md:items-start md:justify-between md:gap-4"><div class="flex items-center gap-2"><h1 class="MuiTypography-root MuiTypography-h2 mui-xhvznl">Caching</h1><div class="MuiBox-root mui-yrscm7"></div></div></div><p class="MuiTypography-root MuiTypography-body2 mui-19x8mt2" data-hi-narration-block-id="p-0" data-hi-narration-clickable="false" data-hi-narration-active="true" data-hi-narration-playing="false">Learn about caching and when to use it in system design interviews.</p></div></div><hr class="MuiDivider-root MuiDivider-fullWidth mui-18s6yq7"></div>
+<div class="mdx-p" data-hi-narration-block-id="p-1" data-hi-narration-clickable="false">In system design interviews, caching comes up almost every time you need to handle high read traffic. Your database becomes the bottleneck, latency starts creeping up, and the interviewer is waiting for you to say the word: cache.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-2" data-hi-narration-clickable="false">Reading a user profile from Postgres may take 50 milliseconds, but reading from an in-memory cache like Redis takes just 1 millisecond. That's a 50x improvement in latency. Databases store data on disk, and every query pays the cost of disk access. Memory sits much closer to the CPU and avoids that entirely.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-3" data-hi-narration-clickable="false">Caches are essential for scalable systems. They reduce load on the database and cut latency dramatically. But they also create new challenges around invalidation and failure handling.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-4" data-hi-narration-clickable="false">This breakdown covers the basics of caching, when and where to use it, common pitfalls, and how to talk about caching clearly in interviews.</div>
+<h2 id="where-to-cache" class="mdx-h2" data-hi-narration-block-id="p-5" data-hi-narration-clickable="false">Where to Cache</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-6" data-hi-narration-clickable="false">When most engineers hear caching, they immediately think of Redis or Memcached sitting between the application and the database. It is the most common type of cache and the one interviewers care about the most.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-7" data-hi-narration-clickable="false">But caching shows up in multiple layers of a system. Browsers cache. CDNs cache. Applications cache. Even databases have built-in caching layers.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-8" data-hi-narration-clickable="false">Let's look at the main places you can cache data, why each one exists, and when it makes sense to use it.</div>
+<h3 id="external-caching" class="mdx-h3" data-hi-narration-block-id="p-9" data-hi-narration-clickable="false">External Caching</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-10" data-hi-narration-clickable="false">An external cache is a standalone cache service that your application talks to over the network. This is what most people think of when they hear caching. You store frequently accessed data in something like <a href="/learn/system-design/deep-dives/redis" target="_blank" rel="noopener noreferrer" class="mdx-a">Redis</a> or <a href="https://memcached.org/" target="_blank" rel="noopener noreferrer" class="mdx-a">Memcached</a> so you do not have to hit the database every time.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/i-fdmuqwkz7t.2y32e8ylfd7zm-97587dd8.svg" alt="External Caching" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">External Caching</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-11" data-hi-narration-clickable="false">External caches scale well because every application server can share the same cache. They also support eviction policies like LRU and expiration via TTL so your memory footprint stays controlled.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-12" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">In system design interviews, external caching with Redis is the default answer when discussing caching strategies. Interviewers expect you to mention it for any high-traffic system. Start here, then layer on other caching types such as CDN or client-side caching only if the problem calls for them.</div></div></div></div>
+<h3 id="cdn-content-delivery-network" class="mdx-h3" data-hi-narration-block-id="p-13" data-hi-narration-clickable="false">CDN (Content Delivery Network)</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-14" data-hi-narration-clickable="false">A CDN is a geographically distributed network of servers that caches content close to users. Instead of every request traveling to your origin server, a CDN stores copies of your content at edge servers around the world.</div>
+<div class="callout callout-info my-6" data-hi-narration-block-id="p-15" data-hi-narration-clickable="false"><div class="MuiBox-root mui-r83s7g"><div class="MuiBox-root mui-14185gn"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Modern CDNs like Cloudflare, Fastly, and Akamai can cache much more than static files. They can also cache public API responses, HTML pages, and even run edge logic to personalize content or enforce security rules before requests reach your servers. But the most common and most impactful use of a CDN is still media delivery.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-16" data-hi-narration-clickable="false">How it works:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-17" data-hi-narration-clickable="false">A user requests an image from your app.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-18" data-hi-narration-clickable="false">The request goes to the nearest CDN edge server.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-19" data-hi-narration-clickable="false">If the image is cached there, it is returned immediately.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-20" data-hi-narration-clickable="false">If not, the CDN fetches it from your origin server, stores it, and returns it.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-21" data-hi-narration-clickable="false">Future users in that region get the image instantly from the CDN.</li>
+</ol>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/8-vtex8ilxuc.1qposik0ha4oq-b59bcedd.svg" alt="CDN Caching" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">CDN Caching</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-22" data-hi-narration-clickable="false">Without a CDN, every image request travels to your origin. If your server is in Virginia and the user is in India, that adds 250–300 ms of latency per request. With a CDN, the same image is served from a nearby edge server in 20–40 ms. That is a massive performance difference.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-23" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Even though modern CDNs can cache API responses and dynamic content, in system design interviews the safest time to introduce a CDN is when your system serves static media at scale. Start with that reason first, then expand only if the problem calls for more.</div></div></div></div>
+<h3 id="client-side-caching" class="mdx-h3" data-hi-narration-block-id="p-24" data-hi-narration-clickable="false">Client-Side Caching</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-25" data-hi-narration-clickable="false">Client-side caching stores data close to the requester to avoid unnecessary network calls. This usually means the user's device, like a browser (HTTP cache, localStorage) or mobile app using local memory or on-device storage.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-26" data-hi-narration-clickable="false">But it can also mean caching within a client library. For example, Redis clients cache cluster metadata like which nodes are in the cluster and which slots are assigned to them. That way, the client can route requests directly to the right node without querying the cluster on every operation.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-27" data-hi-narration-clickable="false">For user-facing caching, you have limited control from the backend. Data can go stale and invalidation is harder. The <a href="/learn/system-design/problem-breakdowns/strava" target="_blank" rel="noopener noreferrer" class="mdx-a">Strava app</a> keeps your run data on the device while you are offline and syncs it later. A browser reusing a previously downloaded image from disk is also caching.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/rccaplqdcg10.3jjqfty1czxwl-7409bf8f.svg" alt="Client-Side Caching" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Client-Side Caching</span></div></div></div></div>
+<h3 id="in-process-caching" class="mdx-h3" data-hi-narration-block-id="p-28" data-hi-narration-clickable="false">In-Process Caching</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-29" data-hi-narration-clickable="false">Most candidates, and engineers, overlook the fact that servers run on machines with a lot of memory. As hardware improves, this becomes increasingly true. You can use that memory to cache data directly inside the application process instead of always calling out to Redis or the database.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-30" data-hi-narration-clickable="false">The idea is simple: if your service keeps requesting the same small pieces of data again and again, store them in a local cache inside the process. Reads from local memory are even faster than reads from Redis because they avoid any network call.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-31" data-hi-narration-clickable="false">This light-weight form of caching makes sense for small pieces of data that are requested frequently like:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-32" data-hi-narration-clickable="false">Configuration values</li>
+<li class="mdx-li" data-hi-narration-block-id="p-33" data-hi-narration-clickable="false">Feature flags</li>
+<li class="mdx-li" data-hi-narration-block-id="p-34" data-hi-narration-clickable="false">Small reference datasets</li>
+<li class="mdx-li" data-hi-narration-block-id="p-35" data-hi-narration-clickable="false">Hot keys</li>
+<li class="mdx-li" data-hi-narration-block-id="p-36" data-hi-narration-clickable="false">Rate limiting counters</li>
+<li class="mdx-li" data-hi-narration-block-id="p-37" data-hi-narration-clickable="false">Precomputed values</li>
+</ul>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/selgeswuam_-.402yv8qq8u703-6033dfa8.svg" alt="In-Process Caching" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">In-Process Caching</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-38" data-hi-narration-clickable="false">In-process caching is blazing fast, but it comes with obvious limitations. Each instance of your application has its own cache, so cached data is not shared across servers. If one instance updates or invalidates a cached value, the others will not know.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-39" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Use in-process caching for small, frequently accessed values that rarely change. It is great for speed but not a replacement for Redis. In system design interviews, mention this only as an <strong>optimization layer</strong> after you have already introduced an external cache.</div></div></div></div>
+<h2 id="cache-architectures" class="mdx-h2" data-hi-narration-block-id="p-40" data-hi-narration-clickable="false">Cache Architectures</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-41" data-hi-narration-clickable="false">Not all caching works the same way. How you read from and write to the cache changes performance, consistency, and complexity. These are the four core cache patterns you should know for system design interviews.</div>
+<h3 id="cache-aside-lazy-loading" class="mdx-h3" data-hi-narration-block-id="p-42" data-hi-narration-clickable="false">Cache-Aside (Lazy Loading)</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-43" data-hi-narration-clickable="false">This is the most common caching pattern and the one you should default to in interviews.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-44" data-hi-narration-clickable="false">How it works:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-45" data-hi-narration-clickable="false">Application checks the cache.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-46" data-hi-narration-clickable="false">If the data is there, return it.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-47" data-hi-narration-clickable="false">If not, fetch from the database, store it in the cache, and return it.</li>
+</ol>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/rps7cy2z78dc.2hte0db5lfbvr-c83401a9.svg" alt="Cache-Aside" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Cache-Aside</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-48" data-hi-narration-clickable="false">Cache-aside only caches data when needed, which keeps the cache lean. The downside is that a cache miss causes extra latency.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-49" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">If you only remember one caching pattern for interviews, make it cache-aside.</div></div></div></div>
+<h3 id="write-through-caching" class="mdx-h3" data-hi-narration-block-id="p-50" data-hi-narration-clickable="false">Write-Through Caching</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-51" data-hi-narration-clickable="false">With write-through caching, the application writes only to the cache. The cache then synchronously writes to the database before returning to the application. The write operation does not complete until both the cache and database are updated.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-52" data-hi-narration-clickable="false">In practice, this requires a cache implementation that supports write-through, like a caching library with a data store plugin. When you write to the cache, the library handles calling your database write logic before acknowledging the write. Redis itself does not natively support write-through, so you need application code or a framework to implement this pattern.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/0scq9wo17cwy.0w-chlnxgaxlp-1682ba23.svg" alt="Write-Through" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Write-Through</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-53" data-hi-narration-clickable="false">The tradeoff is slower writes because the application must wait for both the cache update and the database write to complete. Write-through can also pollute the cache with data that may never be read again.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-54" data-hi-narration-clickable="false">Write-through still suffers from the dual-write problem. If the cache update succeeds but the database write fails, or vice versa, the systems can end up inconsistent. You need retry logic, error handling, or eventually accept that perfect consistency is difficult without distributed transactions.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-55" data-hi-narration-clickable="false">In system design interviews, write-through is less common than cache-aside because it requires specialized caching infrastructure and still has consistency edge cases.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-56" data-hi-narration-clickable="false">Use this when <strong>reads must always return fresh data</strong> and your system can tolerate slightly slower writes.</div>
+<h3 id="write-behind-write-back-caching" class="mdx-h3" data-hi-narration-block-id="p-57" data-hi-narration-clickable="false">Write-Behind (Write-Back) Caching</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-58" data-hi-narration-clickable="false">With write-behind caching, the application writes only to the cache. The cache batches and writes the data to the database asynchronously in the background.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/eefy1o-nsac6.3jue8v55es_mo-7333c0b3.svg" alt="Write-Behind" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Write-Behind</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-59" data-hi-narration-clickable="false">This makes writes very fast, but introduces risk. If the cache crashes before flushing, you can lose data. This is best for workloads where occasional data loss is acceptable.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-60" data-hi-narration-clickable="false">Use this when <strong>you need high write throughput</strong> and <strong><span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">eventual consistency</span> is acceptable</strong>. Common in analytics and metrics pipelines.</div>
+<h3 id="read-through-caching" class="mdx-h3" data-hi-narration-block-id="p-61" data-hi-narration-clickable="false">Read-Through Caching</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-62" data-hi-narration-clickable="false">With read-through caching, the cache acts as a smart proxy. Your application never talks to the database directly. On a cache miss, the cache itself fetches from the database, stores the data, and returns it.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-63" data-hi-narration-clickable="false">This is the read equivalent of write-through. In both patterns, the cache acts as an intermediary that handles database operations. Read-through manages reads, write-through manages writes. Systems often combine both patterns.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/_hddsimzhowq.3zwz0jqx7amir-5a6ec567.svg" alt="Read-Through" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Read-Through</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-64" data-hi-narration-clickable="false">This centralizes caching logic but adds complexity and usually requires a specialized caching library or service. It is less common in practice than cache-aside.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-65" data-hi-narration-clickable="false">CDNs are a form of read-through cache. When a CDN gets a cache miss, it fetches from your origin server, caches the result, and returns it. But for application-level caching with Redis, cache-aside is far more common.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-66" data-hi-narration-clickable="false">Generally speaking, there are very few reasons to propose this pattern in system design interviews unless you're discussing CDNs or similar infrastructure.</div>
+<h2 id="cache-eviction-policies" class="mdx-h2" data-hi-narration-block-id="p-67" data-hi-narration-clickable="false">Cache Eviction Policies</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-68" data-hi-narration-clickable="false">Caches have limited memory, so they need a strategy for deciding which entries to remove when full. These strategies are called eviction policies.</div>
+<h3 id="lru-least-recently-used" class="mdx-h3" data-hi-narration-block-id="p-69" data-hi-narration-clickable="false">LRU (Least Recently Used)</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-70" data-hi-narration-clickable="false">LRU evicts the item that has not been accessed for the longest time. It tracks access order using a linked list or ring buffer so the least recently used item can be removed in constant time.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-71" data-hi-narration-clickable="false">It is the default in many systems because it adapts well to most workloads where recently used data is likely to be used again.</div>
+<h3 id="lfu-least-frequently-used" class="mdx-h3" data-hi-narration-block-id="p-72" data-hi-narration-clickable="false">LFU (Least Frequently Used)</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-73" data-hi-narration-clickable="false">LFU evicts the item that has been accessed the least. It maintains a counter for each key and removes the one with the lowest frequency. Some implementations use approximate LFU to avoid the cost of precise frequency tracking.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-74" data-hi-narration-clickable="false">This works well when certain keys are consistently popular over time, like trending videos or top playlists.</div>
+<h3 id="fifo-first-in-first-out" class="mdx-h3" data-hi-narration-block-id="p-75" data-hi-narration-clickable="false">FIFO (First In First Out)</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-76" data-hi-narration-clickable="false">FIFO evicts the oldest item in the cache based only on insertion time. It can be implemented with a simple queue, but it ignores usage patterns.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-77" data-hi-narration-clickable="false">Because it may evict items that are still hot, it is rarely used in real systems beyond simple caching layers.</div>
+<h3 id="ttl-time-to-live" class="mdx-h3" data-hi-narration-block-id="p-78" data-hi-narration-clickable="false">TTL (Time To Live)</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-79" data-hi-narration-clickable="false">TTL is not an eviction policy by itself. Instead, it sets an expiration time for each key and removes entries that are too old. It is often combined with LRU or LFU to balance freshness and memory usage.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-80" data-hi-narration-clickable="false">TTL is a must have when data must eventually refresh, like API responses or session tokens.</div>
+<h2 id="common-caching-problems" class="mdx-h2" data-hi-narration-block-id="p-81" data-hi-narration-clickable="false">Common Caching Problems</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-82" data-hi-narration-clickable="false">Caching makes systems faster, but it also introduces new failure modes. These problems show up in real systems at scale, and interviewers often use them to test whether you understand the trade-offs of caching, not just the benefits. If you bring up caching in an interview, you should also show that you can handle these edge cases.</div>
+<h3 id="cache-stampede-thundering-herd" class="mdx-h3" data-hi-narration-block-id="p-83" data-hi-narration-clickable="false">Cache Stampede (Thundering Herd)</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-84" data-hi-narration-clickable="false">A cache stampede happens when a popular cache entry expires and many requests try to rebuild it at the same time. There is a brief window, even if only a second, where every request misses the cache and goes straight to the database. Instead of one query, you suddenly have hundreds or thousands, which can overload the database.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/hwqjetydmm14.35h3zejev60q7-12bca6d4.svg" alt="Cache Stampede" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Cache Stampede</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-85" data-hi-narration-clickable="false">For example, imagine your system caches the homepage feed with a TTL of 60 seconds. When the cache expires at exactly 12:01:00, every request at that moment misses the cache and queries the database. If traffic is high, this spike can overwhelm the database and cause cascading failures.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-86" data-hi-narration-clickable="false">How to handle it:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-87" data-hi-narration-clickable="false"><strong>Request coalescing (single flight):</strong> Allow only one request to rebuild the cache while others wait for the result. This is the most effective solution.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-88" data-hi-narration-clickable="false"><strong>Cache warming:</strong> Refresh popular keys proactively before they expire. This only helps when using TTL-based expiration. If you invalidate cache on writes instead, warming does not prevent stampedes.</li>
+</ul>
+<h3 id="cache-consistency" class="mdx-h3" data-hi-narration-block-id="p-89" data-hi-narration-clickable="false">Cache Consistency</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-90" data-hi-narration-clickable="false">Cache consistency problems are some of the most commonly discussed in system design interviews. They happen when the cache and database return different values for the same data. This is common because most systems read from the cache but write to the database first. That creates a window where the cache still holds stale data.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-91" data-hi-narration-clickable="false">For example, if a user updates their profile picture, the new value is written to the database but the old value might still be in the cache. Other users may see the outdated profile picture until the cache eventually refreshes.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-92" data-hi-narration-clickable="false">There is no perfect solution. You choose a strategy based on how fresh the data must be.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-93" data-hi-narration-clickable="false">How to handle it:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-94" data-hi-narration-clickable="false"><strong>Cache invalidation on writes:</strong> Delete the cache entry after updating the database so it gets repopulated with fresh data.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-95" data-hi-narration-clickable="false"><strong>Short TTLs for stale tolerance:</strong> Let slightly stale data live temporarily if eventual consistency is acceptable.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-96" data-hi-narration-clickable="false"><strong>Accept eventual consistency:</strong> For feeds, metrics, and analytics, a short delay is usually fine.</li>
+</ul>
+<h3 id="hot-keys" class="mdx-h3" data-hi-narration-block-id="p-97" data-hi-narration-clickable="false">Hot Keys</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-98" data-hi-narration-clickable="false">A hot key is a cache entry that receives a huge amount of traffic compared to everything else. Even if the cache hit rate is high, a single hot key can overload one cache node or one Redis shard and become a bottleneck.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-99" data-hi-narration-clickable="false">For example, if you are building Twitter and everyone is viewing Taylor Swift’s profile, the cache key for her user data (user:taylorswift) may receive millions of requests per second. That one key can overload a single Redis node even though everything is working “correctly.”</div>
+<div class="mdx-p" data-hi-narration-block-id="p-100" data-hi-narration-clickable="false">How to handle it:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-101" data-hi-narration-clickable="false"><strong>Replicate hot keys:</strong> Store the same value on multiple cache nodes and load balance reads across them.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-102" data-hi-narration-clickable="false"><strong>Add a local fallback cache:</strong> Keep extremely hot values in-process to avoid pounding Redis.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-103" data-hi-narration-clickable="false"><strong>Apply rate limiting:</strong> Slow down abusive traffic patterns on specific keys.</li>
+</ul>
+<div class="my-6" id="scaling-reads" data-hi-narration-block-id="p-104" data-hi-narration-clickable="false"><div class="MuiBox-root mui-1wdikhn"><div class="flex flex-col gap-2"><div class="flex flex-row items-center gap-2"><div class="MuiBox-root mui-4fyzfg"><div class="heroicon-sw-3 MuiBox-root mui-1mzzbdb"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-4 h-4 heroicon-sw-1-5" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"></path></svg></div></div><h6 class="MuiTypography-root MuiTypography-subtitle1 mui-17qpg43">Pattern: <!-- -->Scaling Reads</h6></div><div class="MuiBox-root mui-1by1rmn"><div class="mdx-p">Hot key scenarios in distributed caches is not limited to just caches. It is a common problem in distributed systems when millions of users simultaneously request the same viral content, traditional caching assumptions break down.</div></div><a class="MuiButtonBase-root MuiButton-root MuiButton-contained MuiButton-containedPremium MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPremium MuiButton-disableElevation MuiButton-root MuiButton-contained MuiButton-containedPremium MuiButton-sizeSmall MuiButton-containedSizeSmall MuiButton-colorPremium MuiButton-disableElevation mui-1thjdrf" tabindex="0" href="/learn/system-design/patterns/scaling-reads" target="_blank" rel="noopener noreferrer">Learn This Pattern</a></div></div></div>
+<h2 id="caching-in-system-design-interviews" class="mdx-h2" data-hi-narration-block-id="p-105" data-hi-narration-clickable="false">Caching in System Design Interviews</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-106" data-hi-narration-clickable="false">Caching comes up in nearly every system design interview, so it's important to know when to bring it up and how to walk through it systematically.</div>
+<h3 id="when-to-bring-up-caching" class="mdx-h3" data-hi-narration-block-id="p-107" data-hi-narration-clickable="false">When to Bring Up Caching</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-108" data-hi-narration-clickable="false">Don't jump straight to caching. You need to establish why it's necessary first.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-109" data-hi-narration-clickable="false">Bring up caching when you identify one of these problems:</div>
+<div class="mdx-p" data-hi-narration-block-id="p-110" data-hi-narration-clickable="false">Read-heavy workload: "We're serving 10M daily active users, each making 20 requests per day. That's 200M reads hitting the database. Even with indexes, we're looking at 20-50ms per query. A cache drops that to under 2ms and takes most of the load off the database."</div>
+<div class="mdx-p" data-hi-narration-block-id="p-111" data-hi-narration-clickable="false">Expensive queries: "Computing a user's personalized feed requires joining posts, followers, and likes across multiple tables. That query takes 200ms. We can cache the computed feed for 60 seconds and serve it in 1ms from Redis."</div>
+<div class="mdx-p" data-hi-narration-block-id="p-112" data-hi-narration-clickable="false">High database CPU: "Our database CPU is hitting 80% during peak hours just serving reads. The same queries run over and over. Caching the hot queries will cut database load by 70-80%."</div>
+<div class="mdx-p" data-hi-narration-block-id="p-113" data-hi-narration-clickable="false">Latency requirements: "We need sub-10ms response times for the API. Database queries are taking 30-50ms. We have to cache."</div>
+<div class="mdx-p" data-hi-narration-block-id="p-114" data-hi-narration-clickable="false">The pattern is simple. Identify the performance problem, quantify it with rough numbers, and explain how caching solves it. You can use our <a href="/learn/system-design/core-concepts/numbers-to-know" target="_blank" rel="noopener noreferrer" class="mdx-a">Numbers to Know</a> to get a sense of reasonable database and cache latencies.</div>
+<h3 id="how-to-introduce-caching" class="mdx-h3" data-hi-narration-block-id="p-115" data-hi-narration-clickable="false">How to Introduce Caching</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-116" data-hi-narration-clickable="false">Once you've established the need for caching, walk through your caching strategy systematically:</div>
+<div class="mdx-p"><strong>1. Identify the bottleneck</strong></div>
+<div class="mdx-p" data-hi-narration-block-id="p-117" data-hi-narration-clickable="false">Start by pointing to the specific problem caching will solve. Is it database load? Query latency? Expensive computations? Be specific about what's slow and why.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-118" data-hi-narration-clickable="false">"User profile queries are hitting the database 500 times per second during peak hours. Each query takes 30ms. That's our bottleneck."</div>
+<div class="mdx-p"><strong>2. Decide what to cache</strong></div>
+<div class="mdx-p" data-hi-narration-block-id="p-119" data-hi-narration-clickable="false">Not everything should be cached. Focus on data that is read frequently, doesn't change often, and is expensive to fetch or compute.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-120" data-hi-narration-clickable="false">"We'll cache user profiles since they're read on every page load but only updated when users edit their settings. We'll also cache the trending posts feed since it's computed from expensive aggregations but only needs to refresh every minute."</div>
+<div class="mdx-p" data-hi-narration-block-id="p-121" data-hi-narration-clickable="false">Think about cache keys. How will you look up cached data? For user profiles, the key might be <span class="mdx-code">user:123:profile</span>. For trending posts, it could be <span class="mdx-code">trending:posts:global</span>.</div>
+<div class="mdx-p"><strong>3. Choose your cache architecture</strong></div>
+<div class="mdx-p" data-hi-narration-block-id="p-122" data-hi-narration-clickable="false">Pick a caching pattern that matches your consistency requirements. Write-through makes sense when you need <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">strong consistency</span>. Write-behind works for high-volume writes where you can tolerate some risk.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-123" data-hi-narration-clickable="false">"I'll use cache-aside. On a read, we check Redis first. If it's there, return it. If not, query the database, store the result in Redis, and return it."</div>
+<div class="mdx-p" data-hi-narration-block-id="p-124" data-hi-narration-clickable="false">If you're dealing with static content like images or videos, mention CDN caching. If you have extremely hot keys that get hammered, mention in-process caching as an optimization layer.</div>
+<div class="mdx-p"><strong>4. Set an eviction policy</strong></div>
+<div class="mdx-p" data-hi-narration-block-id="p-125" data-hi-narration-clickable="false">Explain how you'll manage cache size. LRU is the safe default answer. TTL is essential for preventing stale data.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-126" data-hi-narration-clickable="false">"We'll use LRU eviction with Redis and set a TTL of 10 minutes on user profiles. That keeps the cache from growing unbounded while ensuring profiles don't get too stale. If a user updates their profile, we'll invalidate the cache entry immediately."</div>
+<div class="mdx-p"><strong>5. Address the downsides</strong></div>
+<div class="mdx-p" data-hi-narration-block-id="p-127" data-hi-narration-clickable="false">Caching introduces complexity. Show you've thought about the trade-offs.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-128" data-hi-narration-clickable="false">Cache invalidation: How do you keep cached data fresh? Do you invalidate on writes, rely on TTL, or accept eventual consistency?</div>
+<div class="mdx-p" data-hi-narration-block-id="p-129" data-hi-narration-clickable="false">"When a user updates their profile, we'll delete the cache entry so the next read fetches fresh data from the database."</div>
+<div class="mdx-p" data-hi-narration-block-id="p-130" data-hi-narration-clickable="false">Cache failures: What happens if Redis goes down? Will your database get crushed by the sudden traffic spike?</div>
+<div class="mdx-p" data-hi-narration-block-id="p-131" data-hi-narration-clickable="false">"If Redis is unavailable, requests will fall back to the database. We'll add circuit breakers so we don't overwhelm the database with a stampede. We might also consider keeping a small in-process cache as a last-resort layer."</div>
+<div class="mdx-p" data-hi-narration-block-id="p-132" data-hi-narration-clickable="false">Thundering herd: What happens when a popular cache entry expires and 1000 requests try to refetch it simultaneously?</div>
+<div class="mdx-p" data-hi-narration-block-id="p-133" data-hi-narration-clickable="false">"For extremely popular keys, we can use probabilistic early expiration or request coalescing so only one request fetches from the database while others wait for that result."</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-134" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Don't list every possible problem. Pick one or two that are relevant to the system you're designing and explain how you'd handle them. For staff-level candidates, focus on the important but non-obvious scenarios rather than burning time on things the interviewer can already assume.</div></div></div></div>
+<h2 id="conclusion" class="mdx-h2" data-hi-narration-block-id="p-135" data-hi-narration-clickable="false">Conclusion</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-136" data-hi-narration-clickable="false">Caching is what you do when reading from the database is too slow or too expensive. It keeps frequently accessed data in fast memory so you can skip the database entirely for most reads.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-137" data-hi-narration-clickable="false">The core trade-off is simple. Caches make reads faster and reduce load on whatever is behind them, but they introduce complexity around staleness and invalidation. Cached data can fall out of sync with the database. Cache failures can crush your database if you're not prepared. Hot keys can create bottlenecks even in distributed caches.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-138" data-hi-narration-clickable="false">In interviews, bring up caching after you've identified a database bottleneck. Walk through what you'll cache, which caching pattern you'll use, how you'll handle eviction, and what happens when things go wrong. CDN caching works for static media, and in-process caching can make sense for extremely hot keys.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-139" data-hi-narration-clickable="false">Most importantly, don't cache everything. Show you understand when caching is worth the complexity and when a well-indexed database is enough.</div>
+<div class="my-6"><div class="MuiBox-root mui-10b10ta"><div class="flex flex-row items-center gap-3 mb-3"><div class="heroicon-sw-2 MuiBox-root mui-tbago3"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"></path></svg></div><div><h6 class="MuiTypography-root MuiTypography-h6 mui-jyzq54">Test Your Knowledge</h6><p class="MuiTypography-root MuiTypography-body2 mui-14ou361">Answer the question below to find your gaps.</p></div></div><div class="flex flex-row items-baseline gap-3 mb-1 "><p class="MuiTypography-root MuiTypography-body2 mui-nk2f70">Question 1 of 15</p></div><div class="MuiBox-root mui-1muw576"><div class="mdx-p">In system design interviews, which caching pattern should you default to when discussing application-level caching?</div></div><div class="MuiBox-root mui-0"><div class="grid grid-cols-1 gap-2 mb-4"><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">1</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Read-through caching with auto-population</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">2</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Cache-aside (lazy loading)</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">3</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Write-behind caching</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">4</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Write-through caching</div></div></div></div></div></div></div></div><div class="MuiBox-root mui-17f8lpp"><div class="flex flex-col md:flex-row items-center justify-between gap-3 md:gap-0 chrome"><div class="flex flex-row items-center gap-3 md:gap-3 w-full md:w-auto"><div class="heroicon-sw-2 MuiBox-root mui-14uhju3"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 17.25v3.375c0 .621-.504 1.125-1.125 1.125h-9.75a1.125 1.125 0 0 1-1.125-1.125V7.875c0-.621.504-1.125 1.125-1.125H6.75a9.06 9.06 0 0 1 1.5.124m7.5 10.376h3.375c.621 0 1.125-.504 1.125-1.125V11.25c0-4.46-3.243-8.161-7.5-8.876a9.06 9.06 0 0 0-1.5-.124H9.375c-.621 0-1.125.504-1.125 1.125v3.5m7.5 10.375H9.375a1.125 1.125 0 0 1-1.125-1.125v-9.25m12 6.625v-1.875a3.375 3.375 0 0 0-3.375-3.375h-1.5a1.125 1.125 0 0 1-1.125-1.125v-1.5a3.375 3.375 0 0 0-3.375-3.375H9.75"></path></svg></div><div><h6 class="MuiTypography-root MuiTypography-h6 mui-xebfs0">Quick Reference</h6><p class="MuiTypography-root MuiTypography-body2 mui-vleovk">Get a quick-reference sheet for this topic, perfect for last-minute review.</p></div></div><a class="self-stretch md:self-center" style="text-decoration:none" href="/learn/system-design/core-concepts/caching/quick-reference"></a></div></div></div></div></div></div></div><!--$--><!--/$--></div></div></main>
+</body>
+</html>

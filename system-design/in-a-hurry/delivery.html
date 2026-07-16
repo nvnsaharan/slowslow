@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Delivery Framework</title>
+<meta name="source-url" content="https://www.hellointerview.com/learn/system-design/in-a-hurry/delivery">
+<script>
+(function () {
+  var theme;
+  try { theme = localStorage.getItem('course-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #666666;
+    --faint: #888888;
+    --border: #e1e4e8;
+    --border-strong: #d0d7de;
+    --code-bg: #f6f8fa;
+    --inline-code-bg: #f0f1f3;
+    --link: #0969da;
+    --accent: #10857a;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121212;
+    --fg: #e6e6e6;
+    --muted: #aaaaaa;
+    --faint: #999999;
+    --border: #333333;
+    --border-strong: #3a3a3a;
+    --code-bg: #1e1e1e;
+    --inline-code-bg: #252525;
+    --link: #6cb2ff;
+    --accent: #34b3a6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    max-width: 46rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--fg);
+    background: var(--bg);
+  }
+  h1, h2, h3, h4, h5, h6 { line-height: 1.3; margin: 2em 0 0.6em; }
+  h1 { font-size: 2rem; margin-top: 0.5em; }
+  img, svg, video { max-width: 100%; height: auto; }
+  figure { margin: 1.5em 0; text-align: center; }
+  figcaption { font-size: 0.875rem; color: var(--muted); }
+  pre {
+    padding: 1em;
+    overflow-x: auto;
+    border-radius: 8px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    background: var(--inline-code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  table { border-collapse: collapse; width: 100%; margin: 1.5em 0; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--border-strong); padding: 0.5em 0.75em; text-align: left; }
+  th { background: var(--code-bg); }
+  blockquote { margin: 1.5em 0; padding: 0.5em 1.25em; border-left: 4px solid var(--border-strong); color: var(--muted); }
+  a { color: var(--link); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+  .lesson-source { font-size: 0.8125rem; color: var(--faint); margin-bottom: 2rem; }
+
+  #theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+  #theme-toggle:hover { border-color: var(--accent); }
+
+</style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Toggle light/dark theme"></button>
+<script>
+(function () {
+  var btn = document.getElementById('theme-toggle');
+  function refresh() { btn.textContent = document.documentElement.dataset.theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19'; }
+  btn.addEventListener('click', function () {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('course-theme', next); } catch (e) {}
+    refresh();
+  });
+  refresh();
+})();
+</script>
+<p class="lesson-source">Saved for offline reading from <a href="https://www.hellointerview.com/learn/system-design/in-a-hurry/delivery">https://www.hellointerview.com/learn/system-design/in-a-hurry/delivery</a></p>
+<main class="flex-1 min-w-0 overflow-y-auto print-main"><div class="flex flex-col bg-nav-bg-paper"><div class="px-4 md:px-6 max-w-7xl mx-auto py-3 w-full print-main-content" style="min-height:calc(100vh - 48px - 0px);transition:min-height 0.3s ease-in-out;background-color:var(--nav-bg-paper)"><div class="grid grid-cols-7 gap-12 md:gap-0 mx-auto max-w-5xl"><div class="col-span-7 w-full max-w-4xl md:pr-6 xl:col-span-5"><div class="relative"><div id="markdown" class="mui-4tqezl"><div class="chrome"><div class="flex flex-col gap-2"><div class="flex flex-col relative"><div class="flex items-center justify-between   "><h6 class="MuiTypography-root MuiTypography-h6 mui-pkyqy5">System Design in a Hurry</h6></div><div class="flex flex-col md:flex-row md:items-start md:justify-between md:gap-4"><div class="flex items-center gap-2"><h1 class="MuiTypography-root MuiTypography-h2 mui-xhvznl">Delivery Framework</h1><div class="MuiBox-root mui-yrscm7"></div></div></div><p class="MuiTypography-root MuiTypography-body2 mui-19x8mt2">The best way to structure your system design interviews to structure your thoughts and focus on the most important aspects, built by FAANG managers and staff engineers.</p></div></div><hr class="MuiDivider-root MuiDivider-fullWidth mui-18s6yq7"></div>
+<div class="mdx-p" data-hi-narration-block-id="p-0" data-hi-narration-clickable="false">The easiest way to sabotage your chances of getting an offer in your system design interview is to fail to deliver a working system. This is the most common reason that mid-level candidates fail these interviews and it often manifests as the opaque "time management". This issue isn't (always) that you need to work twice as fast — many times you just need to focus on the right things.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/ys4v6zcgjykn.3p6o56omxuec2-ca8ab3c9.svg" alt="Overall Structure" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Overall Structure</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-1" data-hi-narration-clickable="false">Our delivery framework is a sequence of steps and timings we recommend for your interview. By structuring your interview in this way, you'll stay focused on the bits that are most important to your interviewer. An added benefit is that you'll have a clear path to fall back if you're overwhelmed. Many candidates are (understandably!) nervous in their interview. It's easy to get lost if you aren't building up a solution in a linear way.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-2" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">While a firm structure to your approach is important and your interviewer is not trained specifically to assess you on your delivery (often this gets bucketed into "communication"), in practice we've seen many candidates that perform significantly better by following a structure which both keeps them from getting stuck and ensures they deliver a working system.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-3" data-hi-narration-clickable="false">Here's the framework!</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/_joun9weokj5.0u4398u53ksb_-f4c75621.svg" alt="Recommended system design interview structure" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Recommended system design interview structure</span></div></div></div></div>
+<h2 id="requirements-5-minutes" class="mdx-h2" data-hi-narration-block-id="p-4" data-hi-narration-clickable="false">Requirements (~5 minutes)</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-5" data-hi-narration-clickable="false">The goal of the requirements section is to get a clear understanding of the system that you are being asked to design. To do this, we suggest you break your requirements into two sections.</div>
+<h3 id="1-functional-requirements" class="mdx-h3" data-hi-narration-block-id="p-6" data-hi-narration-clickable="false">1) Functional Requirements</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-7" data-hi-narration-clickable="false">Functional requirements are your "Users/Clients should be able to..." statements. These are the core features of your system and should be the first thing you discuss with your interviewer. Oftentimes this is a back and forth with your interviewer. Ask targeted questions as if you were talking to a client, customer, or product manager ("does the system need to do X?", "what would happen if Y?") to arrive at a prioritized list of core features.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-8" data-hi-narration-clickable="false">For example, if you were designing a system like Twitter, you might have the following functional requirements:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-9" data-hi-narration-clickable="false">Users should be able to post tweets</li>
+<li class="mdx-li" data-hi-narration-block-id="p-10" data-hi-narration-clickable="false">Users should be able to follow other users</li>
+<li class="mdx-li" data-hi-narration-block-id="p-11" data-hi-narration-clickable="false">Users should be able to see tweets from users they follow</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-12" data-hi-narration-clickable="false">A cache meanwhile might have requirements like:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-13" data-hi-narration-clickable="false">Clients should be able to insert items</li>
+<li class="mdx-li" data-hi-narration-block-id="p-14" data-hi-narration-clickable="false">Clients should be able to set expirations</li>
+<li class="mdx-li" data-hi-narration-block-id="p-15" data-hi-narration-clickable="false">Clients should be able to read items</li>
+</ul>
+<div class="callout callout-warning my-6" data-hi-narration-block-id="p-16" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Keep your requirements targeted! The main objective in the remaining part of the interview is to develop a system that meets the requirements you've identified -- so it's crucial to be strategic in your prioritization. Many of these systems have hundreds of features, but it's your job to identify and prioritize the top 3. Having a long list of requirements will hurt you more than it will help you and many top FAANGs directly evaluate you on your ability to focus on what matters.</div></div></div></div>
+<h3 id="2-non-functional-requirements" class="mdx-h3" data-hi-narration-block-id="p-17" data-hi-narration-clickable="false">2) Non-functional Requirements</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-18" data-hi-narration-clickable="false">Non-functional requirements are statements about the system qualities that are important to your users. These can be phrased as "The system should be able to..." or "The system should be..." statements.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-19" data-hi-narration-clickable="false">For example, if you were designing a system like Twitter, you might have the following non-functional requirements:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-20" data-hi-narration-clickable="false">The system should be highly available, prioritizing availability over consistency</li>
+<li class="mdx-li" data-hi-narration-block-id="p-21" data-hi-narration-clickable="false">The system should be able to scale to support 100M+ <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">DAU</span> (Daily Active Users)</li>
+<li class="mdx-li" data-hi-narration-block-id="p-22" data-hi-narration-clickable="false">The system should be low latency, rendering feeds in under 200ms</li>
+</ul>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-23" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">It's important that non-functional requirements are put in the context of the system and, where possible, are quantified. For example, "the system should be low latency" is obvious and not very meaningful—nearly all systems should be low latency. "The system should have low latency search, &lt; 500ms," is much more useful as it identifies the part of the system that most needs to be low latency and provides a target.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-24" data-hi-narration-clickable="false">Coming up with non-functional requirements can be challenging, especially if you're not familiar with the domain. Here is a checklist of things to consider that might help you identify the most important non-functional requirements for your system. You'll want to identify the top 3-5 that are most relevant to your system.</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-25" data-hi-narration-clickable="false"><strong>CAP Theorem</strong>: Should your system prioritize consistency or availability? Note, partition tolerance is a given in distributed systems.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-26" data-hi-narration-clickable="false"><strong>Environment Constraints</strong>: Are there any constraints on the environment in which your system will run? For example, are you running on a mobile device with limited battery life? Running on devices with limited memory or limited bandwidth (e.g. streaming video on 3G)?</li>
+<li class="mdx-li" data-hi-narration-block-id="p-27" data-hi-narration-clickable="false"><strong>Scalability</strong>: All systems need to scale, but does this system have unique scaling requirements? For example, does it have bursty traffic at a specific time of day? Are there events, like holidays, that will cause a significant increase in traffic? Also consider the read vs write ratio here. Does your system need to scale reads or writes more?</li>
+<li class="mdx-li" data-hi-narration-block-id="p-28" data-hi-narration-clickable="false"><strong>Latency</strong>: How quickly does the system need to respond to user requests? Specifically consider any requests that require meaningful computation. For example, low latency search when designing Yelp.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-29" data-hi-narration-clickable="false"><strong>Durability</strong>: How important is it that the data in your system is not lost? For example, a social network might be able to tolerate some data loss, but a banking system cannot.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-30" data-hi-narration-clickable="false"><strong>Security</strong>: How secure does the system need to be? Consider data protection, access control, and compliance with regulations.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-31" data-hi-narration-clickable="false"><strong>Fault Tolerance</strong>: How well does the system need to handle failures? Consider redundancy, failover, and recovery mechanisms.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-32" data-hi-narration-clickable="false"><strong>Compliance</strong>: Are there legal or regulatory requirements the system needs to meet? Consider industry standards, data protection laws, and other regulations.</li>
+</ol>
+<h3 id="3-capacity-estimation" class="mdx-h3" data-hi-narration-block-id="p-33" data-hi-narration-clickable="false">3) Capacity Estimation</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-34" data-hi-narration-clickable="false">Many guides you've read will suggest doing back-of-the-envelope calculations at this stage. We believe this is <em>often</em> unnecessary. Instead, perform calculations only if they will directly influence your design. In most scenarios, you're dealing with a large, distributed system – and it's reasonable to assume as much. Many candidates will calculate storage, DAU, and <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">QPS</span>, only to conclude, "ok, so it's a lot. Got it." As interviewers, we gain nothing from this except that you can perform basic arithmetic.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-35" data-hi-narration-clickable="false">Our suggestion is to explain to the interviewer that you would like to skip on estimations upfront and that you will do math while designing when/if necessary. When would it be necessary? Imagine you are designing a TopK system for trending topics in FB posts. You would want to estimate the number of topics you would expect to see, as this will influence whether you can use a single instance of a data structure like a min-heap or if you need to shard it across multiple instances, which will have a big impact on your design.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-36" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Regardless of how you end up using it in the interview, <a href="/blog/mastering-estimation" target="_blank" rel="noopener noreferrer" class="mdx-a">learning to estimate relevant quantities quickly</a> will help you quickly reason through design trade-offs in your design. Don't worry if you're not good at mental arithmetic under pressure, most people aren't.</div></div></div></div>
+<h2 id="core-entities-2-minutes" class="mdx-h2" data-hi-narration-block-id="p-37" data-hi-narration-clickable="false">Core Entities (~2 minutes)</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-38" data-hi-narration-clickable="false">Next you should take a moment to identify and list the core entities of your system. This helps you to define terms, understand the data central to your design, and gives you a foundation to build on. These are the core entities that your API will exchange and that your system will persist in a Data Model. In the actual interview, this is as simple as jotting down a bulleted list and explaining this is your first draft to the interviewer.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-39" data-hi-narration-clickable="false">Why not list the entire data model at this point? Because you don't know what you don't know. As you design your system, you'll discover new entities and relationships that you didn't anticipate. By starting with a small list, you can quickly iterate and add to it as you go. Once you get into the high level design and have a clearer sense of exactly what state needs to update upon each request you can start to build out the list of relevant columns/fields for each entity.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-40" data-hi-narration-clickable="false">For our Twitter example, our core entities are rather simple:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-41" data-hi-narration-clickable="false">User</li>
+<li class="mdx-li" data-hi-narration-block-id="p-42" data-hi-narration-clickable="false">Tweet</li>
+<li class="mdx-li" data-hi-narration-block-id="p-43" data-hi-narration-clickable="false">Follow</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-44" data-hi-narration-clickable="false">A couple useful questions to ask yourself to help identify core entities:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-45" data-hi-narration-clickable="false">Who are the actors in the system? Are they overlapping?</li>
+<li class="mdx-li" data-hi-narration-block-id="p-46" data-hi-narration-clickable="false">What are the nouns or resources necessary to satisfy the functional requirements?</li>
+</ul>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-47" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Aim to choose good names for your entities. While most problems are small enough that you could probably sub in <span class="mdx-code">foo</span> and <span class="mdx-code">bar</span> for any entity in your system, some interviewers use this as an opportunity to see whether you're any good at one of the <a href="https://www.martinfowler.com/bliki/TwoHardThings.html" target="_blank" rel="noopener noreferrer" class="mdx-a">hardest problems in computer science</a>.</div></div></div></div>
+<h2 id="api-or-system-interface-5-minutes" class="mdx-h2" data-hi-narration-block-id="p-48" data-hi-narration-clickable="false">API or System Interface (~5 minutes)</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-49" data-hi-narration-clickable="false">Before you get into the high-level design, you'll want to define the contract between your system and its users. Oftentimes, especially for full product style interviews, this maps directly to the functional requirements you've already identified (but not always!). You will use this contract to guide your high-level design and to ensure that you're meeting the requirements you've identified.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-50" data-hi-narration-clickable="false">You have a quick decision to make here -- which API protocol should you use?</div>
+<div class="mdx-p" data-hi-narration-block-id="p-51" data-hi-narration-clickable="false"><strong><span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">REST</span> (Representational State Transfer)</strong>: Uses HTTP verbs (GET, POST, PUT, DELETE) to perform CRUD operations on resources. This should be your default choice for most interviews.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-52" data-hi-narration-clickable="false"><strong>GraphQL</strong>: Allows clients to specify exactly what data they want to receive, avoiding over-fetching and under-fetching. Choose this when you have diverse clients with different data needs.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-53" data-hi-narration-clickable="false"><strong>RPC (Remote Procedure Call)</strong>: Action-oriented protocol (like gRPC) that's faster than REST for service-to-service communication. Use for internal APIs when performance is critical.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-54" data-hi-narration-clickable="false">Don't overthink this. Default to REST unless you have a specific reason not to. For real-time features, you'll also need <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">WebSockets</span> or Server-Sent Events, but design your core API first.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-55" data-hi-narration-clickable="false">For Twitter, we would choose REST and design our endpoints using our core entities as resources. Resources should be plural nouns that represent things in your system:</div>
+<div class="my-6" data-hi-narration-skip="true"><div class="MuiBox-root mui-127va17" data-code-language="bash"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#2675FF">POST</span><span style="color:#212B36"> /v1/tweets</span></span>
+<span class="line"><span style="color:#2675FF">body:</span><span style="color:#212B36"> {</span></span>
+<span class="line"><span style="color:#212B36">  "text": string</span></span>
+<span class="line"><span style="color:#2675FF">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#2675FF">GET</span><span style="color:#212B36"> /v1/tweets/{tweetId} -&gt; Tweet</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#2675FF">POST</span><span style="color:#212B36"> /v1/follows</span></span>
+<span class="line"><span style="color:#2675FF">body:</span><span style="color:#212B36"> {</span></span>
+<span class="line"><span style="color:#212B36">  "followee_id": string</span></span>
+<span class="line"><span style="color:#2675FF">}</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#2675FF">GET</span><span style="color:#212B36"> /v1/feed -&gt; Tweet[]</span></span></code></pre></div><div class="MuiBox-root mui-1e0b4d"></div></div></div></div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-57" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Notice how we use plural resource names (<span class="mdx-code">tweets</span>, not <span class="mdx-code">tweet</span>). The current user is derived from the authentication token in the request header, not from request bodies or path parameters.</div></div></div></div>
+<div class="callout callout-warning my-6" data-hi-narration-block-id="p-58" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Never rely on sensitive information like user IDs from request bodies when they should come from authentication. Always authenticate requests and derive the current user from the auth token, not from user input.</div></div></div></div>
+<h2 id="optional-data-flow-5-minutes" class="mdx-h2" data-hi-narration-block-id="p-59" data-hi-narration-clickable="false">[Optional] Data Flow (~5 minutes)</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-60" data-hi-narration-clickable="false">For some backend systems, especially data-processing systems, it can be helpful to describe the high level sequence of actions or processes that the system performs on the inputs to produce the desired outputs. If your system doesn't involve a long sequence of actions, skip this!</div>
+<div class="mdx-p" data-hi-narration-block-id="p-61" data-hi-narration-clickable="false">We usually define the data flow via a simple list. You'll use this flow to inform your high-level design in the next section.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-62" data-hi-narration-clickable="false">For a web crawler, this might look like:</div>
+<ol class="mdx-ol">
+<li class="mdx-li" data-hi-narration-block-id="p-63" data-hi-narration-clickable="false">Fetch seed URLs</li>
+<li class="mdx-li" data-hi-narration-block-id="p-64" data-hi-narration-clickable="false">Parse HTML</li>
+<li class="mdx-li" data-hi-narration-block-id="p-65" data-hi-narration-clickable="false">Extract URLs</li>
+<li class="mdx-li" data-hi-narration-block-id="p-66" data-hi-narration-clickable="false">Store data</li>
+<li class="mdx-li" data-hi-narration-block-id="p-67" data-hi-narration-clickable="false">Repeat</li>
+</ol>
+<h2 id="high-level-design-10-15-minutes" class="mdx-h2" data-hi-narration-block-id="p-68" data-hi-narration-clickable="false">High Level Design (~10-15 minutes)</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-69" data-hi-narration-clickable="false">Now that you have a clear understanding of the requirements, entities, and API of your system, you can start to design the high-level architecture. This consists of drawing boxes and arrows to represent the different components of your system and how they interact. Components are basic building blocks like servers, databases, caches, etc. This can be done either in person on a whiteboard or virtually using whiteboarding software like <a href="https://excalidraw.com/" target="_blank" rel="noopener noreferrer" class="mdx-a">Excalidraw</a>. The <a href="/learn/system-design/in-a-hurry/key-technologies" target="_blank" rel="noopener noreferrer" class="mdx-a">Key Technologies</a> section will give you a good sense of the most common components you'll need to know.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-70" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Ask your recruiter what software you'll be using for your interview and practice with it ahead of time. You don't want to be fumbling with the software during your interview.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-71" data-hi-narration-clickable="false">Don't over think this! Your primary goal is to design an architecture that satisfies the API you've designed and, thus, the requirements you've identified. In most cases, you can even go one-by-one through your API endpoints and build up your design sequentially to satisfy each one.</div>
+<div class="callout callout-warning my-6" data-hi-narration-block-id="p-72" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Stay focused! It's incredibly common for candidates to start layering on complexity too early, resulting in them never arriving at a complete solution. Focus on a relatively simple design that meets the core functional requirements, and then layer on complexity to satisfy the non-functional requirements in your deep dives section. It's natural to identify areas where you can add complexity, like caches or message queues, while in the high-level design. We encourage you to note these areas with a simple verbal callout and written note, and then move on.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-73" data-hi-narration-clickable="false">As you're drawing your design, you should be talking through your thought process with your interviewer. Be explicit about how data flows through the system and what state (either in databases, caches, message queues, etc.) changes with each request, starting from API requests and ending with the response. When your request reaches your database or persistence layer, it's a great time to start documenting the relevant columns/fields for each entity. You can do this directly next to your database visually. This helps keep it close to the relevant components and makes it easy to evolve as you iterate on your design. No need to worry too much about types here, your interviewer can infer and they'll only slow you down.</div>
+<div class="callout callout-warning my-6" data-hi-narration-block-id="p-74" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Don't waste your time documenting every column/field in your schema. For example, your interviewer knows that a User table has a name, email, and password hash so you don't need to write these down. Instead, focus on the columns/fields that are particularly relevant to your design.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-75" data-hi-narration-clickable="false">For our simple Twitter example, here is how you might build up your design, one endpoint at a time:</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/w0welajib662.3kq003jbogr99-a62f8718.svg" alt="High Level Design (~10-15 minutes)" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">High Level Design (~10-15 minutes)</span></div></div></div></div>
+<h2 id="deep-dives-10-minutes" class="mdx-h2" data-hi-narration-block-id="p-76" data-hi-narration-clickable="false">Deep Dives (~10 minutes)</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-77" data-hi-narration-clickable="false">Astute readers probably noticed that our simple, high-level design of Twitter is going to be woefully inefficient when it comes to fetching users' feeds. No problem! That's exactly the sort of thing you'll iterate on in the deep dives section. Now that you have a high-level design in place you're going to use the remaining 10 or so minutes of the interview to harden your design by:</div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-78" data-hi-narration-clickable="false">Ensuring it meets all of your non-functional requirements</li>
+<li class="mdx-li" data-hi-narration-block-id="p-79" data-hi-narration-clickable="false">Addressing edge cases</li>
+<li class="mdx-li" data-hi-narration-block-id="p-80" data-hi-narration-clickable="false">Identifying and addressing issues and bottlenecks</li>
+<li class="mdx-li" data-hi-narration-block-id="p-81" data-hi-narration-clickable="false">Improving the design based on probes from your interviewer.</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-82" data-hi-narration-clickable="false">The degree to which you're proactive in leading deep dives is a function of your seniority. More junior candidates can expect the interviewer to jump in here and point out places where the design could be improved. More senior candidates should be able to identify these places themselves and lead the discussion.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-83" data-hi-narration-clickable="false">So for example, one of our non-functional requirements for Twitter was that our system needs to scale to &gt;100M DAU. We could then lead a discussion oriented around horizontal scaling, the introduction of caches, and database <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">sharding</span> -- updating our design as we go. Another was that feeds need to be fetched with low latency. In the case of Twitter, this is actually the most interesting problem. We'd lead a discussion about fanout-on-read vs fanout-on-write and the use of caches.</div>
+<div class="callout callout-warning my-6" data-hi-narration-block-id="p-84" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">A common mistake candidates make is that they try to talk over their interviewer here. There is a lot to talk about, sure, and for senior candidates being proactive is important, however, it's a balance. Make sure you give your interviewer room to ask questions and probe your design. Chances are they have specific signals they want to get from you and you're going to miss it if you're too busy talking. Plus, you'll hurt your evaluation on communication and collaboration.</div></div></div></div>
+</div></div></div></div><!--$--><!--/$--></div></div></main>
+</body>
+</html>

@@ -1,0 +1,615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Design Patterns</title>
+<meta name="source-url" content="https://www.hellointerview.com/learn/low-level-design/in-a-hurry/patterns">
+<script>
+(function () {
+  var theme;
+  try { theme = localStorage.getItem('course-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #666666;
+    --faint: #888888;
+    --border: #e1e4e8;
+    --border-strong: #d0d7de;
+    --code-bg: #f6f8fa;
+    --inline-code-bg: #f0f1f3;
+    --link: #0969da;
+    --accent: #10857a;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121212;
+    --fg: #e6e6e6;
+    --muted: #aaaaaa;
+    --faint: #999999;
+    --border: #333333;
+    --border-strong: #3a3a3a;
+    --code-bg: #1e1e1e;
+    --inline-code-bg: #252525;
+    --link: #6cb2ff;
+    --accent: #34b3a6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    max-width: 46rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--fg);
+    background: var(--bg);
+  }
+  h1, h2, h3, h4, h5, h6 { line-height: 1.3; margin: 2em 0 0.6em; }
+  h1 { font-size: 2rem; margin-top: 0.5em; }
+  img, svg, video { max-width: 100%; height: auto; }
+  figure { margin: 1.5em 0; text-align: center; }
+  figcaption { font-size: 0.875rem; color: var(--muted); }
+  pre {
+    padding: 1em;
+    overflow-x: auto;
+    border-radius: 8px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    background: var(--inline-code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  table { border-collapse: collapse; width: 100%; margin: 1.5em 0; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--border-strong); padding: 0.5em 0.75em; text-align: left; }
+  th { background: var(--code-bg); }
+  blockquote { margin: 1.5em 0; padding: 0.5em 1.25em; border-left: 4px solid var(--border-strong); color: var(--muted); }
+  a { color: var(--link); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+  .lesson-source { font-size: 0.8125rem; color: var(--faint); margin-bottom: 2rem; }
+
+  #theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+  #theme-toggle:hover { border-color: var(--accent); }
+
+</style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Toggle light/dark theme"></button>
+<script>
+(function () {
+  var btn = document.getElementById('theme-toggle');
+  function refresh() { btn.textContent = document.documentElement.dataset.theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19'; }
+  btn.addEventListener('click', function () {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('course-theme', next); } catch (e) {}
+    refresh();
+  });
+  refresh();
+})();
+</script>
+<p class="lesson-source">Saved for offline reading from <a href="https://www.hellointerview.com/learn/low-level-design/in-a-hurry/patterns">https://www.hellointerview.com/learn/low-level-design/in-a-hurry/patterns</a></p>
+<main class="flex-1 min-w-0 overflow-y-auto print-main"><div class="flex flex-col bg-nav-bg-paper"><div class="px-4 md:px-6 max-w-7xl mx-auto py-3 w-full print-main-content" style="min-height:calc(100vh - 48px - 0px);transition:min-height 0.3s ease-in-out;background-color:var(--nav-bg-paper)"><div><div class="grid grid-cols-7 gap-12 md:gap-0 mx-auto max-w-5xl"><div class="col-span-7 w-full max-w-4xl md:pr-6 xl:col-span-5"><div class="relative"><div id="markdown" class="mui-4tqezl"><div class="chrome"><div class="flex flex-col gap-2"><div class="flex flex-col relative"><div class="flex items-center justify-between   "><h6 class="MuiTypography-root MuiTypography-h6 mui-pkyqy5">Low-Level Design in a Hurry</h6></div><div class="flex flex-col md:flex-row md:items-start md:justify-between md:gap-4"><div class="flex items-center gap-2"><h1 class="MuiTypography-root MuiTypography-h2 mui-xhvznl">Design Patterns</h1><div class="MuiBox-root mui-yrscm7"></div></div></div><p class="MuiTypography-root MuiTypography-body2 mui-19x8mt2" data-hi-narration-block-id="p-0" data-hi-narration-clickable="false">A list of design patterns for low-level design interviews.</p></div></div><hr class="MuiDivider-root MuiDivider-fullWidth mui-18s6yq7"></div>
+<div class="mdx-p" data-hi-narration-block-id="p-1" data-hi-narration-clickable="false">Design patterns are reusable building blocks for solving common design problems. They're names for structures you naturally create when you follow solid design principles.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-2" data-hi-narration-clickable="false">The Gang of Four catalog, written in 1994 for C++ and Smalltalk, defined 23 patterns that became required reading for software engineers. The book earned legendary status, but the reality is most of those patterns don't matter anymore. Modern languages have built-in features that replaced half of them ie. iterators are primitives now, not patterns. The shift from <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">inheritance</span>-heavy OOP to composition and functional programming made others obsolete. And in interviews, you'll get asked about maybe five patterns total, not twenty-three.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-3" data-hi-narration-clickable="false">Most online resources still dutifully list all 23 GoF patterns like they're equally important. They're not. We're cutting the historical baggage and focusing on the patterns that actually show up in modern LLD interviews. The ones below are what interviewers ask about and what you'll use in real designs.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-4" data-hi-narration-clickable="false">As you learn these patterns, keep in mind that the goal isn't to force them into every solution. You should only use a pattern when the problem naturally calls for it. Forcing one is a common mistake that signals over-engineering. Patterns arise from good design decisions rather than driving them, and the most frequent error is trying to fit a pattern where it doesn't belong.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-5" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Design patterns are handled differently depending on where you interview. In the US, most LLD interviews don't explicitly test whether you can name patterns—you're evaluated on the quality of your design. In other parts of the world, particularly India, interviewers are more likely to ask about patterns directly. While we align with the former, both approaches have merit, and we want you prepared for either reality you may encounter.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-6" data-hi-narration-clickable="false">Patterns fit cleanly into three categories: creational, structural, and behavioral. Let's walk through each category together.</div>
+<h2 id="creational-patterns" class="mdx-h2" data-hi-narration-block-id="p-7" data-hi-narration-clickable="false">Creational Patterns</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-8" data-hi-narration-clickable="false">Creational patterns control how objects get created. They hide construction details, let you swap implementations, and keep your code from being tightly coupled to specific classes.</div>
+<h3 id="factory-method" class="mdx-h3" data-hi-narration-block-id="p-9" data-hi-narration-clickable="false">Factory Method</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-10" data-hi-narration-clickable="false">A factory is a helper that makes the right kind of object for you so you don't have to decide which one to create. They're used to hide creation logic and keep your code flexible when the exact type you need can change.</div>
+<div class="callout callout-warning my-6" data-hi-narration-block-id="p-11" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Factories are polarizing. While very popular and idiomatic in languages like Java, some engineers see them as examples of overengineering. If you choose to implement one, take a look at your interviewer and check them for a grimace.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-12" data-hi-narration-clickable="false">Factory shows up regularly in interviews, usually when requirements say "support different notification types" or "handle multiple payment methods." Instead of writing <span class="mdx-code">new EmailNotification()</span> throughout your code, you call <span class="mdx-code">notificationFactory.create(type)</span>. Now when you add SMS notifications, you update the factory. The rest of your code never changes.</div>
+<div class="my-6 MuiBox-root mui-lzjfwc"><div class="MuiBox-root mui-136gx4j"><div class="MuiBox-root mui-avdosu"><div class="MuiBox-root mui-lli68z"><svg stroke="currentColor" fill="currentColor" stroke-width="0" role="img" viewBox="0 0 24 24" class="w-3.5 h-3.5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"></path></svg><span>factory_method.py</span></div></div><div class="MuiBox-root mui-yi0x7b"><div class="flex items-center gap-0 mb-0"><div class="MuiFormControl-root mui-882m9p"><div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root mui-s1farw"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="language-select-label" class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall mui-1jilzfn">Python</div><fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline mui-5v2ak0"><legend class="mui-w1u3ce"><span>Language</span></legend></fieldset></div></div></div></div></div><div class="MuiBox-root mui-1nigps4"><div class="MuiBox-root mui-357n2r" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">from</span><span style="color:#212B36"> abc </span><span style="color:#299A8D">import</span><span style="color:#212B36"> ABC, abstractmethod</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Notification(ABC):</span></span>
+<span class="line"><span style="color:#212B36">    @abstractmethod</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> send(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, message: str) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        pass</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> EmailNotification(Notification):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> send(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, message: str) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">        # Email sending logic</span></span>
+<span class="line"><span style="color:#299A8D">        pass</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> SMSNotification(Notification):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> send(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, message: str) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">        # SMS sending logic</span></span>
+<span class="line"><span style="color:#299A8D">        pass</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> NotificationFactory:</span></span>
+<span class="line"><span style="color:#212B36">    @staticmethod</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> create(notification_type: str) -&gt; Notification:</span></span>
+<span class="line"><span style="color:#299A8D">        if</span><span style="color:#212B36"> notification_type == </span><span style="color:#2C9C59">"email"</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">            return</span><span style="color:#212B36"> EmailNotification()</span></span>
+<span class="line"><span style="color:#299A8D">        elif</span><span style="color:#212B36"> notification_type == </span><span style="color:#2C9C59">"sms"</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">            return</span><span style="color:#212B36"> SMSNotification()</span></span>
+<span class="line"><span style="color:#299A8D">        raise</span><span style="color:#212B36"> ValueError(</span><span style="color:#2C9C59">"Unknown type"</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#919EAB;font-style:italic"># Usage</span></span>
+<span class="line"><span style="color:#212B36">notif = NotificationFactory.create(</span><span style="color:#2C9C59">"email"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#212B36">notif.send(</span><span style="color:#2C9C59">"Hello"</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre></div></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-13" data-hi-narration-clickable="false">The factory centralizes creation logic. When you add push notifications, you modify one place. Factory controls which object gets instantiated. It makes the decision once and returns the right type.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-14" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">This is technically called Simple Factory, not the <a href="https://en.wikipedia.org/wiki/Design_Patterns" target="_blank" rel="noopener noreferrer" class="mdx-a">Gang of Four</a> Factory Method pattern. The GoF version uses abstract factory classes with subclasses that override a factory method. It's more complex and rarely shows up in real code or interviews. What we're showing here is what people actually build and what interviewers expect when they say "use a factory."</div></div></div></div>
+<h3 id="builder" class="mdx-h3" data-hi-narration-block-id="p-15" data-hi-narration-clickable="false">Builder</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-16" data-hi-narration-clickable="false">A builder is a helper that lets you create a complex object step by step without worrying about the order or messy construction details. It's used when an object has many optional parts or configuration choices.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-17" data-hi-narration-clickable="false">This shows up when designing things like HTTP requests, database queries, or configuration objects. Instead of a constructor with ten parameters where half are null, you build the object incrementally.</div>
+<div class="my-6 MuiBox-root mui-lzjfwc"><div class="MuiBox-root mui-136gx4j"><div class="MuiBox-root mui-avdosu"><div class="MuiBox-root mui-lli68z"><svg stroke="currentColor" fill="currentColor" stroke-width="0" role="img" viewBox="0 0 24 24" class="w-3.5 h-3.5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"></path></svg><span>builder.py</span></div></div><div class="MuiBox-root mui-yi0x7b"><div class="flex items-center gap-0 mb-0"><div class="MuiFormControl-root mui-882m9p"><div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root mui-s1farw"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="language-select-label" class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall mui-1jilzfn">Python</div><fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline mui-5v2ak0"><legend class="mui-w1u3ce"><span>Language</span></legend></fieldset></div></div></div></div></div><div class="MuiBox-root mui-1nigps4"><div class="MuiBox-root mui-357n2r" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">from</span><span style="color:#212B36"> typing </span><span style="color:#299A8D">import</span><span style="color:#212B36"> Optional</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#919EAB;font-style:italic"># NOTE: Builder is less common in Python. Python has better alternatives like</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic"># dataclasses with default values, keyword arguments, or simple dictionaries.</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic"># This pattern adds unnecessary complexity for most Python use cases.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> HttpRequest:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.url: Optional[str] = </span><span style="color:#F4A261">None</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.method: Optional[str] = </span><span style="color:#F4A261">None</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.headers: dict[str, str] = {}</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.body: Optional[str] = </span><span style="color:#F4A261">None</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    class</span><span style="color:#212B36"> Builder:</span></span>
+<span class="line"><span style="color:#299A8D">        def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">):</span></span>
+<span class="line"><span style="color:#299A8D">            self</span><span style="color:#212B36">._request = HttpRequest()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">        def</span><span style="color:#212B36"> url(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, url: str) -&gt; </span><span style="color:#2C9C59">'HttpRequest.Builder'</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">            self</span><span style="color:#212B36">._request.url = url</span></span>
+<span class="line"><span style="color:#299A8D">            return</span><span style="color:#299A8D"> self</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">        def</span><span style="color:#212B36"> method(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, method: str) -&gt; </span><span style="color:#2C9C59">'HttpRequest.Builder'</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">            self</span><span style="color:#212B36">._request.method = method</span></span>
+<span class="line"><span style="color:#299A8D">            return</span><span style="color:#299A8D"> self</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">        def</span><span style="color:#212B36"> header(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, key: str, value: str) -&gt; </span><span style="color:#2C9C59">'HttpRequest.Builder'</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">            self</span><span style="color:#212B36">._request.headers[key] = value</span></span>
+<span class="line"><span style="color:#299A8D">            return</span><span style="color:#299A8D"> self</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">        def</span><span style="color:#212B36"> body(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, body: str) -&gt; </span><span style="color:#2C9C59">'HttpRequest.Builder'</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">            self</span><span style="color:#212B36">._request.body = body</span></span>
+<span class="line"><span style="color:#299A8D">            return</span><span style="color:#299A8D"> self</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">        def</span><span style="color:#212B36"> build(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; </span><span style="color:#2C9C59">'HttpRequest'</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">            # Validate required fields</span></span>
+<span class="line"><span style="color:#299A8D">            if</span><span style="color:#299A8D"> self</span><span style="color:#212B36">._request.url </span><span style="color:#299A8D">is</span><span style="color:#F4A261"> None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">                raise</span><span style="color:#212B36"> ValueError(</span><span style="color:#2C9C59">"URL is required"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#299A8D">            return</span><span style="color:#299A8D"> self</span><span style="color:#212B36">._request</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#919EAB;font-style:italic"># Usage</span></span>
+<span class="line"><span style="color:#212B36">request = (HttpRequest.Builder()</span></span>
+<span class="line"><span style="color:#212B36">    .url(</span><span style="color:#2C9C59">"https://api.example.com"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#212B36">    .method(</span><span style="color:#2C9C59">"POST"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#212B36">    .header(</span><span style="color:#2C9C59">"Content-Type"</span><span style="color:#212B36">, </span><span style="color:#2C9C59">"application/json"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#212B36">    .body(</span><span style="color:#2C9C59">'{"key": "value"}'</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#212B36">    .build())</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre></div></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-18" data-hi-narration-clickable="false">Builder makes construction readable and handles optional fields cleanly. It most commonly shows up in LLD interviews when you're designing API clients or complex configurations, but is very rarely used in other contexts.</div>
+<div class="callout callout-warning my-6" data-hi-narration-block-id="p-19" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">If the interviewer didn't describe a complex object with lots of optional details, Builder probably isn't needed. Most interview problems involve simple domain objects with 2-4 required fields where a normal constructor works fine.</div></div></div></div>
+<h3 id="singleton" class="mdx-h3" data-hi-narration-block-id="p-20" data-hi-narration-clickable="false">Singleton</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-21" data-hi-narration-clickable="false">Singleton ensures only one instance of a class exists. Use it when you need exactly one shared resource like a configuration manager, connection pool, or logger.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-22" data-hi-narration-clickable="false">Most of the time you don't actually need a Singleton. You can just pass shared objects through constructors instead — it's clearer and easier to test. Singletons hide dependencies and make testing harder.</div>
+<div class="my-6 MuiBox-root mui-lzjfwc"><div class="MuiBox-root mui-136gx4j"><div class="MuiBox-root mui-avdosu"><div class="MuiBox-root mui-lli68z"><svg stroke="currentColor" fill="currentColor" stroke-width="0" role="img" viewBox="0 0 24 24" class="w-3.5 h-3.5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"></path></svg><span>singleton.py</span></div></div><div class="MuiBox-root mui-yi0x7b"><div class="flex items-center gap-0 mb-0"><div class="MuiFormControl-root mui-882m9p"><div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root mui-s1farw"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="language-select-label" class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall mui-1jilzfn">Python</div><fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline mui-5v2ak0"><legend class="mui-w1u3ce"><span>Language</span></legend></fieldset></div></div></div></div></div><div class="MuiBox-root mui-193lpgi"><div class="MuiBox-root mui-357n2r" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#919EAB;font-style:italic"># NOTE: Singletons are not idiomatic in Python. In Python, modules</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic"># themselves are singletons - they're only imported once. For shared</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic"># resources, create a module-level instance instead of this pattern.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> DatabaseConnection:</span></span>
+<span class="line"><span style="color:#212B36">    _instance = </span><span style="color:#F4A261">None</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __new__(cls):</span></span>
+<span class="line"><span style="color:#299A8D">        if</span><span style="color:#212B36"> cls._instance </span><span style="color:#299A8D">is</span><span style="color:#F4A261"> None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">            cls._instance = super().__new__(cls)</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#212B36"> cls._instance</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> query(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, sql: str) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">        # Database operations</span></span>
+<span class="line"><span style="color:#299A8D">        pass</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#919EAB;font-style:italic"># Usage</span></span>
+<span class="line"><span style="color:#212B36">db = DatabaseConnection()</span></span>
+<span class="line"><span style="color:#212B36">db.query(</span><span style="color:#2C9C59">"SELECT * FROM users"</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre></div></div></div></div></div>
+<div class="MuiTypography-root MuiTypography-body1 mui-4ivghx">In Python, module-level variables are natural singletons since modules are only loaded once. The class-based approach shown here uses <span class="mdx-code">get_instance</span> for consistency with other languages, but you could also just use a module-level object directly.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-23" data-hi-narration-clickable="false">In interviews, know what Singleton is and when not to use it. If an interviewer asks "should this be a Singleton?", the answer is usually no unless they explicitly want a single shared instance across the entire system. There are thread-safe versions of Singleton, but interviewers don't expect you to implement them in LLD interviews.</div>
+<h2 id="structural-patterns" class="mdx-h2" data-hi-narration-block-id="p-24" data-hi-narration-clickable="false">Structural Patterns</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-25" data-hi-narration-clickable="false">Structural patterns deal with how objects connect to each other. They help you build flexible relationships between classes without creating tight coupling or messy dependencies.</div>
+<h3 id="decorator" class="mdx-h3" data-hi-narration-block-id="p-26" data-hi-narration-clickable="false">Decorator</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-27" data-hi-narration-clickable="false">A decorator adds behavior to an object without changing its class. Use it when you need to layer on extra functionality at runtime.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-28" data-hi-narration-clickable="false">Decorator is powerful but comes up less often than Strategy or Observer. You might need this when the requirements say things like "add logging to specific operations" or "encrypt certain messages." Instead of creating subclasses for every combination (<span class="mdx-code">LoggedEmailNotification</span>, <span class="mdx-code">EncryptedEmailNotification</span>, <span class="mdx-code">LoggedEncryptedEmailNotification</span>), you wrap the base object with decorators. If you see words like "optional features," "stack behaviors," or "combine multiple enhancements," think Decorator.</div>
+<div class="my-6 MuiBox-root mui-lzjfwc"><div class="MuiBox-root mui-136gx4j"><div class="MuiBox-root mui-avdosu"><div class="MuiBox-root mui-lli68z"><svg stroke="currentColor" fill="currentColor" stroke-width="0" role="img" viewBox="0 0 24 24" class="w-3.5 h-3.5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"></path></svg><span>decorator.py</span></div></div><div class="MuiBox-root mui-yi0x7b"><div class="flex items-center gap-0 mb-0"><div class="MuiFormControl-root mui-882m9p"><div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root mui-s1farw"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="language-select-label" class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall mui-1jilzfn">Python</div><fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline mui-5v2ak0"><legend class="mui-w1u3ce"><span>Language</span></legend></fieldset></div></div></div></div></div><div class="MuiBox-root mui-1xuzhe1"><div class="MuiBox-root mui-357n2r" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">from</span><span style="color:#212B36"> abc </span><span style="color:#299A8D">import</span><span style="color:#212B36"> ABC, abstractmethod</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#919EAB;font-style:italic"># NOTE: This is the Decorator design pattern, which is different from Python's</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic"># @decorator syntax. The naming can be confusing since Python decorators (with @)</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic"># are a language feature for function/class modification, while this is an</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic"># object composition pattern for adding behavior at runtime.</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> DataSource(ABC):</span></span>
+<span class="line"><span style="color:#212B36">    @abstractmethod</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> write_data(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, data: str) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        pass</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#212B36">    @abstractmethod</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> read_data(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; str:</span></span>
+<span class="line"><span style="color:#299A8D">        pass</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> FileDataSource(DataSource):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, filename: str):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.filename = filename</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> write_data(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, data: str) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">        # Write to file</span></span>
+<span class="line"><span style="color:#299A8D">        pass</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> read_data(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; str:</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">        # Read from file</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#2C9C59"> "data from file"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> EncryptionDecorator(DataSource):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, source: DataSource):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">._wrapped = source</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> write_data(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, data: str) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">        encrypted = </span><span style="color:#299A8D">self</span><span style="color:#212B36">._encrypt(data)</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">._wrapped.write_data(encrypted)  </span><span style="color:#919EAB;font-style:italic"># Delegate to wrapped object</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> read_data(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; str:</span></span>
+<span class="line"><span style="color:#212B36">        data = </span><span style="color:#299A8D">self</span><span style="color:#212B36">._wrapped.read_data()</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#299A8D"> self</span><span style="color:#212B36">._decrypt(data)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> _encrypt(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, data: str) -&gt; str:</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#2C9C59"> f"encrypted:{data}"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> _decrypt(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, data: str) -&gt; str:</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#212B36"> data.replace(</span><span style="color:#2C9C59">"encrypted:"</span><span style="color:#212B36">, </span><span style="color:#2C9C59">""</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> CompressionDecorator(DataSource):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, source: DataSource):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">._wrapped = source</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> write_data(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, data: str) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">        compressed = </span><span style="color:#299A8D">self</span><span style="color:#212B36">._compress(data)</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">._wrapped.write_data(compressed)  </span><span style="color:#919EAB;font-style:italic"># Delegate to wrapped object</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> read_data(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; str:</span></span>
+<span class="line"><span style="color:#212B36">        data = </span><span style="color:#299A8D">self</span><span style="color:#212B36">._wrapped.read_data()</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#299A8D"> self</span><span style="color:#212B36">._decompress(data)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> _compress(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, data: str) -&gt; str:</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#2C9C59"> f"compressed:{data}"</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> _decompress(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, data: str) -&gt; str:</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#212B36"> data.replace(</span><span style="color:#2C9C59">"compressed:"</span><span style="color:#212B36">, </span><span style="color:#2C9C59">""</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#919EAB;font-style:italic"># Usage</span></span>
+<span class="line"><span style="color:#212B36">source = FileDataSource(</span><span style="color:#2C9C59">"data.txt"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#212B36">source = EncryptionDecorator(source)</span></span>
+<span class="line"><span style="color:#212B36">source = CompressionDecorator(source)</span></span>
+<span class="line"><span style="color:#212B36">source.write_data(</span><span style="color:#2C9C59">"sensitive info"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic"># Data gets compressed, then encrypted, then written to file</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre></div></div></div></div></div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-30" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Use a Decorator when you need to add behavior at runtime based on conditions, like wrapping a service with logging only in debug mode or adding caching only for certain requests. It lets you layer optional, combinable features without modifying the underlying class. In most other cases, use normal subclasses, where the new behavior is fixed at design time and represents a stable variation of the original type. If the behavior depends on runtime conditions, choose Decorator; if it’s a predefined type difference, choose Subclass.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-31" data-hi-narration-clickable="false">Each decorator adds one piece of functionality. You can stack them in any order and add or remove them without touching the base class or other decorators, though in real systems order often affects behavior.</div>
+<h3 id="facade" class="mdx-h3" data-hi-narration-block-id="p-32" data-hi-narration-clickable="false">Facade</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-33" data-hi-narration-clickable="false">A facade is just a coordinator class that hides complexity. You're probably already building facades in every LLD interview without calling them that. Your <span class="mdx-code">Game</span> class in Tic Tac Toe? That's a facade. Any orchestrator that coordinates multiple components behind a clean interface? Also a facade.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-34" data-hi-narration-clickable="false">Almost nobody names this pattern when they're using it. The pattern name is more useful when you're wrapping existing messy code. Like, if you inherit a complex subsystem with awkward APIs, you write a facade to make it easier to use. But in LLD interviews, you're designing clean orchestrators from scratch, which happens to be the same structure. You're likely already doing the right thing instinctively, you just don't need to announce it.</div>
+<div class="my-6 MuiBox-root mui-lzjfwc"><div class="MuiBox-root mui-136gx4j"><div class="MuiBox-root mui-avdosu"><div class="MuiBox-root mui-lli68z"><svg stroke="currentColor" fill="currentColor" stroke-width="0" role="img" viewBox="0 0 24 24" class="w-3.5 h-3.5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"></path></svg><span>facade.py</span></div></div><div class="MuiBox-root mui-yi0x7b"><div class="flex items-center gap-0 mb-0"><div class="MuiFormControl-root mui-882m9p"><div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root mui-s1farw"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="language-select-label" class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall mui-1jilzfn">Python</div><fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline mui-5v2ak0"><legend class="mui-w1u3ce"><span>Language</span></legend></fieldset></div></div></div></div></div><div class="MuiBox-root mui-1xuzhe1"><div class="MuiBox-root mui-357n2r" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">from</span><span style="color:#212B36"> enum </span><span style="color:#299A8D">import</span><span style="color:#212B36"> Enum</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> GameState(Enum):</span></span>
+<span class="line"><span style="color:#212B36">    IN_PROGRESS = </span><span style="color:#F4A261">1</span></span>
+<span class="line"><span style="color:#212B36">    WON = </span><span style="color:#F4A261">2</span></span>
+<span class="line"><span style="color:#212B36">    DRAW = </span><span style="color:#F4A261">3</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Board:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> place_mark(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, row: int, col: int, mark: str) -&gt; bool:</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">        # Place mark logic</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#F4A261"> True</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> check_win(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, row: int, col: int) -&gt; bool:</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">        # Check win logic</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#F4A261"> False</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> is_full(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; bool:</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">        # Check if board is full</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#F4A261"> False</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Player:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, mark: str):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.mark = mark</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> get_mark(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; str:</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#299A8D"> self</span><span style="color:#212B36">.mark</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Game:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.board = Board()</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.player_x = Player(</span><span style="color:#2C9C59">"X"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.player_o = Player(</span><span style="color:#2C9C59">"O"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.current_player = </span><span style="color:#299A8D">self</span><span style="color:#212B36">.player_x</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.state = GameState.IN_PROGRESS</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> make_move(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, row: int, col: int) -&gt; bool:</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">        # Coordinates board, player, and state logic</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">        # Caller doesn't need to understand internal details</span></span>
+<span class="line"><span style="color:#299A8D">        if</span><span style="color:#299A8D"> self</span><span style="color:#212B36">.state != GameState.IN_PROGRESS:</span></span>
+<span class="line"><span style="color:#299A8D">            return</span><span style="color:#F4A261"> False</span></span>
+<span class="line"><span style="color:#299A8D">        if</span><span style="color:#299A8D"> not</span><span style="color:#299A8D"> self</span><span style="color:#212B36">.board.place_mark(row, col, </span><span style="color:#299A8D">self</span><span style="color:#212B36">.current_player.get_mark()):</span></span>
+<span class="line"><span style="color:#299A8D">            return</span><span style="color:#F4A261"> False</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">        if</span><span style="color:#299A8D"> self</span><span style="color:#212B36">.board.check_win(row, col):</span></span>
+<span class="line"><span style="color:#299A8D">            self</span><span style="color:#212B36">.state = GameState.WON</span></span>
+<span class="line"><span style="color:#299A8D">        elif</span><span style="color:#299A8D"> self</span><span style="color:#212B36">.board.is_full():</span></span>
+<span class="line"><span style="color:#299A8D">            self</span><span style="color:#212B36">.state = GameState.DRAW</span></span>
+<span class="line"><span style="color:#299A8D">        else</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">            self</span><span style="color:#212B36">.current_player = (</span></span>
+<span class="line"><span style="color:#299A8D">                self</span><span style="color:#212B36">.player_o </span><span style="color:#299A8D">if</span><span style="color:#299A8D"> self</span><span style="color:#212B36">.current_player == </span><span style="color:#299A8D">self</span><span style="color:#212B36">.player_x</span></span>
+<span class="line"><span style="color:#299A8D">                else</span><span style="color:#299A8D"> self</span><span style="color:#212B36">.player_x</span></span>
+<span class="line"><span style="color:#212B36">            )</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#F4A261"> True</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#919EAB;font-style:italic"># Usage - simple interface hides all the coordination</span></span>
+<span class="line"><span style="color:#212B36">game = Game()</span></span>
+<span class="line"><span style="color:#212B36">game.make_move(</span><span style="color:#F4A261">0</span><span style="color:#212B36">, </span><span style="color:#F4A261">0</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#212B36">game.make_move(</span><span style="color:#F4A261">1</span><span style="color:#212B36">, </span><span style="color:#F4A261">1</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre></div></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-36" data-hi-narration-clickable="false">The pattern name just describes what good orchestrator design looks like. Build it naturally, name it if it helps communicate, but don't worry if you never mention Facade by name in an interview.</div>
+<h2 id="behavioral-patterns" class="mdx-h2" data-hi-narration-block-id="p-37" data-hi-narration-clickable="false">Behavioral Patterns</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-38" data-hi-narration-clickable="false">Behavioral patterns control how objects interact and distribute responsibilities. They're about the flow of control and communication between objects.</div>
+<h3 id="strategy" class="mdx-h3" data-hi-narration-block-id="p-39" data-hi-narration-clickable="false">Strategy</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-40" data-hi-narration-clickable="false">Strategy replaces conditional logic with <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">polymorphism</span>. Use it when you have different ways of doing the same thing and you want to swap them at runtime.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-41" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">When we say "runtime," we mean the moment the program is actually running. You can choose behaviors based on conditions, inputs, or configuration as the code executes. When we say "compile time," we mean decisions baked into the code itself. The behavior is fixed in the class definition and doesn't change while the program runs.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-42" data-hi-narration-clickable="false">Interviewers love Strategy. It's the single most common pattern in LLD interviews because it directly tests whether you understand polymorphism and composition over inheritance. When you see a pile of <span class="mdx-code">if/else</span> or <span class="mdx-code">switch</span> statements based on type, that's a strategy pattern waiting to happen. If you learn one pattern from this page, make it this one. You've already seen this in the <a href="/learn/low-level-design/in-a-hurry/oop-concepts" target="_blank" rel="noopener noreferrer" class="mdx-a">OOP concepts</a> page with the parking lot vehicle example.</div>
+<div class="my-6 MuiBox-root mui-lzjfwc"><div class="MuiBox-root mui-136gx4j"><div class="MuiBox-root mui-avdosu"><div class="MuiBox-root mui-lli68z"><svg stroke="currentColor" fill="currentColor" stroke-width="0" role="img" viewBox="0 0 24 24" class="w-3.5 h-3.5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"></path></svg><span>strategy.py</span></div></div><div class="MuiBox-root mui-yi0x7b"><div class="flex items-center gap-0 mb-0"><div class="MuiFormControl-root mui-882m9p"><div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root mui-s1farw"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="language-select-label" class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall mui-1jilzfn">Python</div><fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline mui-5v2ak0"><legend class="mui-w1u3ce"><span>Language</span></legend></fieldset></div></div></div></div></div><div class="MuiBox-root mui-1eh06om"><div class="MuiBox-root mui-357n2r" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">from</span><span style="color:#212B36"> abc </span><span style="color:#299A8D">import</span><span style="color:#212B36"> ABC, abstractmethod</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> PaymentStrategy(ABC):</span></span>
+<span class="line"><span style="color:#212B36">    @abstractmethod</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> pay(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, amount: float) -&gt; bool:</span></span>
+<span class="line"><span style="color:#299A8D">        pass</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> CreditCardPayment(PaymentStrategy):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, card_number: str):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.card_number = card_number</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> pay(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, amount: float) -&gt; bool:</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">        # Credit card processing logic</span></span>
+<span class="line"><span style="color:#212B36">        print(</span><span style="color:#2C9C59">f"Paid {amount} with credit card"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#F4A261"> True</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> PayPalPayment(PaymentStrategy):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, email: str):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.email = email</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> pay(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, amount: float) -&gt; bool:</span></span>
+<span class="line"><span style="color:#919EAB;font-style:italic">        # PayPal processing logic</span></span>
+<span class="line"><span style="color:#212B36">        print(</span><span style="color:#2C9C59">f"Paid {amount} with PayPal"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#299A8D">        return</span><span style="color:#F4A261"> True</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> ShoppingCart:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.payment_strategy = </span><span style="color:#F4A261">None</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> set_payment_strategy(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, strategy: PaymentStrategy) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.payment_strategy = strategy</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> checkout(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, amount: float) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.payment_strategy.pay(amount)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#919EAB;font-style:italic"># Usage</span></span>
+<span class="line"><span style="color:#212B36">cart = ShoppingCart()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#212B36">cart.set_payment_strategy(CreditCardPayment(</span><span style="color:#2C9C59">"1234-5678"</span><span style="color:#212B36">))</span></span>
+<span class="line"><span style="color:#212B36">cart.checkout(</span><span style="color:#F4A261">100.00</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#212B36">cart.set_payment_strategy(PayPalPayment(</span><span style="color:#2C9C59">"user@example.com"</span><span style="color:#212B36">))</span></span>
+<span class="line"><span style="color:#212B36">cart.checkout(</span><span style="color:#F4A261">50.00</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre></div></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-43" data-hi-narration-clickable="false">Instead of having checkout logic full of <span class="mdx-code">if (paymentType == "credit")</span> statements, each payment method handles itself. This is just polymorphism with a pattern name. Strategy swaps behavior at runtime through composition. The cart holds a reference to a strategy and delegates to it. Factory decides which type to instantiate. Strategy decides which behavior to use after the object already exists.</div>
+<h3 id="observer" class="mdx-h3" data-hi-narration-block-id="p-44" data-hi-narration-clickable="false">Observer</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-45" data-hi-narration-clickable="false">Observer lets objects subscribe to events and get notified when something happens. Use it when changes in one object need to trigger updates in other objects.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-46" data-hi-narration-clickable="false">Observer is a top-tier interview pattern. It shows up when you're designing systems where multiple components care about state changes—a stock price changes and multiple displays need to update, or a user places an order and inventory, notifications, and analytics all need to know. If the problem involves the words "notify" or "update multiple components," you're probably looking at Observer.</div>
+<div class="my-6 MuiBox-root mui-lzjfwc"><div class="MuiBox-root mui-136gx4j"><div class="MuiBox-root mui-avdosu"><div class="MuiBox-root mui-lli68z"><svg stroke="currentColor" fill="currentColor" stroke-width="0" role="img" viewBox="0 0 24 24" class="w-3.5 h-3.5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"></path></svg><span>observer.py</span></div></div><div class="MuiBox-root mui-yi0x7b"><div class="flex items-center gap-0 mb-0"><div class="MuiFormControl-root mui-882m9p"><div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root mui-s1farw"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="language-select-label" class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall mui-1jilzfn">Python</div><fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline mui-5v2ak0"><legend class="mui-w1u3ce"><span>Language</span></legend></fieldset></div></div></div></div></div><div class="MuiBox-root mui-1xuzhe1"><div class="MuiBox-root mui-357n2r" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">from</span><span style="color:#212B36"> abc </span><span style="color:#299A8D">import</span><span style="color:#212B36"> ABC, abstractmethod</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Observer(ABC):</span></span>
+<span class="line"><span style="color:#212B36">    @abstractmethod</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> update(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, symbol: str, price: float) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        pass</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Subject(ABC):</span></span>
+<span class="line"><span style="color:#212B36">    @abstractmethod</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> attach(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, observer: Observer) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        pass</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#212B36">    @abstractmethod</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> detach(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, observer: Observer) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        pass</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#212B36">    @abstractmethod</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> notify_observers(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        pass</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> Stock(Subject):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, symbol: str):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">._observers: list[Observer] = []</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.symbol = symbol</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.price = </span><span style="color:#F4A261">0.0</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> attach(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, observer: Observer) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">._observers.append(observer)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> detach(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, observer: Observer) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">._observers.remove(observer)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> set_price(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, price: float) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.price = price</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.notify_observers()  </span><span style="color:#919EAB;font-style:italic"># Price changed, tell everyone</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> notify_observers(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        for</span><span style="color:#212B36"> observer </span><span style="color:#299A8D">in</span><span style="color:#299A8D"> self</span><span style="color:#212B36">._observers:</span></span>
+<span class="line"><span style="color:#212B36">            observer.update(</span><span style="color:#299A8D">self</span><span style="color:#212B36">.symbol, </span><span style="color:#299A8D">self</span><span style="color:#212B36">.price)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> PriceDisplay(Observer):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> update(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, symbol: str, price: float) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">        print(</span><span style="color:#2C9C59">f"Display updated: {symbol} = ${price}"</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> PriceAlert(Observer):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, threshold: float):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">.threshold = threshold</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> update(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, symbol: str, price: float) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        if</span><span style="color:#212B36"> price &gt; </span><span style="color:#299A8D">self</span><span style="color:#212B36">.threshold:</span></span>
+<span class="line"><span style="color:#212B36">            print(</span><span style="color:#2C9C59">f"Alert! {symbol} exceeded ${self.threshold}"</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#919EAB;font-style:italic"># Usage</span></span>
+<span class="line"><span style="color:#212B36">stock = Stock(</span><span style="color:#2C9C59">"AAPL"</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#212B36">display = PriceDisplay()</span></span>
+<span class="line"><span style="color:#212B36">alert = PriceAlert(</span><span style="color:#F4A261">150.00</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#212B36">stock.attach(display)</span></span>
+<span class="line"><span style="color:#212B36">stock.attach(alert)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#212B36">stock.set_price(</span><span style="color:#F4A261">145.00</span><span style="color:#212B36">)  </span><span style="color:#919EAB;font-style:italic"># Both observers get notified</span></span>
+<span class="line"><span style="color:#212B36">stock.set_price(</span><span style="color:#F4A261">155.00</span><span style="color:#212B36">)  </span><span style="color:#919EAB;font-style:italic"># Both observers get notified</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre></div></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-47" data-hi-narration-clickable="false">When the stock price changes, every attached observer gets updated automatically. No need for the stock to know what the observers do with the information.</div>
+<h3 id="state-machine" class="mdx-h3" data-hi-narration-block-id="p-48" data-hi-narration-clickable="false">State Machine</h3>
+<div class="mdx-p" data-hi-narration-block-id="p-49" data-hi-narration-clickable="false">A state machine handles state transitions cleanly. Use it when an object's behavior changes based on its internal state and you have complex state transition rules. You'll also see this called the "State pattern" in some references, but state machine is the more common term.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-50" data-hi-narration-clickable="false">State machines are less common than Strategy or Observer, but when you need one, it's usually the centerpiece of your entire design. If there's a state machine in your solution, the interview is probably organized around it—it's the most important thing to talk through. This shows up in LLD interviews when you're designing things like vending machines, document workflows, or game states. If the word "state" appears multiple times in the requirements, you're probably looking at a state machine. Instead of scattered conditionals checking current state everywhere, you encapsulate each state's behavior in its own class.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-51" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Drawing a state diagram is one of the best ways to communicate a state machine design in an interview. Show the states as circles, transitions as arrows labeled with actions, and it becomes immediately clear how the system works. Interviewers appreciate the visual—it shows you're thinking clearly about the problem.</div></div></div></div>
+<div class="my-6 MuiBox-root mui-lzjfwc"><div class="MuiBox-root mui-136gx4j"><div class="MuiBox-root mui-avdosu"><div class="MuiBox-root mui-lli68z"><svg stroke="currentColor" fill="currentColor" stroke-width="0" role="img" viewBox="0 0 24 24" class="w-3.5 h-3.5" height="1em" width="1em" xmlns="http://www.w3.org/2000/svg"><path d="M14.25.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.77l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.17l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05-.05-1.23.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.18l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09zm13.09 3.95l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08z"></path></svg><span>state_machine.py</span></div></div><div class="MuiBox-root mui-yi0x7b"><div class="flex items-center gap-0 mb-0"><div class="MuiFormControl-root mui-882m9p"><div class="MuiInputBase-root MuiOutlinedInput-root MuiInputBase-colorPrimary MuiInputBase-formControl MuiInputBase-sizeSmall MuiSelect-root mui-s1farw"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="language-select-label" class="MuiSelect-select MuiSelect-outlined MuiInputBase-input MuiOutlinedInput-input MuiInputBase-inputSizeSmall mui-1jilzfn">Python</div><fieldset aria-hidden="true" class="MuiOutlinedInput-notchedOutline mui-5v2ak0"><legend class="mui-w1u3ce"><span>Language</span></legend></fieldset></div></div></div></div></div><div class="MuiBox-root mui-luvi81"><div class="MuiBox-root mui-357n2r" data-code-language="python"><div class="MuiBox-root mui-1wdrgmb"><div class="MuiBox-root mui-0"><pre class="shiki hi-light" style="background-color:#FFFFFF;color:#212B36" tabindex="0"><code><span class="line"><span style="color:#299A8D">from</span><span style="color:#212B36"> abc </span><span style="color:#299A8D">import</span><span style="color:#212B36"> ABC, abstractmethod</span></span>
+<span class="line"><span style="color:#299A8D">from</span><span style="color:#212B36"> typing </span><span style="color:#299A8D">import</span><span style="color:#212B36"> TYPE_CHECKING</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">if</span><span style="color:#212B36"> TYPE_CHECKING:</span></span>
+<span class="line"><span style="color:#299A8D">    from</span><span style="color:#212B36"> __future__ </span><span style="color:#299A8D">import</span><span style="color:#212B36"> annotations</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> VendingMachineState(ABC):</span></span>
+<span class="line"><span style="color:#212B36">    @abstractmethod</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> insert_coin(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, machine: </span><span style="color:#2C9C59">'VendingMachine'</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        pass</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#212B36">    @abstractmethod</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> select_product(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, machine: </span><span style="color:#2C9C59">'VendingMachine'</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        pass</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#212B36">    @abstractmethod</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> dispense(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, machine: </span><span style="color:#2C9C59">'VendingMachine'</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        pass</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> NoCoinState(VendingMachineState):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> insert_coin(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, machine: </span><span style="color:#2C9C59">'VendingMachine'</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">        print(</span><span style="color:#2C9C59">"Coin inserted"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#212B36">        machine.set_state(HasCoinState())</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> select_product(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, machine: </span><span style="color:#2C9C59">'VendingMachine'</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">        print(</span><span style="color:#2C9C59">"Insert coin first"</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> dispense(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, machine: </span><span style="color:#2C9C59">'VendingMachine'</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">        print(</span><span style="color:#2C9C59">"Insert coin first"</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> HasCoinState(VendingMachineState):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> insert_coin(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, machine: </span><span style="color:#2C9C59">'VendingMachine'</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">        print(</span><span style="color:#2C9C59">"Coin already inserted"</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> select_product(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, machine: </span><span style="color:#2C9C59">'VendingMachine'</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">        print(</span><span style="color:#2C9C59">"Product selected"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#212B36">        machine.set_state(DispenseState())</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> dispense(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, machine: </span><span style="color:#2C9C59">'VendingMachine'</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">        print(</span><span style="color:#2C9C59">"Select product first"</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> DispenseState(VendingMachineState):</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> insert_coin(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, machine: </span><span style="color:#2C9C59">'VendingMachine'</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">        print(</span><span style="color:#2C9C59">"Please wait, dispensing"</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> select_product(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, machine: </span><span style="color:#2C9C59">'VendingMachine'</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">        print(</span><span style="color:#2C9C59">"Please wait, dispensing"</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> dispense(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, machine: </span><span style="color:#2C9C59">'VendingMachine'</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#212B36">        print(</span><span style="color:#2C9C59">"Dispensing product"</span><span style="color:#212B36">)</span></span>
+<span class="line"><span style="color:#212B36">        machine.set_state(NoCoinState())</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">class</span><span style="color:#212B36"> VendingMachine:</span></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> __init__(</span><span style="color:#299A8D">self</span><span style="color:#212B36">):</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">._current_state: VendingMachineState = NoCoinState()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> insert_coin(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">._current_state.insert_coin(</span><span style="color:#299A8D">self</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> select_product(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">._current_state.select_product(</span><span style="color:#299A8D">self</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> dispense(</span><span style="color:#299A8D">self</span><span style="color:#212B36">) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">._current_state.dispense(</span><span style="color:#299A8D">self</span><span style="color:#212B36">)</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#299A8D">    def</span><span style="color:#212B36"> set_state(</span><span style="color:#299A8D">self</span><span style="color:#212B36">, state: VendingMachineState) -&gt; </span><span style="color:#F4A261">None</span><span style="color:#212B36">:</span></span>
+<span class="line"><span style="color:#299A8D">        self</span><span style="color:#212B36">._current_state = state</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#919EAB;font-style:italic"># Usage</span></span>
+<span class="line"><span style="color:#212B36">machine = VendingMachine()</span></span>
+<span class="line"></span>
+<span class="line"><span style="color:#212B36">machine.select_product()  </span><span style="color:#919EAB;font-style:italic"># "Insert coin first"</span></span>
+<span class="line"><span style="color:#212B36">machine.insert_coin()     </span><span style="color:#919EAB;font-style:italic"># "Coin inserted"</span></span>
+<span class="line"><span style="color:#212B36">machine.select_product()  </span><span style="color:#919EAB;font-style:italic"># "Product selected"</span></span>
+<span class="line"><span style="color:#212B36">machine.dispense()        </span><span style="color:#919EAB;font-style:italic"># "Dispensing product"</span></span>
+<span class="line"></span>
+<span class="line"></span></code></pre></div></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-52" data-hi-narration-clickable="false">Each state knows which state comes next and what actions are valid. No giant switch statements checking current state in every method.</div>
+<h2 id="wrapping-up" class="mdx-h2" data-hi-narration-block-id="p-53" data-hi-narration-clickable="false">Wrapping Up</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-54" data-hi-narration-clickable="false">Patterns only help when they match the problem you’re solving. Most interview-ready designs use no patterns, or at most one or two. If you’re reaching for three or more, you’re probably forcing it and over-engineering.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-55" data-hi-narration-clickable="false">Here’s the quick pattern cheat sheet, grouped by category:</div>
+<div class="mdx-p" data-hi-narration-block-id="p-56" data-hi-narration-clickable="false"><strong>Creational Patterns</strong></div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-57" data-hi-narration-clickable="false"><strong>Factory</strong> → Use when callers shouldn’t care which concrete class gets created.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-58" data-hi-narration-clickable="false"><strong>Builder</strong> → Use when an object has lots of optional fields or messy construction details.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-59" data-hi-narration-clickable="false"><strong>Singleton</strong> → Use when you truly need one global instance (rare in interviews).</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-60" data-hi-narration-clickable="false"><strong>Structural Patterns</strong></div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-61" data-hi-narration-clickable="false"><strong>Decorator</strong> → Use when you need to layer optional behaviors at runtime without subclass explosion.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-62" data-hi-narration-clickable="false"><strong>Facade</strong> → Use when you want to hide internal complexity behind a simple entry point.</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-63" data-hi-narration-clickable="false"><strong>Behavioral Patterns</strong></div>
+<ul class="mdx-ul">
+<li class="mdx-li" data-hi-narration-block-id="p-64" data-hi-narration-clickable="false"><strong>Strategy</strong> → Use when you're replacing if/else logic with interchangeable behaviors.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-65" data-hi-narration-clickable="false"><strong>Observer</strong> → Use when multiple components need to react to a single event.</li>
+<li class="mdx-li" data-hi-narration-block-id="p-66" data-hi-narration-clickable="false"><strong>State Machine</strong> → Use when an object's behavior depends on its current state and transitions get messy.</li>
+</ul>
+<div class="mdx-p" data-hi-narration-block-id="p-67" data-hi-narration-clickable="false">Focus on solving the problem cleanly and name the pattern afterward if it fits.</div>
+<div class="MuiBox-root mui-10b10ta"><div class="flex flex-row items-center gap-3 mb-3"><div class="heroicon-sw-2 MuiBox-root mui-tbago3"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.879 7.519c1.171-1.025 3.071-1.025 4.242 0 1.172 1.025 1.172 2.687 0 3.712-.203.179-.43.326-.67.442-.745.361-1.45.999-1.45 1.827v.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 5.25h.008v.008H12v-.008Z"></path></svg></div><div><h6 class="MuiTypography-root MuiTypography-h6 mui-jyzq54">Test Your Knowledge</h6><p class="MuiTypography-root MuiTypography-body2 mui-14ou361">Answer the question below to find your gaps.</p></div></div><div class="flex flex-row items-baseline gap-3 mb-1 "><p class="MuiTypography-root MuiTypography-body2 mui-nk2f70">Question 1 of 15</p></div><div class="MuiBox-root mui-1muw576"><div class="mdx-p">You see code with <span class="mdx-code">if (paymentType == "credit") { ... } else if (paymentType == "debit") { ... }</span>. Which pattern eliminates this?</div></div><div class="MuiBox-root mui-0"><div class="grid grid-cols-1 gap-2 mb-4"><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">1</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Factory</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">2</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Singleton</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">3</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Strategy</div></div></div></div></div><div class="MuiPaper-root MuiPaper-elevation MuiPaper-rounded MuiPaper-elevation0 MuiCard-root mui-qdivvn" style="--Paper-shadow: none;"><div class="MuiCardContent-root mui-12dc1y3"><div class="flex items-center gap-3"><div class="MuiBox-root mui-c4ix06">4</div><div class="MuiBox-root mui-ytr2bn"><div class="mdx-p">Observer</div></div></div></div></div></div></div></div></div></div></div></div></div><!--$--><!--/$--></div></div></main>
+</body>
+</html>

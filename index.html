@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Course Library</title>
+<script>
+(function () {
+  var theme;
+  try { theme = localStorage.getItem('course-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #666666;
+    --faint: #888888;
+    --border: #d0d7de;
+    --track: #e8eaed;
+    --hover: #f4f5f7;
+    --link: #0969da;
+    --accent: #10857a;
+    --tick-border: #b6bdc6;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121212;
+    --fg: #e6e6e6;
+    --muted: #9aa0a6;
+    --faint: #777777;
+    --border: #3a3a3a;
+    --track: #2a2d31;
+    --hover: #1d1f23;
+    --link: #6cb2ff;
+    --accent: #34b3a6;
+    --tick-border: #5f6368;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto;
+    padding: 2.5rem 1.25rem 4rem;
+    max-width: 46rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--fg);
+    background: var(--bg);
+  }
+  h1 { margin: 0 0 0.25rem; font-size: 1.75rem; }
+  .subtitle { color: var(--muted); margin: 0 0 1.5rem; font-size: 0.9375rem; }
+  .progress-wrap { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 1.75rem; }
+  .progress { flex: 1; height: 8px; border-radius: 4px; background: var(--track); overflow: hidden; }
+  .progress > div { height: 100%; width: 0; border-radius: 4px; background: var(--accent); transition: width 0.25s; }
+  .progress-label { font-size: 0.875rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .search {
+    width: 100%;
+    padding: 0.6em 0.9em;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: transparent;
+    color: inherit;
+  }
+  .search:focus { outline: 2px solid var(--accent); border-color: transparent; }
+  h2 { margin: 2rem 0 0.25rem; font-size: 1.3125rem; }
+  h3 { margin: 1.25rem 0 0.375rem; font-size: 1rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.04em; font-weight: 600; }
+  .count { font-size: 0.8125rem; color: var(--faint); font-weight: 400; }
+  ul.lessons { list-style: none; margin: 0; padding: 0; }
+  ul.lessons li {
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.4rem 0.5rem;
+    border-radius: 8px;
+  }
+  ul.lessons li:hover { background: var(--hover); }
+  ul.lessons a { color: var(--link); text-decoration: none; flex: 1; }
+  ul.lessons a:hover { text-decoration: underline; }
+  li.done a { color: var(--faint); text-decoration: line-through; }
+  .tick { display: inline-flex; cursor: pointer; }
+  .tick input { position: absolute; opacity: 0; pointer-events: none; }
+  .tick .box {
+    width: 18px; height: 18px;
+    border: 1.5px solid var(--tick-border);
+    border-radius: 5px;
+    display: inline-block;
+    position: relative;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .tick input:checked + .box { background: var(--accent); border-color: var(--accent); }
+  .tick input:checked + .box::after {
+    content: '';
+    position: absolute;
+    left: 5px; top: 1.5px;
+    width: 5px; height: 9px;
+    border: solid #fff;
+    border-width: 0 2px 2px 0;
+    transform: rotate(45deg);
+  }
+  .tick input:focus-visible + .box { outline: 2px solid var(--accent); outline-offset: 2px; }
+  li.hidden { display: none; }
+
+  #theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+  #theme-toggle:hover { border-color: var(--accent); }
+
+</style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Toggle light/dark theme"></button>
+<script>
+(function () {
+  var btn = document.getElementById('theme-toggle');
+  function refresh() { btn.textContent = document.documentElement.dataset.theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19'; }
+  btn.addEventListener('click', function () {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('course-theme', next); } catch (e) {}
+    refresh();
+  });
+  refresh();
+})();
+</script>
+<h1>Course Library</h1>
+<p class="subtitle">Saved for offline reading. Tick a lesson to track your progress — stored locally in this browser.</p>
+<div class="progress-wrap">
+  <div class="progress"><div id="progress-bar"></div></div>
+  <span class="progress-label" id="progress-label"></span>
+</div>
+<input class="search" id="search" type="search" placeholder="Filter lessons…" aria-label="Filter lessons">
+
+<section class="course">
+  <h2>System Design <span class="count" data-count-for="System Design"></span></h2>
+  
+  <h3>In A Hurry</h3>
+  <ul class="lessons" data-course="System Design">
+    <li data-href="system-design/in-a-hurry/introduction.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/in-a-hurry/introduction.html">Introduction</a>
+    </li>
+    <li data-href="system-design/in-a-hurry/how-to-prepare.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/in-a-hurry/how-to-prepare.html">How to Prepare for System Design Interviews</a>
+    </li>
+    <li data-href="system-design/in-a-hurry/delivery.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/in-a-hurry/delivery.html">Delivery Framework</a>
+    </li>
+    <li data-href="system-design/in-a-hurry/core-concepts.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/in-a-hurry/core-concepts.html">Core Concepts</a>
+    </li>
+    <li data-href="system-design/in-a-hurry/key-technologies.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/in-a-hurry/key-technologies.html">Key Technologies</a>
+    </li>
+    <li data-href="system-design/in-a-hurry/patterns.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/in-a-hurry/patterns.html">Common Patterns</a>
+    </li>
+    <li data-href="system-design/in-a-hurry/problem-breakdowns.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/in-a-hurry/problem-breakdowns.html">Breakdowns of Popular System Design Questions</a>
+    </li>
+    <li data-href="system-design/in-a-hurry/vote.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/in-a-hurry/vote.html">Vote for what we break down next</a>
+    </li>
+  </ul>
+
+  <h3>Core Concepts</h3>
+  <ul class="lessons" data-course="System Design">
+    <li data-href="system-design/core-concepts/networking-essentials.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/core-concepts/networking-essentials.html">Networking Essentials</a>
+    </li>
+    <li data-href="system-design/core-concepts/api-design.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/core-concepts/api-design.html">API Design</a>
+    </li>
+    <li data-href="system-design/core-concepts/data-modeling.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/core-concepts/data-modeling.html">Data Modeling</a>
+    </li>
+    <li data-href="system-design/core-concepts/caching.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/core-concepts/caching.html">Caching</a>
+    </li>
+    <li data-href="system-design/core-concepts/sharding.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/core-concepts/sharding.html">Sharding</a>
+    </li>
+    <li data-href="system-design/core-concepts/consistent-hashing.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/core-concepts/consistent-hashing.html">Consistent Hashing</a>
+    </li>
+    <li data-href="system-design/core-concepts/cap-theorem.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/core-concepts/cap-theorem.html">CAP Theorem</a>
+    </li>
+    <li data-href="system-design/core-concepts/db-indexing.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/core-concepts/db-indexing.html">Database Indexing</a>
+    </li>
+    <li data-href="system-design/core-concepts/numbers-to-know.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/core-concepts/numbers-to-know.html">Numbers to Know</a>
+    </li>
+  </ul>
+
+  <h3>Problem Breakdowns</h3>
+  <ul class="lessons" data-course="System Design">
+    <li data-href="system-design/problem-breakdowns/bitly.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/bitly.html">Bitly</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/dropbox.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/dropbox.html">Dropbox</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/gopuff.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/gopuff.html">Local Delivery Service</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/ticketmaster.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/ticketmaster.html">Ticketmaster</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/fb-news-feed.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/fb-news-feed.html">FB News Feed</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/tinder.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/tinder.html">Tinder</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/leetcode.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/leetcode.html">LeetCode</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/whatsapp.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/whatsapp.html">WhatsApp</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/distributed-rate-limiter.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/distributed-rate-limiter.html">Rate Limiter</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/youtube.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/youtube.html">YouTube</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/fb-live-comments.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/fb-live-comments.html">FB Live Comments</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/top-k.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/top-k.html">YouTube Top K</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/uber.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/uber.html">Uber</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/web-crawler.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/web-crawler.html">Web Crawler</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/ad-click-aggregator.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/ad-click-aggregator.html">Ad Click Aggregator</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/fb-post-search.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/fb-post-search.html">FB Post Search</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/yelp.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/yelp.html">Yelp</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/instagram.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/instagram.html">Instagram</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/strava.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/strava.html">Strava</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/distributed-cache.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/distributed-cache.html">Distributed Cache</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/online-auction.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/online-auction.html">Online Auction</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/job-scheduler.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/job-scheduler.html">Job Scheduler</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/google-news.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/google-news.html">News Aggregator</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/camelcamelcamel.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/camelcamelcamel.html">Price Tracking Service</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/robinhood.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/robinhood.html">Robinhood</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/google-docs.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/google-docs.html">Google Docs</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/payment-system.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/payment-system.html">Payment System</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/metrics-monitoring.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/metrics-monitoring.html">Metrics Monitoring</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/online-chess.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/online-chess.html">Online Chess</a>
+    </li>
+    <li data-href="system-design/problem-breakdowns/chatgpt.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/problem-breakdowns/chatgpt.html">ChatGPT</a>
+    </li>
+  </ul>
+
+  <h3>Patterns</h3>
+  <ul class="lessons" data-course="System Design">
+    <li data-href="system-design/patterns/realtime-updates.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/patterns/realtime-updates.html">Real-time Updates</a>
+    </li>
+    <li data-href="system-design/patterns/dealing-with-contention.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/patterns/dealing-with-contention.html">Dealing with Contention</a>
+    </li>
+    <li data-href="system-design/patterns/multi-step-processes.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/patterns/multi-step-processes.html">Multi-step Processes</a>
+    </li>
+    <li data-href="system-design/patterns/scaling-reads.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/patterns/scaling-reads.html">Scaling Reads</a>
+    </li>
+    <li data-href="system-design/patterns/scaling-writes.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/patterns/scaling-writes.html">Scaling Writes</a>
+    </li>
+    <li data-href="system-design/patterns/large-blobs.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/patterns/large-blobs.html">Handling Large Blobs</a>
+    </li>
+    <li data-href="system-design/patterns/long-running-tasks.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/patterns/long-running-tasks.html">Managing Long Running Tasks</a>
+    </li>
+  </ul>
+
+  <h3>Deep Dives</h3>
+  <ul class="lessons" data-course="System Design">
+    <li data-href="system-design/deep-dives/redis.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/deep-dives/redis.html">Redis</a>
+    </li>
+    <li data-href="system-design/deep-dives/elasticsearch.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/deep-dives/elasticsearch.html">Elasticsearch</a>
+    </li>
+    <li data-href="system-design/deep-dives/kafka.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/deep-dives/kafka.html">Kafka</a>
+    </li>
+    <li data-href="system-design/deep-dives/api-gateway.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/deep-dives/api-gateway.html">API Gateway</a>
+    </li>
+    <li data-href="system-design/deep-dives/cassandra.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/deep-dives/cassandra.html">Cassandra</a>
+    </li>
+    <li data-href="system-design/deep-dives/dynamodb.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/deep-dives/dynamodb.html">DynamoDB</a>
+    </li>
+    <li data-href="system-design/deep-dives/postgres.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/deep-dives/postgres.html">PostgreSQL</a>
+    </li>
+    <li data-href="system-design/deep-dives/flink.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/deep-dives/flink.html">Flink</a>
+    </li>
+    <li data-href="system-design/deep-dives/zookeeper.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/deep-dives/zookeeper.html">ZooKeeper</a>
+    </li>
+    <li data-href="system-design/deep-dives/proximity-search.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/deep-dives/proximity-search.html">Proximity Search</a>
+    </li>
+    <li data-href="system-design/deep-dives/time-series-databases.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/deep-dives/time-series-databases.html">Time Series Databases</a>
+    </li>
+    <li data-href="system-design/deep-dives/data-structures-for-big-data.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/deep-dives/data-structures-for-big-data.html">Data Structures for Big Data</a>
+    </li>
+    <li data-href="system-design/deep-dives/vector-databases.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design/deep-dives/vector-databases.html">Vector Databases</a>
+    </li>
+  </ul>
+
+  <h3>Overview</h3>
+  <ul class="lessons" data-course="System Design">
+    <li data-href="system-design.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="system-design.html">Introduction</a>
+    </li>
+  </ul>
+</section>
+
+<section class="course">
+  <h2>Low Level Design <span class="count" data-count-for="Low Level Design"></span></h2>
+  
+  <h3>In A Hurry</h3>
+  <ul class="lessons" data-course="Low Level Design">
+    <li data-href="low-level-design/in-a-hurry/introduction.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/in-a-hurry/introduction.html">Introduction</a>
+    </li>
+    <li data-href="low-level-design/in-a-hurry/delivery.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/in-a-hurry/delivery.html">Delivery Framework</a>
+    </li>
+    <li data-href="low-level-design/in-a-hurry/design-principles.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/in-a-hurry/design-principles.html">Design Principles</a>
+    </li>
+    <li data-href="low-level-design/in-a-hurry/oop-concepts.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/in-a-hurry/oop-concepts.html">OOP Concepts</a>
+    </li>
+    <li data-href="low-level-design/in-a-hurry/patterns.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/in-a-hurry/patterns.html">Design Patterns</a>
+    </li>
+  </ul>
+
+  <h3>Concurrency</h3>
+  <ul class="lessons" data-course="Low Level Design">
+    <li data-href="low-level-design/concurrency/intro.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/concurrency/intro.html">Introduction</a>
+    </li>
+    <li data-href="low-level-design/concurrency/correctness.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/concurrency/correctness.html">Correctness</a>
+    </li>
+    <li data-href="low-level-design/concurrency/coordination.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/concurrency/coordination.html">Coordination</a>
+    </li>
+    <li data-href="low-level-design/concurrency/scarcity.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/concurrency/scarcity.html">Scarcity</a>
+    </li>
+  </ul>
+
+  <h3>Problem Breakdowns</h3>
+  <ul class="lessons" data-course="Low Level Design">
+    <li data-href="low-level-design/problem-breakdowns/connect-four.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/problem-breakdowns/connect-four.html">Connect Four</a>
+    </li>
+    <li data-href="low-level-design/problem-breakdowns/amazon-locker.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/problem-breakdowns/amazon-locker.html">Amazon Locker</a>
+    </li>
+    <li data-href="low-level-design/problem-breakdowns/elevator.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/problem-breakdowns/elevator.html">Elevator</a>
+    </li>
+    <li data-href="low-level-design/problem-breakdowns/parking-lot.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/problem-breakdowns/parking-lot.html">Parking Lot</a>
+    </li>
+    <li data-href="low-level-design/problem-breakdowns/file-system.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/problem-breakdowns/file-system.html">File System</a>
+    </li>
+    <li data-href="low-level-design/problem-breakdowns/bookmyshow.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/problem-breakdowns/bookmyshow.html">Movie Ticket Booking</a>
+    </li>
+    <li data-href="low-level-design/problem-breakdowns/logging-service.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/problem-breakdowns/logging-service.html">Logging Service</a>
+    </li>
+    <li data-href="low-level-design/problem-breakdowns/rate-limiter.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/problem-breakdowns/rate-limiter.html">Rate Limiter</a>
+    </li>
+    <li data-href="low-level-design/problem-breakdowns/inventory-management.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/problem-breakdowns/inventory-management.html">Inventory Management</a>
+    </li>
+  </ul>
+
+  <h3>Low Level Design</h3>
+  <ul class="lessons" data-course="Low Level Design">
+    <li data-href="low-level-design/vote.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design/vote.html">Vote for what we break down next</a>
+    </li>
+  </ul>
+
+  <h3>Overview</h3>
+  <ul class="lessons" data-course="Low Level Design">
+    <li data-href="low-level-design.html">
+      <label class="tick"><input type="checkbox" aria-label="Mark read"><span class="box"></span></label>
+      <a href="low-level-design.html">Introduction</a>
+    </li>
+  </ul>
+</section>
+<script>
+(function () {
+  var KEY = 'course-read-progress';
+  var state;
+  try { state = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) { state = {}; }
+
+  var items = Array.prototype.slice.call(document.querySelectorAll('li[data-href]'));
+
+  function save() { localStorage.setItem(KEY, JSON.stringify(state)); }
+
+  function updateCounts() {
+    var done = 0;
+    items.forEach(function (li) { if (state[li.dataset.href]) done++; });
+    document.getElementById('progress-bar').style.width = items.length ? (100 * done / items.length) + '%' : '0';
+    document.getElementById('progress-label').textContent = done + ' / ' + items.length + ' read';
+    document.querySelectorAll('[data-count-for]').forEach(function (span) {
+      var course = span.getAttribute('data-count-for');
+      var courseItems = document.querySelectorAll('ul[data-course="' + CSS.escape(course) + '"] li[data-href]');
+      var courseDone = 0;
+      courseItems.forEach(function (li) { if (state[li.dataset.href]) courseDone++; });
+      span.textContent = courseDone + ' / ' + courseItems.length;
+    });
+  }
+
+  items.forEach(function (li) {
+    var cb = li.querySelector('input');
+    cb.checked = !!state[li.dataset.href];
+    li.classList.toggle('done', cb.checked);
+    cb.addEventListener('change', function () {
+      if (cb.checked) state[li.dataset.href] = true; else delete state[li.dataset.href];
+      li.classList.toggle('done', cb.checked);
+      save();
+      updateCounts();
+    });
+  });
+
+  document.getElementById('search').addEventListener('input', function () {
+    var q = this.value.trim().toLowerCase();
+    items.forEach(function (li) {
+      li.classList.toggle('hidden', q !== '' && li.textContent.toLowerCase().indexOf(q) === -1);
+    });
+  });
+
+  updateCounts();
+})();
+</script>
+</body>
+</html>

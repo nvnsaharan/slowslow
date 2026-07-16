@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Common Patterns</title>
+<meta name="source-url" content="https://www.hellointerview.com/learn/system-design/in-a-hurry/patterns">
+<script>
+(function () {
+  var theme;
+  try { theme = localStorage.getItem('course-theme'); } catch (e) {}
+  if (theme !== 'light' && theme !== 'dark') {
+    theme = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  }
+  document.documentElement.dataset.theme = theme;
+})();
+</script>
+<style>
+  :root {
+    color-scheme: light;
+    --bg: #ffffff;
+    --fg: #1a1a1a;
+    --muted: #666666;
+    --faint: #888888;
+    --border: #e1e4e8;
+    --border-strong: #d0d7de;
+    --code-bg: #f6f8fa;
+    --inline-code-bg: #f0f1f3;
+    --link: #0969da;
+    --accent: #10857a;
+  }
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #121212;
+    --fg: #e6e6e6;
+    --muted: #aaaaaa;
+    --faint: #999999;
+    --border: #333333;
+    --border-strong: #3a3a3a;
+    --code-bg: #1e1e1e;
+    --inline-code-bg: #252525;
+    --link: #6cb2ff;
+    --accent: #34b3a6;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0 auto;
+    padding: 2rem 1.25rem 4rem;
+    max-width: 46rem;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 1.0625rem;
+    line-height: 1.7;
+    color: var(--fg);
+    background: var(--bg);
+  }
+  h1, h2, h3, h4, h5, h6 { line-height: 1.3; margin: 2em 0 0.6em; }
+  h1 { font-size: 2rem; margin-top: 0.5em; }
+  img, svg, video { max-width: 100%; height: auto; }
+  figure { margin: 1.5em 0; text-align: center; }
+  figcaption { font-size: 0.875rem; color: var(--muted); }
+  pre {
+    padding: 1em;
+    overflow-x: auto;
+    border-radius: 8px;
+    background: var(--code-bg);
+    border: 1px solid var(--border);
+    font-size: 0.875rem;
+    line-height: 1.5;
+  }
+  code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 0.9em;
+    background: var(--inline-code-bg);
+    padding: 0.15em 0.35em;
+    border-radius: 4px;
+  }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  table { border-collapse: collapse; width: 100%; margin: 1.5em 0; display: block; overflow-x: auto; }
+  th, td { border: 1px solid var(--border-strong); padding: 0.5em 0.75em; text-align: left; }
+  th { background: var(--code-bg); }
+  blockquote { margin: 1.5em 0; padding: 0.5em 1.25em; border-left: 4px solid var(--border-strong); color: var(--muted); }
+  a { color: var(--link); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 2.5em 0; }
+  .lesson-source { font-size: 0.8125rem; color: var(--faint); margin-bottom: 2rem; }
+
+  #theme-toggle {
+    position: fixed;
+    top: 1rem;
+    right: 1rem;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    border: 1px solid var(--border);
+    background: var(--bg);
+    font-size: 1.15rem;
+    line-height: 1;
+    cursor: pointer;
+    z-index: 100;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.12);
+  }
+  #theme-toggle:hover { border-color: var(--accent); }
+
+</style>
+</head>
+<body>
+<button id="theme-toggle" type="button" aria-label="Toggle light/dark theme"></button>
+<script>
+(function () {
+  var btn = document.getElementById('theme-toggle');
+  function refresh() { btn.textContent = document.documentElement.dataset.theme === 'dark' ? '\u2600\uFE0F' : '\uD83C\uDF19'; }
+  btn.addEventListener('click', function () {
+    var next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+    document.documentElement.dataset.theme = next;
+    try { localStorage.setItem('course-theme', next); } catch (e) {}
+    refresh();
+  });
+  refresh();
+})();
+</script>
+<p class="lesson-source">Saved for offline reading from <a href="https://www.hellointerview.com/learn/system-design/in-a-hurry/patterns">https://www.hellointerview.com/learn/system-design/in-a-hurry/patterns</a></p>
+<main class="flex-1 min-w-0 overflow-y-auto print-main"><div class="flex flex-col bg-nav-bg-paper"><div class="px-4 md:px-6 max-w-7xl mx-auto py-3 w-full print-main-content" style="min-height:calc(100vh - 48px - 0px);transition:min-height 0.3s ease-in-out;background-color:var(--nav-bg-paper)"><div class="grid grid-cols-7 gap-12 md:gap-0 mx-auto max-w-5xl"><div class="col-span-7 w-full max-w-4xl md:pr-6 xl:col-span-5"><div class="relative"><div id="markdown" class="mui-4tqezl"><div class="chrome"><div class="flex flex-col gap-2"><div class="flex flex-col relative"><div class="flex items-center justify-between   "><h6 class="MuiTypography-root MuiTypography-h6 mui-pkyqy5">System Design in a Hurry</h6></div><div class="flex flex-col md:flex-row md:items-start md:justify-between md:gap-4"><div class="flex items-center gap-2"><h1 class="MuiTypography-root MuiTypography-h2 mui-xhvznl">Common Patterns</h1><div class="MuiBox-root mui-yrscm7"></div></div></div><p class="MuiTypography-root MuiTypography-body2 mui-19x8mt2">The most common system design interview patterns, built by FAANG managers and staff engineers</p></div><div class="MuiBox-root mui-j7tv77"><span class="MuiBox-root mui-1ch289i">Updated<!-- --> <span>Jul 18, 2025</span><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-3 h-3" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="m19.5 8.25-7.5 7.5-7.5-7.5"></path></svg></span></div></div><hr class="MuiDivider-root MuiDivider-fullWidth mui-18s6yq7"></div>
+<div class="mdx-p" data-hi-narration-block-id="p-0" data-hi-narration-clickable="false">By taking the <a href="/learn/system-design/in-a-hurry/key-technologies" target="_blank" rel="noopener noreferrer" class="mdx-a">key technologies</a> and <a href="/learn/system-design/in-a-hurry/core-concepts" target="_blank" rel="noopener noreferrer" class="mdx-a">core concepts</a> we've discussed and combining them, you can build a wide variety of systems. But success in the time-constrained environment of interviewing is all about patterns. If you're able to identify the patterns that are required for a specific design, not only can you fall back to best practices but you'll save a bunch of time trying to reinvent the wheel.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-1" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">The ability to identify and apply patterns is a skill that often separates senior engineers from more junior engineers in the system design interview. Patterns allow you to know what's interesting and what's not, they also save you time by helping you to see common failure modes rather than reverse engineering them on the fly!</div></div></div></div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/njgl5-wwrusr.2hpv1intm3zat-1f30e1b8.svg" alt="Overall Structure" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Overall Structure</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-2" data-hi-narration-clickable="false">What follows are some common patterns that you can use to build systems. These patterns are not mutually exclusive, and you'll often find yourself utilizing several of them to build a system. In each of our <a href="/learn/system-design/problem-breakdowns/overview" target="_blank" rel="noopener noreferrer" class="mdx-a">Problem Breakdowns</a>, we'll call out patterns that are used to build the system so you can spot these commonalities and read about common deep dives and pitfalls.</div>
+<h2 id="pushing-realtime-updates" class="mdx-h2" data-hi-narration-block-id="p-3" data-hi-narration-clickable="false">Pushing Realtime Updates</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-4" data-hi-narration-clickable="false">In many systems, you'll need to be able to make updates to the user in real-time. For synchronous APIs, this is as simple as returning a response once the request is completed. For other systems like chat applications, notifications, or live dashboards, you'll need to be able to push updates to the user as they happen.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-5" data-hi-narration-clickable="false">There are a lot of decisions to make when implementing realtime updates. First, you'll need to choose a protocol. Simple HTTP polling is the simplest option, but it's not the most efficient. Server-sent events (SSE) and <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">websockets</span> are purpose-built for realtime updates, but the infrastructure can be tricky to get right. Read our <a href="/learn/system-design/core-concepts/networking-essentials" target="_blank" rel="noopener noreferrer" class="mdx-a">Networking Essentials</a> core concept for a deep dive on the protocol choice. We generally recommend starting with HTTP polling until it no longer serves your needs. Once you're there, you can consider SSE or websockets.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-6" data-hi-narration-clickable="false">For the server side of realtime updates, you again have more options! Pub/Sub services are a common way to decouple the publisher and subscriber (used in our <a href="/learn/system-design/problem-breakdowns/whatsapp" target="_blank" rel="noopener noreferrer" class="mdx-a">Whatsapp</a> breakdown), while stateful servers in a consistent hash ring or other configuration can be used for situations where processing is heavier (used in our <a href="/learn/system-design/problem-breakdowns/google-docs" target="_blank" rel="noopener noreferrer" class="mdx-a">Google Docs</a> breakdown).</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/3leigixbyuj2.2o5brx2af4kyd-54f163a2.svg" alt="Realtime Updates Challenges" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Realtime Updates Challenges</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-7" data-hi-narration-clickable="false">We talk about all of these options at length in our <a href="/learn/system-design/patterns/realtime-updates" target="_blank" rel="noopener noreferrer" class="mdx-a">Pushing Realtime Updates</a> Pattern.</div>
+<h2 id="managing-long-running-tasks" class="mdx-h2" data-hi-narration-block-id="p-8" data-hi-narration-clickable="false">Managing Long-Running Tasks</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-9" data-hi-narration-clickable="false">Many operations in distributed systems take too long for synchronous processing - video encoding, report generation, bulk operations, or any task that takes more than a few seconds. The Managing Long-Running Tasks pattern splits these operations into immediate acknowledgment and background processing.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-10" data-hi-narration-clickable="false">When users submit heavy tasks, your web server instantly validates the request, pushes a job to a queue (like Redis or Kafka), and returns a job ID within milliseconds. Separate worker processes continuously pull jobs from the queue and execute the actual work. This provides fast user response times, independent scaling of web servers and workers, and fault isolation.</div>
+<div class="callout callout-warning my-6" data-hi-narration-block-id="p-11" data-hi-narration-clickable="false"><div class="MuiBox-root mui-fj81ft"><div class="MuiBox-root mui-3t6lyr"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Many candidates are quick to pull the trigger on pushing their processing behind a queue, but this is frequently a bad decision and you need to be careful about the tradeoffs. If you have short-running jobs, returning the status of the job synchronously with the request simplifies your architecture dramatically providing clearer back-pressure and better user experience.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-12" data-hi-narration-clickable="false">The key technologies are message queues for job coordination and worker pools for processing. You'll need to handle job status tracking, retries, and failure scenarios like dead letter queues for poison messages.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/mq5xa3unbpsw.2_xpdngz4ol-b-35c7e9f5.svg" alt="Long Running Tasks" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Long Running Tasks</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-13" data-hi-narration-clickable="false">Get the full breakdown of async worker pools, job queues, and failure handling in our <a href="/learn/system-design/patterns/long-running-tasks" target="_blank" rel="noopener noreferrer" class="mdx-a">Managing Long-Running Tasks</a> Pattern.</div>
+<h2 id="dealing-with-contention" class="mdx-h2" data-hi-narration-block-id="p-14" data-hi-narration-clickable="false">Dealing with Contention</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-15" data-hi-narration-clickable="false">When multiple users try to access the same resource simultaneously, like booking the last concert ticket or bidding on an auction item, you need mechanisms to prevent race conditions and ensure data consistency. This pattern addresses coordination challenges in distributed systems.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-16" data-hi-narration-clickable="false">Solutions range from database-level approaches like pessimistic locking and optimistic concurrency control to distributed coordination mechanisms. The key is understanding when to use atomicity and transactions versus explicit locking strategies. For distributed systems, you might need distributed locks, two-phase commit protocols, or queue-based serialization.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-17" data-hi-narration-clickable="false">Trade-offs include performance versus consistency guarantees, and simple database solutions versus complex distributed coordination. Most problems start with single-database solutions before scaling to distributed approaches.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-18" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">Databases are built around problems of contention. When you separate your data into multiple databases, you're taking on all of the challenges that the database systems were originally designed to solve. In some cases this can be completely appropriate, but be careful about doing it prematurely. Interviewers are keen to dig in and see if you really understand all that you're giving up by breaking your data apart.</div></div></div></div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/pggz3dak7rjg.3x16hientrwdt-a334401e.svg" alt="Example of a race condition" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Example of a race condition</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-19" data-hi-narration-clickable="false">Dive deeper into locks, transactions, and distributed coordination techniques in our <a href="/learn/system-design/patterns/dealing-with-contention" target="_blank" rel="noopener noreferrer" class="mdx-a">Dealing with Contention</a> Pattern.</div>
+<h2 id="scaling-reads" class="mdx-h2" data-hi-narration-block-id="p-20" data-hi-narration-clickable="false">Scaling Reads</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-21" data-hi-narration-clickable="false">As your application grows from hundreds to millions of users, read traffic often becomes the first bottleneck. While writes create data, reads consume it - and read traffic typically grows much faster than write traffic. The Scaling Reads pattern addresses high-volume read requests through database optimization, horizontal scaling, and intelligent caching.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-22" data-hi-narration-clickable="false">For most applications, the read-to-write ratio starts at 10:1 but often reaches 100:1 or higher. Consider Instagram: when you open the app, you see dozens of photos requiring hundreds of database queries for metadata, user info, and engagement data. Meanwhile, you might only post once per day - a single write operation.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-23" data-hi-narration-clickable="false">The solution follows a natural progression: optimize read performance within your database through indexing and denormalization, scale horizontally with read replicas, then add external caching layers like Redis and CDNs.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-24" data-hi-narration-clickable="false">Key considerations include managing cache invalidation, handling <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">replication</span> lag in read replicas, and dealing with <span class="cursor-help underline decoration-dashed underline-offset-4 text-inherit transition-all" style="text-decoration-color:color-mix(in srgb, currentColor 40%, transparent)">hot keys</span> where millions of users request the same popular content simultaneously.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/2qkv4dk_8l2v.1y7z8qi9oppk0-83ad6f5b.svg" alt="Database Read Scaling" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Database Read Scaling</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-25" data-hi-narration-clickable="false">Learn about indexing strategies, read replicas, and cache invalidation patterns in our <a href="/learn/system-design/patterns/scaling-reads" target="_blank" rel="noopener noreferrer" class="mdx-a">Scaling Reads</a> Pattern.</div>
+<h2 id="scaling-writes" class="mdx-h2" data-hi-narration-block-id="p-26" data-hi-narration-clickable="false">Scaling Writes</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-27" data-hi-narration-clickable="false">As your application grows from hundreds to millions of writes per second, individual database servers and storage systems hit hard limits. The Scaling Writes pattern addresses write bottlenecks through <a href="/learn/system-design/core-concepts/sharding" target="_blank" rel="noopener noreferrer" class="mdx-a">sharding</a>, batching, and intelligent load management.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-28" data-hi-narration-clickable="false">The core strategies are horizontal <a href="/learn/system-design/core-concepts/sharding" target="_blank" rel="noopener noreferrer" class="mdx-a">sharding</a> (distributing data across multiple servers), vertical partitioning (separating different types of data), and handling write bursts through queues and load shedding. Key considerations include selecting good partition keys that distribute load evenly while keeping related data together.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-29" data-hi-narration-clickable="false">For burst handling, you can use write queues to buffer temporary spikes or implement load shedding to prioritize important writes during overload. Batching techniques help reduce per-operation overhead by grouping multiple writes together.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/9k8uhxcpdlnu.1g-ybku-ecjw5-99ba2a49.svg" alt="Good and Bad Partition Keys" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Good and Bad Partition Keys</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-30" data-hi-narration-clickable="false">Read our comprehensive guide to <a href="/learn/system-design/core-concepts/sharding" target="_blank" rel="noopener noreferrer" class="mdx-a">sharding</a>, partitioning, and handling write bursts in our <a href="/learn/system-design/patterns/scaling-writes" target="_blank" rel="noopener noreferrer" class="mdx-a">Scaling Writes</a> Pattern.</div>
+<h2 id="handling-large-blobs" class="mdx-h2" data-hi-narration-block-id="p-31" data-hi-narration-clickable="false">Handling Large Blobs</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-32" data-hi-narration-clickable="false">Large files like videos, images, and documents need special handling in distributed systems. Instead of routing gigabytes through your application servers, this pattern uses direct client-to-storage transfers with presigned URLs and CDN delivery.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-33" data-hi-narration-clickable="false">Your application server generates temporary, scoped credentials (presigned URLs) that let clients upload directly to blob storage like S3. Downloads come from CDNs with signed URLs for access control. This eliminates your servers as bottlenecks while providing resumable uploads, progress tracking, and global distribution.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-34" data-hi-narration-clickable="false">Key challenges include state synchronization between your database metadata and blob storage, handling upload failures, and managing the lifecycle of large files. Event notifications from storage services help keep your application state consistent.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/yaq3q4vskhec.3m0bjpqk-kj0f-cf0e9c1a.svg" alt="Large Blobs" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Large Blobs</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-35" data-hi-narration-clickable="false">Explore advanced techniques for presigned URLs, resumable uploads, and CDN delivery in our <a href="/learn/system-design/patterns/large-blobs" target="_blank" rel="noopener noreferrer" class="mdx-a">Large Blobs</a> Pattern.</div>
+<h2 id="multi-step-processes" class="mdx-h2" data-hi-narration-block-id="p-36" data-hi-narration-clickable="false">Multi-Step Processes</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-37" data-hi-narration-clickable="false">Complex business processes often involve multiple services and long-running operations that must survive failures, retries, and external dependencies. This pattern provides reliable coordination for workflows like order fulfillment, user onboarding, or payment processing.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-38" data-hi-narration-clickable="false">Solutions range from simple single-server orchestration to sophisticated workflow engines and durable execution systems. Event sourcing provides a distributed approach where each step emits events that trigger subsequent steps. Modern workflow systems like Temporal or AWS Step Functions handle state management, failure recovery, and retry logic automatically.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-39" data-hi-narration-clickable="false">The key insight is moving from scattered state management and manual error handling to declarative workflow definitions where the system guarantees exactly-once execution and maintains complete audit trails.</div>
+<div class="mdx-p"><div class="MuiBox-root mui-10khgmf" style="cursor:pointer" data-hi-narration-skip="true"><div class="MuiGrid-root MuiGrid-container MuiGrid-direction-xs-column mui-3l3qus"><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1lsiufc"><div class="relative w-full"><span class="w-full h-full"><img src="assets/g3gao4pa_bbd.1d6f4kl1bq4i_-e794daa6.svg" alt="Multi-Step Processes" class="block w-auto max-w-full h-auto max-h-full rounded-xl object-contain"></span></div></div><div class="MuiGrid-root MuiGrid-direction-xs-row mui-1n5khr6"><span class="MuiTypography-root MuiTypography-caption mui-f52bxm">Multi-Step Processes</span></div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-40" data-hi-narration-clickable="false">See detailed examples and implementation strategies for workflow engines and durable execution in our <a href="/learn/system-design/patterns/multi-step-processes" target="_blank" rel="noopener noreferrer" class="mdx-a">Multi-Step Processes</a> Pattern.</div>
+<h2 id="proximity-based-services" class="mdx-h2" data-hi-narration-block-id="p-41" data-hi-narration-clickable="false">Proximity-Based Services</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-42" data-hi-narration-clickable="false">Several systems like <a href="/learn/system-design/problem-breakdowns/uber" target="_blank" rel="noopener noreferrer" class="mdx-a">Design Uber</a> or <a href="/learn/system-design/problem-breakdowns/gopuff" target="_blank" rel="noopener noreferrer" class="mdx-a">Design Gopuff</a> will require you to search for entities by location. <a href="/learn/system-design/deep-dives/proximity-search" target="_blank" rel="noopener noreferrer" class="mdx-a">Geospatial indexes</a> are the key to efficiently querying and retrieving entities based on geographical proximity. These services often rely on extensions to commodity databases like <a href="https://postgis.net/" target="_blank" rel="noopener noreferrer" class="mdx-a">PostgreSQL with PostGIS extensions</a> or <a href="https://redis.io/docs/latest/develop/data-types/geospatial/" target="_blank" rel="noopener noreferrer" class="mdx-a">Redis' geospatial data type</a>, or dedicated solutions like Elasticsearch with geo-queries enabled.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-43" data-hi-narration-clickable="false">The architecture typically involves dividing the geographical area into manageable regions and indexing entities within these regions. This allows the system to quickly exclude vast areas that don't contain relevant entities, thereby reducing the search space significantly.</div>
+<div class="callout callout-tip my-6" data-hi-narration-block-id="p-44" data-hi-narration-clickable="false"><div class="MuiBox-root mui-mot7vj"><div class="MuiBox-root mui-zvu67g"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true" data-slot="icon" class="w-6 h-6 heroicon-sw-2" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 18v-5.25m0 0a6.01 6.01 0 0 0 1.5-.189m-1.5.189a6.01 6.01 0 0 1-1.5-.189m3.75 7.478a12.06 12.06 0 0 1-4.5 0m3.75 2.383a14.406 14.406 0 0 1-3 0M14.25 18v-.192c0-.983.658-1.823 1.508-2.316a7.5 7.5 0 1 0-7.517 0c.85.493 1.509 1.333 1.509 2.316V18"></path></svg></div><div class="MuiBox-root mui-79elbk"><div class="mdx-p">While geospatial indexes are great, they're only really necessary when you need to index hundreds of thousands or millions of items. If you need to search through a map of 1,000 items, you're better off scanning all of the items than the overhead of a purpose-built index or service.</div></div></div></div>
+<div class="mdx-p" data-hi-narration-block-id="p-45" data-hi-narration-clickable="false">Note that most systems won't require users to be querying globally. Often, when proximity is involved, it means users are looking for entities <em>local</em> to them.</div>
+<h2 id="pattern-selection" class="mdx-h2" data-hi-narration-block-id="p-46" data-hi-narration-clickable="false">Pattern Selection</h2>
+<div class="mdx-p" data-hi-narration-block-id="p-47" data-hi-narration-clickable="false">These patterns often work together to solve complex system design challenges. A video platform might use <strong>Large Blobs</strong> for video uploads, <strong>Long-Running Tasks</strong> for transcoding, <strong>Realtime Updates</strong> for progress notifications, and <strong>Multi-Step Processes</strong> to coordinate the entire workflow.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-48" data-hi-narration-clickable="false">The key is recognizing which patterns apply to your specific problem and understanding their trade-offs. Start with simpler approaches (polling, single-server orchestration) and only add complexity when you have specific requirements that demand it.</div>
+<div class="mdx-p" data-hi-narration-block-id="p-49" data-hi-narration-clickable="false">In system design interviews, proactively identifying and applying these patterns demonstrates architectural maturity and helps you focus on the most important aspects of your design rather than getting bogged down in implementation details.</div></div></div></div></div><!--$--><!--/$--></div></div></main>
+</body>
+</html>
