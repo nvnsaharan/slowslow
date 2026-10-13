@@ -1,0 +1,385 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body>
+<title>APMS Interview Prep</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: single reading column, Q&A as open disclosure rows grouped by theme, one data-flow diagram up top */
+  :root{
+    --bg:#f6f7f4; --surface:#ffffff; --ink:#18201c; --muted:#56635b; --faint:#8a968f;
+    --line:#dde3dd; --accent:#0f6b52; --accent-soft:#e1f0ea; --warn:#9a5b00; --warn-soft:#f8ecd6;
+    --code:#eef1ec;
+    --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+    --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1512; --surface:#161e19; --ink:#e6ece8; --muted:#a2b0a8; --faint:#6f7e76;
+      --line:#26322b; --accent:#59c9a3; --accent-soft:#18322a; --warn:#e5b45e; --warn-soft:#33270f;
+      --code:#1c2620; color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1512; --surface:#161e19; --ink:#e6ece8; --muted:#a2b0a8; --faint:#6f7e76;
+    --line:#26322b; --accent:#59c9a3; --accent-soft:#18322a; --warn:#e5b45e; --warn-soft:#33270f;
+    --code:#1c2620; color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;
+    padding-inline:16px;padding-block:40px 80px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(2rem,6vw,3rem);line-height:1.05;letter-spacing:-.02em;margin:8px 0 14px;text-wrap:balance}
+  .lede{color:var(--muted);font-size:1.08rem;max-width:62ch;margin:0}
+  h2{font-family:var(--display);font-weight:700;font-size:1.45rem;letter-spacing:-.01em;margin:0 0 6px;text-wrap:balance}
+  .sub{color:var(--muted);margin:0 0 18px;max-width:64ch}
+  code{font-family:var(--mono);font-size:.86em;background:var(--code);padding:1px 5px;border-radius:4px}
+  .pitch{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+  .pitch p{margin:0 0 10px} .pitch p:last-child{margin:0}
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .fact{background:var(--surface);padding:14px 16px;min-width:0}
+  .fact b{display:block;font-family:var(--mono);font-size:12px;font-weight:500;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+  .fact span{font-size:.95rem}
+  .diagram{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto}
+  .diagram pre.mermaid{margin:0;min-width:560px}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  button{font:inherit;font-size:.85rem;font-weight:500;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+  button:hover{border-color:var(--accent)}
+  button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .group{display:flex;flex-direction:column;gap:10px}
+  .group-title{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:14px 0 2px;display:flex;align-items:center;gap:10px}
+  .group-title::after{content:"";flex:1;height:1px;background:var(--line)}
+  details{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+  summary{cursor:pointer;list-style:none;padding:14px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:baseline;font-weight:600}
+  summary::-webkit-details-marker{display:none}
+  summary .n{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:500}
+  summary::after{content:"+";font-family:var(--mono);color:var(--faint)}
+  details[open] summary::after{content:"\2212"}
+  .ans{padding:0 16px 16px 16px;display:flex;flex-direction:column;gap:10px;color:var(--ink)}
+  .ans p{margin:0} .ans ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
+  .say{border-left:3px solid var(--accent);background:var(--accent-soft);padding:9px 13px;border-radius:0 8px 8px 0;font-size:.97rem}
+  .say b{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:2px;font-weight:500}
+  .gap{border-left:3px solid var(--warn);background:var(--warn-soft);padding:9px 13px;border-radius:0 8px 8px 0;font-size:.95rem}
+  .gap b{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--warn);display:block;margin-bottom:2px;font-weight:500}
+  .src{font-family:var(--mono);font-size:12px;color:var(--faint)}
+  table{border-collapse:collapse;width:100%;font-size:.92rem}
+  .tscroll{overflow-x:auto}
+  th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-weight:500}
+  footer{color:var(--faint);font-size:.85rem;border-top:1px solid var(--line);padding-top:16px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  .diagram pre.mermaid{margin:0;min-width:640px;text-align:center;font-family:var(--body)}
+  .flow{display:flex;flex-wrap:wrap;gap:8px 6px;align-items:center;font-size:.88rem}
+  .flow span{background:var(--accent-soft);border:1px solid var(--line);border-radius:6px;padding:3px 9px;font-weight:600}
+  .flow i{color:var(--muted);font-style:normal;font-size:.8rem}
+  .back{font-size:.9rem}.back a{color:var(--accent)}
+</style>
+
+<div class="wrap">
+  <p class="back"><a href="../index.html">&larr; Course Library</a> &nbsp;&middot;&nbsp; <a href="system-design-vocabulary.html">Chapter 2: hot path, cold path, control plane</a></p>
+  <p class="back"><a href="snagit-overview.html">Ch 3 SnagIt overview</a> &middot; <a href="snagit-systems-explained.html">Ch 4 Systems</a> &middot; <a href="snagit-qna.html">Ch 5 Practice Q&amp;A</a> &middot; <a href="core-techniques-revision.html">Ch 6 Core techniques</a></p>
+  <header>
+    <div class="eyebrow">Interview prep &middot; Anakin &middot; automatedProxyManager</div>
+    <h1>APMS: Automated Proxy Management System</h1>
+    <p class="lede">Eighteen questions an interviewer could ask about this project, with answers grounded in the code. Green boxes are what to say out loud. Amber boxes are weak spots you should name before they do.</p>
+  </header>
+
+  <section>
+    <h2>The 30-second pitch</h2>
+    <div class="pitch">
+      <p>APMS is a proxy gateway for our scrapers. A caller sends one JSON request to <code>POST /api/v1/make_request</code>. The service picks a proxy vendor for the target host, makes the request through it, and returns the response.</p>
+      <p>It also learns. Every outcome is counted per host and per vendor, and a background job nudges each vendor's selection probability toward its recent success rate. Vendors that work for a site get more traffic. Vendors that get blocked get less, with no human tuning.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2>Shape of the system</h2>
+    <p class="sub">Two deployables sharing MongoDB as the source of truth.</p>
+    <div class="facts">
+      <div class="fact"><b>Selector</b><span>Go, Gin, ECS task (1 vCPU, ~4 GB, port 8080)</span></div>
+      <div class="fact"><b>Updater</b><span>Python worker, polls SQS</span></div>
+      <div class="fact"><b>Config store</b><span>MongoDB, one doc per host</span></div>
+      <div class="fact"><b>Hot cache</b><span>Redis, 5 min TTL</span></div>
+      <div class="fact"><b>Feedback bus</b><span>SQS queue <code>PROXY_MANAGEMENT_AGGREGATOR</code></span></div>
+      <div class="fact"><b>Secrets</b><span>AWS Secrets Manager, ap-south-1</span></div>
+    </div>
+    <div class="diagram" style="margin-top:14px">
+<pre class="mermaid" id="apmsDiagram">
+flowchart LR
+  caller([Scraper caller])
+
+  subgraph hot["Request path - Go selector"]
+    direction TB
+    api["POST /api/v1/make_request"]
+    pick["Pick vendor by weight<br/>+ country rewrite<br/>+ random TLS profile"]
+    api --> pick
+  end
+
+  subgraph store["Settings per host"]
+    direction TB
+    redis[("Redis<br/>5 min TTL")]
+    mongo[("MongoDB<br/>probabilities, costs, switch")]
+    redis -. "miss: SETNX lock, read" .-> mongo
+  end
+
+  vendors["Proxy vendors<br/>geonode, brightData,<br/>smartProxy, proxyverse"]
+  target([Target site])
+
+  subgraph loop["Feedback loop"]
+    direction TB
+    chan["In-memory channel<br/>(buffer 1000)"]
+    agg["Aggregate per host and vendor<br/>flush every 1 min"]
+    sqs[["SQS<br/>PROXY_MANAGEMENT_AGGREGATOR"]]
+    upd["Python updater<br/>batch 30 s, EMA update"]
+    chan --> agg --> sqs --> upd
+  end
+
+  caller -->|"1. JSON request"| api
+  pick -->|"2. read weights"| redis
+  pick -->|"3. proxied call"| vendors --> target
+  target -->|"4. status 200 = success"| chan
+  upd -->|"5. write new probabilities"| mongo
+  pick -->|"response"| caller
+
+  classDef hotc fill:#e1f0ea,stroke:#0f6b52,color:#18201c;
+  classDef store fill:#f8ecd6,stroke:#9a5b00,color:#18201c;
+  class api,pick hotc
+  class redis,mongo store
+</pre>
+      <div class="flow" id="apmsFallback" hidden>
+  <span>Scraper caller</span><i>&rarr; POST /make_request</i>
+  <span>Selector (Go)</span><i>&rarr; 1. read weights</i>
+  <span>Redis cache</span><i>&rarr; miss: lock, then read</i>
+  <span>MongoDB</span>
+  <i>2. request via chosen vendor &rarr;</i><span>Target site</span>
+  <i>3. success / failure &rarr;</i><span>In-memory channel</span><i>&rarr; every 1 min, batched</i>
+  <span>SQS</span><i>&rarr;</i><span>Updater (Python)</span><i>&rarr; every 30 s, new probabilities</i><span>MongoDB</span>
+</div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Questions and answers</h2>
+    <p class="sub">Grouped by what an interviewer is probing.</p>
+    <div class="toolbar">
+      <button type="button" id="openAll">Expand all</button>
+      <button type="button" id="closeAll">Collapse all</button>
+    </div>
+
+    <div class="group">
+      <div class="group-title">Problem and design</div>
+
+      <details open><summary><span class="n">Q1</span>What problem does it solve?</summary>
+        <div class="ans">
+          <p>We scrape many sites through several paid proxy vendors (the code has geonode, brightData, smartProxy and proxyverse). Which vendor works best depends on the target site, and vendors have different prices. Hard-coding one choice either burns money or gets blocked. APMS picks a vendor per request and adapts as results come in.</p>
+          <div class="say"><b>Say this</b>It turns proxy selection from a static config into a feedback loop, per target host.</div>
+        </div>
+      </details>
+
+      <details open><summary><span class="n">Q2</span>Walk me through one request end to end.</summary>
+        <div class="ans">
+          <ul>
+            <li>The handler parses the JSON (method, URL, headers, payload, timeout, country code). Timeout above 30 s is rejected.</li>
+            <li>The service takes the URL's host and loads that host's proxy settings: Redis first, Mongo on a miss.</li>
+            <li>It picks a vendor by weighted random choice among vendors switched on, optionally rewrites the proxy URL for the requested country, and builds a fresh TLS client with a random browser fingerprint.</li>
+            <li>It sends the request. If the status is 200 it records a success, otherwise a failure, by pushing a small event onto an in-process channel.</li>
+            <li>The response is decoded (gzip, brotli, deflate) and returned. Non-200 responses come back as a JSON error with that status.</li>
+          </ul>
+          <p class="src">proxy_service.go &middot; client_utils.go &middot; response_utils.go</p>
+        </div>
+      </details>
+
+      <details open><summary><span class="n">Q3</span>Why split into a Go service and a Python service?</summary>
+        <div class="ans">
+          <p>They have different jobs. The request path is latency sensitive and high concurrency, and the TLS-fingerprinting client library (<code>bogdanfinn/tls-client</code>) is a Go library. The learning step is not latency sensitive, runs on a timer, and reuses our internal Python SQS helpers. SQS between them means the learner can be slow, restart, or fall behind without affecting live traffic.</p>
+          <div class="say"><b>Say this</b>Hot path stays in Go and never waits on the learner. They only share data through SQS and Mongo.</div>
+        </div>
+      </details>
+
+      <details open><summary><span class="n">Q4</span>Why is the state keyed per host?</summary>
+        <div class="ans">
+          <p>A vendor that is excellent on one site can be blocked on another. Each Mongo document is keyed by host and holds the vendor probabilities, vendor URLs, an on/off switch per vendor, and a learning rate. A host with no document falls back to a <code>default</code> document. On the first update for a new host, the updater inserts a copy of the default, so each new site starts from the default weights and then diverges.</p>
+          <p class="src">stats_repository.py &middot; getDocument / putProbabilites</p>
+        </div>
+      </details>
+    </div>
+
+    <div class="group">
+      <div class="group-title">The learning algorithm</div>
+
+      <details open><summary><span class="n">Q5</span>How does the system learn? Give me the formula.</summary>
+        <div class="ans">
+          <p>For each vendor that received traffic in the window, with success rate <code>s = success / (success + failure)</code>:</p>
+          <p><code>p += lr_eff &times; (s &minus; p)</code></p>
+          <p>That is an exponential moving average pulling the vendor's probability <code>p</code> toward its observed success rate. Afterwards all probabilities are normalized to sum to 1, with a floor of 1e-6 so nothing hits exactly zero. Vendors with no traffic in the window are skipped.</p>
+          <div class="say"><b>Say this</b>It is a lightweight reinforcement scheme: reward-driven probability matching, not a full bandit algorithm like UCB or Thompson sampling.</div>
+          <p class="src">stats_aggregator.py &middot; update_probabilities, normalize</p>
+        </div>
+      </details>
+
+      <details open><summary><span class="n">Q6</span>What is the cost factor and why is it squared?</summary>
+        <div class="ans">
+          <p><code>lr_eff = learning_rate &times; min_cost / cost&sup2;</code>. The cheapest vendor gets the full learning rate. A vendor that costs 2x as much learns at a quarter of the speed. Costs live in a separate Mongo document and are cached for 5 minutes.</p>
+          <p>The intent is to be conservative about shifting traffic toward expensive vendors.</p>
+          <div class="gap"><b>Know the catch</b>The factor slows learning in both directions. An expensive vendor that starts failing also loses probability slowly. A cleaner design puts cost into the reward (success per dollar) and keeps the learning rate constant.</div>
+        </div>
+      </details>
+
+      <details open><summary><span class="n">Q7</span>How does it balance exploration and exploitation?</summary>
+        <div class="ans">
+          <p>Selection is random in proportion to the probabilities, so a vendor with 10% weight still gets about 10% of requests and keeps producing fresh evidence. The 1e-6 floor stops any vendor being permanently dead. A manual <code>switch</code> field per vendor (on/off) lets an operator remove a vendor outright.</p>
+          <div class="gap"><b>Know the catch</b>Probability matching keeps sending a fixed share of traffic to weak vendors, and recovery of a vendor sitting near the floor is slow. Epsilon-greedy with decay, UCB, or Thompson sampling would explore more efficiently.</div>
+        </div>
+      </details>
+
+      <details open><summary><span class="n">Q8</span>How is a vendor actually picked on each request?</summary>
+        <div class="ans">
+          <ul>
+            <li>Keep only vendors whose switch is <code>"on"</code>.</li>
+            <li>Build a cumulative sum of their probabilities and divide by the total, so it works even if the on-vendors do not sum to 1.</li>
+            <li>Draw one uniform random number and take the first bucket that covers it.</li>
+          </ul>
+          <p>If every vendor is off, it returns an explicit "no proxy available" error for that host instead of sending the request unproxied.</p>
+          <p class="src">client_utils.go &middot; SelectURL</p>
+        </div>
+      </details>
+
+      <details open><summary><span class="n">Q9</span>What counts as a success? Is that a good signal?</summary>
+        <div class="ans">
+          <p>HTTP 200 is success. Any other status is a failure, including 404, redirects and 429.</p>
+          <div class="gap"><b>Know the catch</b>
+            <ul>
+              <li>A 404 on a valid proxy is not the proxy's fault, but it lowers that vendor's score.</li>
+              <li>If <code>client.Do</code> errors out (connection refused, proxy auth failure, timeout), the function returns before pushing any stat. Hard network failures are never counted against a vendor.</li>
+              <li>A 200 that contains a captcha page still counts as success.</li>
+            </ul>
+          </div>
+          <div class="say"><b>Say this</b>Next step is classifying outcomes: block signals (403, 429, captcha body) and transport errors count against the vendor, ordinary 404s are ignored.</div>
+        </div>
+      </details>
+    </div>
+
+    <div class="group">
+      <div class="group-title">Concurrency and reliability</div>
+
+      <details open><summary><span class="n">Q10</span>How do you avoid hammering Mongo when the cache expires?</summary>
+        <div class="ans">
+          <p>This is the cache stampede problem. On a Redis miss, a request tries <code>SETNX lock:&lt;host&gt;</code> with a 10 s expiry. The winner re-checks the cache (double-checked locking), reads Mongo, writes Redis with a 5 minute TTL, and releases the lock. Everyone else polls Redis every 100 ms for up to 5 s. So many concurrent requests for the same host cause one Mongo read.</p>
+          <div class="gap"><b>Know the catch</b>The lock value is a constant <code>"1"</code> and release is a plain delete. If the holder is slower than 10 s, it can delete a lock now owned by someone else. A unique token plus a compare-and-delete script fixes that.</div>
+          <p class="src">proxy_service.go &middot; getProxyDocument &middot; cache.go</p>
+        </div>
+      </details>
+
+      <details open><summary><span class="n">Q11</span>Why aggregate in memory and batch to SQS instead of sending one message per request?</summary>
+        <div class="ans">
+          <p>Per-request messages would mean one SQS call per scrape. Instead each request pushes a tiny event to a buffered channel (capacity 1000). A single goroutine drains it into a <code>host &rarr; proxy &rarr; {success, failure}</code> map under a mutex. Every minute a ticker serializes the whole map as one SQS message and resets it. The updater then batches again for 30 s before touching Mongo.</p>
+          <p>The cost is delay and a small loss window: on a crash you lose up to about a minute of counts. For a statistical signal that is acceptable.</p>
+          <p class="src">queue.go &middot; aggregator_service.go &middot; consumer.py</p>
+        </div>
+      </details>
+
+      <details open><summary><span class="n">Q12</span>What happens if that channel fills up?</summary>
+        <div class="ans">
+          <p><code>Push</code> blocks until there is room or the request's context is cancelled. So a stalled aggregator would apply back-pressure and slow live requests.</p>
+          <div class="gap"><b>Know the catch</b>For telemetry, dropping events is the safer choice. A non-blocking send with a default case (and a dropped-events counter) keeps the hot path independent of the feedback path.</div>
+        </div>
+      </details>
+
+      <details open><summary><span class="n">Q13</span>How long until a bad vendor stops getting traffic?</summary>
+        <div class="ans">
+          <p>Worst case adds up across the stages:</p>
+          <div class="tscroll"><table>
+            <thead><tr><th>Stage</th><th>Delay</th></tr></thead>
+            <tbody>
+              <tr><td>Selector aggregation window</td><td>up to 1 min</td></tr>
+              <tr><td>Updater batch window</td><td>up to 30 s</td></tr>
+              <tr><td>Redis TTL on settings</td><td>up to 5 min</td></tr>
+              <tr><td><b>Total</b></td><td><b>roughly 6.5 min</b></td></tr>
+            </tbody>
+          </table></div>
+          <p>For an emergency, the on/off switch in Mongo removes a vendor immediately for new cache loads, or after the 5 minute TTL for cached hosts.</p>
+        </div>
+      </details>
+
+      <details open><summary><span class="n">Q14</span>How does it shut down and what state is at risk?</summary>
+        <div class="ans">
+          <p>It listens for SIGINT and SIGTERM, stops accepting requests with a 5 s <code>server.Shutdown</code>, stops the aggregator goroutines, then closes Mongo and Redis. Mongo and Redis handles are singletons made with <code>sync.Once</code>, and the Mongo handler pings and reconnects (3 tries, 2 s apart) before each operation.</p>
+          <div class="gap"><b>Know the catch</b>Stopping the aggregator does not flush the current partial window to SQS, so up to a minute of stats is dropped on every deploy.</div>
+        </div>
+      </details>
+    </div>
+
+    <div class="group">
+      <div class="group-title">Scraping specifics</div>
+
+      <details open><summary><span class="n">Q15</span>Why create a new client with a random TLS profile for every request?</summary>
+        <div class="ans">
+          <p>Anti-bot systems fingerprint the TLS handshake (JA3 and similar), and Go's default TLS stack is easy to flag. <code>tls-client</code> imitates real browser handshakes. Each request picks a random profile and gets a fresh cookie jar, so requests do not share an identity.</p>
+          <div class="gap"><b>Know the catch</b>No connection reuse, so every request pays a full TLS handshake. A random profile can also disagree with the <code>User-Agent</code> header the caller sends, which some sites check.</div>
+        </div>
+      </details>
+
+      <details open><summary><span class="n">Q16</span>How does country targeting work?</summary>
+        <div class="ans">
+          <p>Residential proxy vendors encode geography in the proxy username. The stored URL has no country, and <code>addCountry</code> rewrites it per vendor: for geonode and brightData it inserts <code>-country-XX</code> before the second colon of the URL, for proxyverse it inserts <code>country-XX</code> after <code>http://</code>, and for smartProxy it leaves the URL unchanged.</p>
+          <div class="gap"><b>Know the catch</b>This is string slicing on credentials. A vendor with a different format, or a malformed URL, can panic or produce a bad URL. Per-vendor URL templates in config would be safer.</div>
+        </div>
+      </details>
+    </div>
+
+    <div class="group">
+      <div class="group-title">Scale and next steps</div>
+
+      <details open><summary><span class="n">Q17</span>What breaks when you run many instances?</summary>
+        <div class="ans">
+          <ul>
+            <li>Selector instances are stateless apart from the in-memory window, so they scale horizontally. Each sends its own aggregate message.</li>
+            <li>The Python updater reads a document, computes new probabilities, and writes them back. Two consumers processing the same host in the same moment would overwrite each other's update (lost update).</li>
+            <li>Fixes: run one consumer, or apply updates atomically (<code>$inc</code> on raw counters in Mongo and compute probabilities from counters), or partition the queue by host.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details open><summary><span class="n">Q18</span>What would you improve first?</summary>
+        <div class="ans">
+          <ul>
+            <li><b>Better outcome signal:</b> count transport errors and block signals, ignore benign 404s.</li>
+            <li><b>Use retries:</b> a <code>MaxRetries = 3</code> constant exists but nothing reads it. On failure, retry once or twice through a different vendor instead of returning the error.</li>
+            <li><b>Cost-aware reward</b> (success per dollar) instead of scaling the learning rate.</li>
+            <li><b>Proper bandit:</b> Beta-Bernoulli with Thompson sampling needs only the success and failure counts already collected.</li>
+            <li><b>Non-blocking telemetry</b> and a final flush on shutdown.</li>
+            <li><b>Safe lock</b> with ownership token, and metrics on per-vendor success rate and latency.</li>
+          </ul>
+          <div class="say"><b>Say this</b>I would start with the outcome signal, because every learning improvement depends on it being correct.</div>
+        </div>
+      </details>
+    </div>
+  </section>
+
+  <footer>
+    Built from the local copy of <code>services/automatedProxyManager</code> (branch <code>feature/Grab_Account_arch</code>, not <code>dev</code>), so check that nothing changed on <code>dev</code>. Mongo database <code>food</code> and secret names are inherited from the food-delivery project. Figures such as the 1 minute, 30 s and 5 minute windows come from the constants in code and may differ from deployed config.
+  </footer>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.3/dist/mermaid.min.js"></script>
+<script>
+  (function(){
+    var pre = document.getElementById("apmsDiagram"), fb = document.getElementById("apmsFallback");
+    function fallback(){ if(pre) pre.hidden = true; if(fb) fb.hidden = false; }
+    if(!window.mermaid){ fallback(); return; }
+    var root = document.documentElement.getAttribute("data-theme");
+    var dark = root ? root === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    try {
+      mermaid.initialize({ startOnLoad:false, theme: dark ? "dark" : "neutral", flowchart:{ curve:"basis", htmlLabels:true } });
+      mermaid.run({ nodes:[pre] }).catch(fallback);
+    } catch(e){ fallback(); }
+  })();
+</script>
+<script>
+  var all = function(){ return document.querySelectorAll("details"); };
+  document.getElementById("openAll").addEventListener("click", function(){ all().forEach(function(d){ d.open = true; }); });
+  document.getElementById("closeAll").addEventListener("click", function(){ all().forEach(function(d){ d.open = false; }); });
+</script>
+
+</body></html>

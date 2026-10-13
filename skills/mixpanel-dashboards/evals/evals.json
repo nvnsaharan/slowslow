@@ -1,0 +1,45 @@
+{
+  "skill_name": "mixpanel-dashboards",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "build me an activation dashboard for Compario — from app open through their first successful ride comparison. Title it \"[skill-eval] Compario Activation\" and make it private.",
+      "expected_output": "A private Mixpanel dashboard scoped to app==compario, with a funnel from app_open through a comparison/quote event, verified event names (checked via Get-Events, not guessed), and the dashboard URL reported back.",
+      "files": [],
+      "assertions": [
+        "Called Get-Business-Context (or otherwise established org/project context) before running Mixpanel queries",
+        "Verified the events used in the funnel actually exist (via Get-Events or equivalent) rather than guessing event names",
+        "Scoped the dashboard's data to app == \"compario\" rather than blending in jedigo data",
+        "Used a funnel-type report (not just an unrelated insights table) for the activation path",
+        "Created a Mixpanel dashboard titled exactly \"[skill-eval] Compario Activation\" and marked private",
+        "Reported back a real Mixpanel dashboard URL"
+      ]
+    },
+    {
+      "id": 2,
+      "prompt": "make a dashboard comparing weekly retention between JediGo and Compario. Title it \"[skill-eval] JediGo vs Compario Retention\" and make it private.",
+      "expected_output": "A private Mixpanel dashboard with a retention report broken down by the app property (jedigo vs compario), correctly using the shared-project distinguishing property rather than assuming two separate projects, with the URL reported back.",
+      "files": [],
+      "assertions": [
+        "Checked for an existing similar dashboard (List-Dashboards or Search-Entities) before creating a new one",
+        "Recognized JediGo and Compario share one Mixpanel project and used the `app` property to break down / compare them, rather than treating them as separate projects or blending them together unscoped",
+        "Used a retention-type report with a weekly unit, matching \"weekly retention\"",
+        "Created a Mixpanel dashboard titled exactly \"[skill-eval] JediGo vs Compario Retention\" and marked private",
+        "Reported back a real Mixpanel dashboard URL"
+      ]
+    },
+    {
+      "id": 3,
+      "prompt": "add a scrape health section to our Comparoo dashboard — track scrape_failed and scrape_succeeded over time. If no such dashboard exists yet, create one titled \"[skill-eval] Scrape Health\" and make it private.",
+      "expected_output": "Checks List-Dashboards/Search-Entities for an existing matching dashboard first; uses Update-Dashboard to add to it if found, otherwise creates a new private dashboard with the given title, with scrape_failed and scrape_succeeded trended over time and the URL reported back.",
+      "files": [],
+      "assertions": [
+        "Checked whether a matching dashboard already existed (List-Dashboards or Search-Entities) before deciding to create vs. update",
+        "Used Update-Dashboard to add to an existing dashboard if one was found, instead of creating a duplicate",
+        "Created a new private dashboard titled exactly \"[skill-eval] Scrape Health\" only if no existing dashboard was found",
+        "Both scrape_failed and scrape_succeeded are trended over time on the resulting dashboard",
+        "Reported back a real Mixpanel dashboard URL"
+      ]
+    }
+  ]
+}

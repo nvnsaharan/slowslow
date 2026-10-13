@@ -1,0 +1,186 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SnagIt Overview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: single reading column, Q&A as open disclosure rows grouped by theme, one data-flow diagram up top */
+  :root{
+    --bg:#f6f7f4; --surface:#ffffff; --ink:#18201c; --muted:#56635b; --faint:#8a968f;
+    --line:#dde3dd; --accent:#0f6b52; --accent-soft:#e1f0ea; --warn:#9a5b00; --warn-soft:#f8ecd6;
+    --code:#eef1ec;
+    --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+    --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1512; --surface:#161e19; --ink:#e6ece8; --muted:#a2b0a8; --faint:#6f7e76;
+      --line:#26322b; --accent:#59c9a3; --accent-soft:#18322a; --warn:#e5b45e; --warn-soft:#33270f;
+      --code:#1c2620; color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1512; --surface:#161e19; --ink:#e6ece8; --muted:#a2b0a8; --faint:#6f7e76;
+    --line:#26322b; --accent:#59c9a3; --accent-soft:#18322a; --warn:#e5b45e; --warn-soft:#33270f;
+    --code:#1c2620; color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;
+    padding-inline:16px;padding-block:40px 80px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(2rem,6vw,3rem);line-height:1.05;letter-spacing:-.02em;margin:8px 0 14px;text-wrap:balance}
+  .lede{color:var(--muted);font-size:1.08rem;max-width:62ch;margin:0}
+  h2{font-family:var(--display);font-weight:700;font-size:1.45rem;letter-spacing:-.01em;margin:0 0 6px;text-wrap:balance}
+  .sub{color:var(--muted);margin:0 0 18px;max-width:64ch}
+  code{font-family:var(--mono);font-size:.86em;background:var(--code);padding:1px 5px;border-radius:4px}
+  .pitch{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+  .pitch p{margin:0 0 10px} .pitch p:last-child{margin:0}
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .fact{background:var(--surface);padding:14px 16px;min-width:0}
+  .fact b{display:block;font-family:var(--mono);font-size:12px;font-weight:500;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+  .fact span{font-size:.95rem}
+  .diagram{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto}
+  .diagram pre.mermaid{margin:0;min-width:560px}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  button{font:inherit;font-size:.85rem;font-weight:500;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+  button:hover{border-color:var(--accent)}
+  button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .group{display:flex;flex-direction:column;gap:10px}
+  .group-title{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:14px 0 2px;display:flex;align-items:center;gap:10px}
+  .group-title::after{content:"";flex:1;height:1px;background:var(--line)}
+  details{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+  summary{cursor:pointer;list-style:none;padding:14px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:baseline;font-weight:600}
+  summary::-webkit-details-marker{display:none}
+  summary .n{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:500}
+  summary::after{content:"+";font-family:var(--mono);color:var(--faint)}
+  details[open] summary::after{content:"\2212"}
+  .ans{padding:0 16px 16px 16px;display:flex;flex-direction:column;gap:10px;color:var(--ink)}
+  .ans p{margin:0} .ans ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
+  .say{border-left:3px solid var(--accent);background:var(--accent-soft);padding:9px 13px;border-radius:0 8px 8px 0;font-size:.97rem}
+  .say b{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:2px;font-weight:500}
+  .gap{border-left:3px solid var(--warn);background:var(--warn-soft);padding:9px 13px;border-radius:0 8px 8px 0;font-size:.95rem}
+  .gap b{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--warn);display:block;margin-bottom:2px;font-weight:500}
+  .src{font-family:var(--mono);font-size:12px;color:var(--faint)}
+  table{border-collapse:collapse;width:100%;font-size:.92rem}
+  .tscroll{overflow-x:auto}
+  th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-weight:500}
+  footer{color:var(--faint);font-size:.85rem;border-top:1px solid var(--line);padding-top:16px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  .diagram pre.mermaid{margin:0;min-width:640px;text-align:center;font-family:var(--body)}
+  .flow{display:flex;flex-wrap:wrap;gap:8px 6px;align-items:center;font-size:.88rem}
+  .flow span{background:var(--accent-soft);border:1px solid var(--line);border-radius:6px;padding:3px 9px;font-weight:600}
+  .flow i{color:var(--muted);font-style:normal;font-size:.8rem}
+  .back{font-size:.9rem}.back a{color:var(--accent)}
+  .def{display:grid;grid-template-columns:1fr;gap:10px}
+  .tag{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:500}
+  .term{font-family:var(--display);font-weight:700;font-size:1.05rem}
+  .pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+  .pair>div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+  .pair h3{margin:0 0 4px;font-family:var(--display);font-size:1.05rem}
+  .pair p{margin:0;font-size:.95rem;color:var(--muted)}
+</style>
+<style>.diagram pre.mermaid{margin:0;min-width:560px;text-align:center;font-family:var(--body)} .flow{display:flex;flex-wrap:wrap;gap:8px 6px;align-items:center;font-size:.88rem} .flow span{background:var(--accent-soft);border:1px solid var(--line);border-radius:6px;padding:3px 9px;font-weight:600} .flow i{color:var(--muted);font-style:normal;font-size:.8rem} .back{font-size:.9rem} .back a{color:var(--accent)}.pair p b{color:var(--ink)} .nav{font-size:.9rem;display:flex;flex-wrap:wrap;gap:6px 14px} .nav a{color:var(--accent)} .ok{color:var(--accent)} .bad{color:var(--warn)} td b{font-weight:600}</style></head><body>
+<div class="wrap">
+<p class="nav"><a href="../index.html">&larr; Course Library</a><a href="apms-interview.html">APMS Q&amp;A</a><a href="system-design-vocabulary.html">Ch 2 Vocabulary</a><a href="snagit-overview.html">Ch 3 SnagIt overview</a><a href="snagit-systems-explained.html">Ch 4 Systems explained</a><a href="snagit-qna.html">Ch 5 Practice Q&amp;A</a> &middot; <a href="core-techniques-revision.html">Ch 6 Core techniques</a></p>
+<header><div class="eyebrow">Chapter 3 &middot; SnagIt</div><h1>SnagIt: what it is and what we achieved</h1><p class="lede">A phone-fleet data collection platform: three Android apps, a four-service Go backend, Redis and Postgres. This chapter gives the pitch, the picture, the numbers and the honest gaps.</p></header>
+
+<section><h2>The 30-second pitch</h2><div class="pitch">
+<p>SnagIt is a data-collection platform for a B2B customer who needs grocery catalogue and ride-fare data that blocks data-centre scrapers. Instead of scraping from servers, the work runs on a fleet of real consumer Android phones on residential IPs. The phones belong to users of our price-comparison apps (Comparoo in India, Compario in the US, Comparion in Africa), who get a free comparison tool.</p>
+<p>The backend sits between two parties that never talk to each other. The customer's producer publishes batches of requirements to SQS. Thousands of phones poll an HTTP API for one job at a time, do it, and post the result back. We turn results into a <code>.tar.gz</code> in S3 and tell the customer's compiler.</p></div></section>
+
+<section><h2>The two-minute version</h2><div class="pitch">
+<p><b>Problem.</b> v1 was a Python/FastAPI monolith. Four of its five outages came from unrelated workloads sharing one process. Phones were also being rejected on empty walks and late submits.</p>
+<p><b>What we built.</b> v2 is Go, one image run as four services split by resource profile: dispatch (phone API), orchestrator (background loops), artifactworker (builds files), control (enrolment and notifications). Redis holds a "shelf" of ready jobs with the invariants in Lua. Postgres is the ledger and source of truth. SQS and S3 carry intake and output.</p>
+<p><b>Why it holds up.</b> One atomic <code>ZPOPMIN</code> guarantees a job goes to one phone. Deterministic job ids make every retry idempotent. Ledger is written before the shelf, and settled before a lease is released, so a crash costs wasted work and never silent loss.</p>
+<p><b>Result.</b> Measured on a laptop: 47,345 req/s at p99 3.4 ms from one dispatch process. v2 has been serving the whole fleet since 28 Sep 2026.</p></div></section>
+
+<section><h2>The system on one page</h2><p class="sub">Green is the hot path (a phone is waiting). Amber is state.</p>
+<div class="diagram"><pre class="mermaid" id="snDiagram">
+flowchart LR
+  prod([Customer producer]) -->|"batch of 1-50 requirements"| intake[["SQS intake"]]
+  subgraph be["Go backend - one image, four services"]
+    orch["orchestrator<br/>admit, fill shelf, settle,<br/>reap, outbox"]
+    disp["dispatch<br/>phone API, no DB handle"]
+    aw["artifactworker<br/>build tar.gz"]
+    ctl["control<br/>enrol, revoke, users, push"]
+  end
+  intake --> orch
+  orch -->|"ledger first"| pg[("Postgres<br/>ledger, source of truth")]
+  orch -->|"then shelf"| rd[("Redis<br/>shelf, leases, stream")]
+  phones(["Android fleet<br/>Comparoo, Compario, Comparion"]) -->|"GET /v2/work"| disp
+  disp <--> rd
+  phones -->|"POST result"| disp
+  disp -->|"stage blob"| s3[("S3")]
+  rd -->|"result stream"| orch
+  orch -->|"build msg"| aw
+  aw --> s3
+  aw -->|"claim + outbox row"| pg
+  orch -->|"compile msg"| comp[["Customer compiler"]]
+  ctl --> pg
+  ctl -->|"push"| fcm[["FCM"]] --> phones
+  classDef hot fill:#e1f0ea,stroke:#0f6b52,color:#18201c;
+  classDef st fill:#f8ecd6,stroke:#9a5b00,color:#18201c;
+  class disp hot
+  class pg,rd,s3 st
+</pre>
+<div class="flow" id="snDiagramFb" hidden><span>Producer</span><i>&rarr; SQS &rarr;</i><span>orchestrator</span><i>&rarr; ledger</i><span>Postgres</span><i>and shelf</i><span>Redis</span><i>&larr; claim by</i><span>dispatch</span><i>&larr; polled by</i><span>phones</span><i>&rarr; result &rarr; stream &rarr;</i><span>settler</span><i>&rarr; build &rarr;</i><span>artifactworker</span><i>&rarr; S3 + compile msg</i></div></div></section>
+
+<section><h2>How this project can be asked</h2>
+<p class="sub">Interviewers rarely say "explain SnagIt". They pick an angle. Prepare one 60-second answer for each.</p>
+<div class="tscroll"><table><thead><tr><th>Angle</th><th>Typical question</th><th>Your anchor answer</th></tr></thead><tbody><tr><td>Scale</td><td>How would it handle 10,000 polls per second?</td><td>Dispatch has no DB handle. A miss costs a few O(1) ZPOPMIN calls. 62,828 claims/s measured on a laptop.</td></tr><tr><td>Correctness</td><td>How do you make sure a job runs on exactly one phone?</td><td>Lua claim script, atomic ZPOPMIN, then deterministic job ids, status-transition claim at settlement, outbox.</td></tr><tr><td>Failure</td><td>What if Redis dies? What if a phone vanishes?</td><td>Shelf is derived state, rebuilt from Postgres. Leases expire and the reaper requeues, buries after 3 attempts.</td></tr><tr><td>Tradeoff</td><td>Why Redis and not Postgres for the queue?</td><td>Delete-on-claim at 1,667/s makes about 144M dead tuples a day. Eligibility is encoded in the key at enqueue.</td></tr><tr><td>Ownership</td><td>What did you personally build?</td><td>See "My part" below. Pick two things and go deep.</td></tr><tr><td>Hindsight</td><td>What would you change?</td><td>Presigned uploads, Redis failover and backups, fleet-wide rate limiter, real load test, Android CI.</td></tr><tr><td>Product / ethics</td><td>Is it OK to run scraping on users phones?</td><td>Consent defaults to no, collection starts only after yes, Play policy driven.</td></tr></tbody></table></div></section>
+
+<section><h2>My part (from the git log)</h2>
+<p class="sub">Commit counts: Arun Singh 193, Naveen 141, Vishal Rao 24. Check this list against your own memory before claiming any of it.</p>
+<div class="pitch"><ul style="margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px">
+<li><b>Comparoo (snagit-in) Android:</b> the earner and batch scraping, Uber and Rapido fixes, Blinkit discovery and assortment walks, Flipkart Minutes and Instamart capture, D-Mart and JioMart wip, push handling, onboarding, release 3.2.3 to 3.3.2.</li>
+<li><b>Compario (snagit-us):</b> the initial commit, silent-push fare checks gated by consent, Firebase registration.</li>
+<li><b>Backend:</b> product_listing routing, credential leasing and store lookup in the orchestrator; GuestVerifier enrolment; user profile, push-token and account endpoints; notification send; app_config on <code>/app/update-config</code>; v1 shim fixes; artifact-worker bucket bug.</li>
+<li><b>Ops and docs:</b> cutover-readiness report, a Grafana alert that could not evaluate, guard tests for dead capabilities and config.</li></ul></div></section>
+
+<section><h2>What we achieved</h2>
+<p class="sub">Say which kind of number each one is. "Measured" means a benchmark on a laptop with real Redis 8.4 and Postgres 16, not production.</p>
+<div class="tscroll"><table><thead><tr><th>Result</th><th>Value</th><th>Kind</th></tr></thead><tbody><tr><td>Dispatch HTTP, one process</td><td>47,345 req/s, p99 3.4 ms (Python: 5,325 req/s, p99 17.2 ms)</td><td>Measured, laptop</td></tr><tr><td>Claim (blended)</td><td>62,828 per second, 9.98 &micro;s of Redis time per claim</td><td>Measured, laptop</td></tr><tr><td>Fan-out of 500k requirements</td><td>11.7 s (42,795/s)</td><td>Measured, laptop</td></tr><tr><td>Redelivery of 10,000 batches</td><td>0 duplicates</td><td>Measured, laptop</td></tr><tr><td>Settlement</td><td>4,422 results/s, 0.018 Postgres transactions per result</td><td>Measured, laptop</td></tr><tr><td>Postgres transactions at design load</td><td>73.1/s vs 1,667/s if synchronous</td><td>Design budget</td></tr><tr><td>v1 to v2 cutover</td><td>ALB default action moved to v2 on 2026-09-28; v2 serves the fleet</td><td>Production</td></tr><tr><td>Postgres connection budget</td><td>0 + 32 + 32 + 4 = 68 of an 80 role limit, enforced by a test</td><td>Design, tested</td></tr><tr><td>Comparoo cold start to Home</td><td>2,450 ms &rarr; 1,760 ms (Pixel 7, debug)</td><td>Measured, device</td></tr><tr><td>Comparoo Connect tab</td><td>3-4 s &rarr; 20-340 ms</td><td>Measured, device</td></tr><tr><td>Comparoo tests</td><td>125 of 127 passing at 3.3.2 (2 known Paparazzi failures)</td><td>Measured</td></tr><tr><td>Idle cost</td><td>about $30 per month</td><td>Doc estimate</td></tr><tr><td>Backfilled users at cutover</td><td>51,227 legacy users</td><td>Doc figure</td></tr></tbody></table></div></section>
+
+<section><h2>What is left to achieve</h2>
+<div class="pair">
+<div><h3>Reliability</h3><p>Redis failover and backups (self-managed t4g.medium today). Dedicated Postgres with point-in-time recovery. Persist the dead set outside Redis.</p></div>
+<div><h3>Scale and cost</h3><p>A real end-to-end load test. Presigned uploads to cut about $43k/month of S3 PUTs at design load. Fleet-wide per-provider rate limiter.</p></div>
+<div><h3>Security</h3><p>Retire the v1 token bridge. Real enrolment verification instead of guest. Redis TLS. Narrow the task role from SQSFullAccess. Encrypt provider sessions on device.</p></div>
+<div><h3>Engineering hygiene</h3><p>Android CI. One shared Go module for provider packages (5 of 8 have drifted between India and US). Refresh stale docs and READMEs.</p></div>
+</div></section>
+
+<section><h2>Honest gaps to name before they do</h2>
+<div class="gap"><b>Say these yourself</b><ul style="margin:0;padding-left:20px">
+<li>Work that ages past SQS retention is deleted silently. The <code>blinkit-in</code> queue keeps messages 5 hours, not the 14 days the design assumed. Detection exists, the fix needs another team.</li>
+<li>The fleet drains about 9.3 jobs/s while supply can be 1,667/s, so admission control caps what we accept.</li>
+<li>A cell is pinned to one Redis slot (about 100k claims/s ceiling).</li>
+<li>Some docs lag reality. <code>CUTOVER-READINESS.md</code> still describes the 25 Sep rollback, while the later deployment doc and commits say v2 has served the fleet since 28 Sep.</li>
+<li>The Africa app has no backend cell yet, so its scrape loop is inert.</li></ul></div></section>
+
+<footer>Sources: snagit/docs (HLD, SERVICES, DEPLOYED, CUTOVER-READINESS), git log and client READMEs, read 2026-10-13. Benchmarks are laptop measurements, not production. Contribution list comes from commit subjects; verify before using it in an interview.</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.3/dist/mermaid.min.js"></script>
+<script>
+  (function(){
+    var pre = document.getElementById("snDiagram"), fb = document.getElementById("snDiagramFb");
+    function fallback(){ if(pre) pre.hidden = true; if(fb) fb.hidden = false; }
+    if(!window.mermaid){ fallback(); return; }
+    var root = document.documentElement.getAttribute("data-theme");
+    var dark = root ? root === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    try {
+      mermaid.initialize({ startOnLoad:false, theme: dark ? "dark" : "neutral", flowchart:{ curve:"basis", htmlLabels:true } });
+      mermaid.run({ nodes:[pre] }).catch(fallback);
+    } catch(e){ fallback(); }
+  })();
+</script>
+<script>
+var all=function(){return document.querySelectorAll("details");};
+var oa=document.getElementById("openAll"),ca=document.getElementById("closeAll"),rq=document.getElementById("rand");
+if(oa)oa.addEventListener("click",function(){all().forEach(function(d){d.open=true;});});
+if(ca)ca.addEventListener("click",function(){all().forEach(function(d){d.open=false;});});
+if(rq)rq.addEventListener("click",function(){var a=Array.prototype.slice.call(all());a.forEach(function(d){d.open=false;});var d=a[Math.floor(Math.random()*a.length)];d.scrollIntoView({block:"center"});var t=d.querySelector("summary").textContent;document.getElementById("rqshow").textContent="Try answering out loud first: "+t;});
+</script>
+</body></html>

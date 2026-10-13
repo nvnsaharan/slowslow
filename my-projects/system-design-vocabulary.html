@@ -1,0 +1,198 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>System Design Vocabulary</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: single reading column, Q&A as open disclosure rows grouped by theme, one data-flow diagram up top */
+  :root{
+    --bg:#f6f7f4; --surface:#ffffff; --ink:#18201c; --muted:#56635b; --faint:#8a968f;
+    --line:#dde3dd; --accent:#0f6b52; --accent-soft:#e1f0ea; --warn:#9a5b00; --warn-soft:#f8ecd6;
+    --code:#eef1ec;
+    --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+    --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1512; --surface:#161e19; --ink:#e6ece8; --muted:#a2b0a8; --faint:#6f7e76;
+      --line:#26322b; --accent:#59c9a3; --accent-soft:#18322a; --warn:#e5b45e; --warn-soft:#33270f;
+      --code:#1c2620; color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1512; --surface:#161e19; --ink:#e6ece8; --muted:#a2b0a8; --faint:#6f7e76;
+    --line:#26322b; --accent:#59c9a3; --accent-soft:#18322a; --warn:#e5b45e; --warn-soft:#33270f;
+    --code:#1c2620; color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;
+    padding-inline:16px;padding-block:40px 80px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(2rem,6vw,3rem);line-height:1.05;letter-spacing:-.02em;margin:8px 0 14px;text-wrap:balance}
+  .lede{color:var(--muted);font-size:1.08rem;max-width:62ch;margin:0}
+  h2{font-family:var(--display);font-weight:700;font-size:1.45rem;letter-spacing:-.01em;margin:0 0 6px;text-wrap:balance}
+  .sub{color:var(--muted);margin:0 0 18px;max-width:64ch}
+  code{font-family:var(--mono);font-size:.86em;background:var(--code);padding:1px 5px;border-radius:4px}
+  .pitch{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+  .pitch p{margin:0 0 10px} .pitch p:last-child{margin:0}
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .fact{background:var(--surface);padding:14px 16px;min-width:0}
+  .fact b{display:block;font-family:var(--mono);font-size:12px;font-weight:500;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+  .fact span{font-size:.95rem}
+  .diagram{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto}
+  .diagram pre.mermaid{margin:0;min-width:560px}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  button{font:inherit;font-size:.85rem;font-weight:500;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+  button:hover{border-color:var(--accent)}
+  button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .group{display:flex;flex-direction:column;gap:10px}
+  .group-title{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:14px 0 2px;display:flex;align-items:center;gap:10px}
+  .group-title::after{content:"";flex:1;height:1px;background:var(--line)}
+  details{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+  summary{cursor:pointer;list-style:none;padding:14px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:baseline;font-weight:600}
+  summary::-webkit-details-marker{display:none}
+  summary .n{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:500}
+  summary::after{content:"+";font-family:var(--mono);color:var(--faint)}
+  details[open] summary::after{content:"\2212"}
+  .ans{padding:0 16px 16px 16px;display:flex;flex-direction:column;gap:10px;color:var(--ink)}
+  .ans p{margin:0} .ans ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
+  .say{border-left:3px solid var(--accent);background:var(--accent-soft);padding:9px 13px;border-radius:0 8px 8px 0;font-size:.97rem}
+  .say b{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:2px;font-weight:500}
+  .gap{border-left:3px solid var(--warn);background:var(--warn-soft);padding:9px 13px;border-radius:0 8px 8px 0;font-size:.95rem}
+  .gap b{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--warn);display:block;margin-bottom:2px;font-weight:500}
+  .src{font-family:var(--mono);font-size:12px;color:var(--faint)}
+  table{border-collapse:collapse;width:100%;font-size:.92rem}
+  .tscroll{overflow-x:auto}
+  th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-weight:500}
+  footer{color:var(--faint);font-size:.85rem;border-top:1px solid var(--line);padding-top:16px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  .diagram pre.mermaid{margin:0;min-width:640px;text-align:center;font-family:var(--body)}
+  .flow{display:flex;flex-wrap:wrap;gap:8px 6px;align-items:center;font-size:.88rem}
+  .flow span{background:var(--accent-soft);border:1px solid var(--line);border-radius:6px;padding:3px 9px;font-weight:600}
+  .flow i{color:var(--muted);font-style:normal;font-size:.8rem}
+  .back{font-size:.9rem}.back a{color:var(--accent)}
+  .def{display:grid;grid-template-columns:1fr;gap:10px}
+  .tag{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:500}
+  .term{font-family:var(--display);font-weight:700;font-size:1.05rem}
+  .pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+  .pair>div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+  .pair h3{margin:0 0 4px;font-family:var(--display);font-size:1.05rem}
+  .pair p{margin:0;font-size:.95rem;color:var(--muted)}
+</style>
+<style>.diagram pre.mermaid{margin:0;min-width:560px;text-align:center;font-family:var(--body)} .flow{display:flex;flex-wrap:wrap;gap:8px 6px;align-items:center;font-size:.88rem} .flow span{background:var(--accent-soft);border:1px solid var(--line);border-radius:6px;padding:3px 9px;font-weight:600} .flow i{color:var(--muted);font-style:normal;font-size:.8rem} .back{font-size:.9rem} .back a{color:var(--accent)}</style>
+</head><body>
+<div class="wrap">
+  <p class="back"><a href="../index.html">&larr; Course Library</a> &nbsp;&middot;&nbsp; <a href="apms-interview.html">APMS interview Q&amp;A</a></p>
+  <p class="back"><a href="snagit-overview.html">Ch 3 SnagIt overview</a> &middot; <a href="snagit-systems-explained.html">Ch 4 Systems</a> &middot; <a href="snagit-qna.html">Ch 5 Practice Q&amp;A</a> &middot; <a href="core-techniques-revision.html">Ch 6 Core techniques</a></p>
+  <header>
+    <div class="eyebrow">Chapter 2 &middot; Vocabulary</div>
+    <h1>Hot path, cold path, control plane and friends</h1>
+    <p class="lede">The words interviewers use to describe how a system is split up, explained in plain language. Each term has one APMS example, so you can reuse it when you talk about the project.</p>
+  </header>
+  <section>
+    <h2>The one-minute version</h2>
+    <div class="pitch">
+      <div class="pair">
+        <div><h3>Hot vs cold path</h3><p>Hot: work a caller is waiting on. Cold: work done afterwards, where nobody waits.</p></div>
+        <div><h3>Data vs control plane</h3><p>Data: moves the real traffic. Control: decides the rules the traffic follows.</p></div>
+      </div>
+      <p style="margin-top:12px">They cut the same system in different ways. Paths ask "is someone waiting?" Planes ask "does this carry traffic or set the rules?"</p>
+    </div>
+  </section>
+  <section>
+    <h2>APMS drawn with these words</h2>
+    <p class="sub">The green box is the hot path inside the data plane. Amber boxes are the cold path and the control plane.</p>
+    <div class="diagram"><pre class="mermaid" id="vocabDiagram">
+flowchart TB
+  subgraph dp["DATA PLANE - carries traffic"]
+    direction LR
+    req([Caller]) --> hot["HOT PATH<br/>cache read, pick vendor,<br/>proxied call"] --> resp([Response])
+  end
+  subgraph cp["CONTROL PLANE - decides the rules"]
+    direction LR
+    mongo[("MongoDB<br/>source of truth")]
+    upd["Updater<br/>recomputes probabilities"]
+    upd --> mongo
+  end
+  cold["COLD PATH<br/>count outcomes, batch to SQS"]
+  cache[("Redis<br/>cache, 5 min")]
+  hot -->|"reads rules"| cache
+  mongo -->|"refill on miss"| cache
+  hot -.->|"async outcome"| cold -.-> upd
+  classDef h fill:#e1f0ea,stroke:#0f6b52,color:#18201c;
+  classDef c fill:#f8ecd6,stroke:#9a5b00,color:#18201c;
+  class hot h
+  class cold,upd c
+</pre>
+<div class="flow" id="vocabFallback" hidden><span>Caller</span><i>&rarr;</i><span>Hot path</span><i>&rarr; reads rules from</i><span>Redis</span><i>&larr; refill from</i><span>MongoDB</span><i>&larr; written by</i><span>Updater</span><i>&larr; fed by</i><span>Cold path</span><i>&larr; async outcomes from</i><span>Hot path</span></div></div>
+    <div class="tscroll" style="margin-top:14px"><div class="tscroll"><table>
+<thead><tr><th>Term</th><th>What it is in APMS</th><th>Where in code</th></tr></thead>
+<tbody>
+<tr><td>Hot path</td><td>make_request: cache read, vendor pick, proxied call, response</td><td>proxy_service.go</td></tr>
+<tr><td>Cold path</td><td>stats channel, aggregation, SQS, updater</td><td>queue.go, aggregator_service.go, DynamicProxyUpdater</td></tr>
+<tr><td>Data plane</td><td>Go selector carrying scrape traffic</td><td>AutomaticProxySelector</td></tr>
+<tr><td>Control plane</td><td>Mongo settings plus the updater that changes them</td><td>stats_aggregator.py, stats_repository.py</td></tr>
+<tr><td>Feedback loop</td><td>outcome, then probability update, then next pick</td><td>whole system</td></tr>
+<tr><td>Source of truth / cache</td><td>Mongo / Redis (5 min TTL)</td><td>cache.go, mongo.go</td></tr>
+</tbody></table></div></div>
+  </section>
+  <section>
+    <h2>The terms</h2>
+    <div class="toolbar"><button type="button" id="openAll">Expand all</button><button type="button" id="closeAll">Collapse all</button></div>
+    <div class="group"><div class="group-title">The two paths</div>
+<details open><summary><span class="n">1</span>Hot path</summary><div class="ans"><p>The code that runs <b>while a user or caller is waiting</b>. Every millisecond here is felt, so it must be fast, simple and avoid slow dependencies. Think of the checkout counter in a shop.</p><div class="say"><b>In APMS</b>From <code>POST /api/v1/make_request</code> until the response goes back: read weights from Redis, pick a vendor, make the proxied call, return the result. The only database work allowed is a Redis read (Mongo only on a cache miss).</div></div></details>
+<details open><summary><span class="n">2</span>Cold path</summary><div class="ans"><p>Work that happens <b>after the fact, off to the side</b>, where nobody is waiting. It can be slow, batched and retried. Think of the back office that counts the till at closing time.</p><div class="say"><b>In APMS</b>Counting successes and failures, batching them to SQS, and the Python updater recomputing probabilities. If it falls minutes behind, requests still work.</div><div class="gap"><b>Mix-up to avoid</b>Cold does not mean unimportant. APMS learning lives entirely on the cold path. It just never blocks a caller.</div></div></details>
+<details open><summary><span class="n">3</span>Warm path (and "fast path / slow path")</summary><div class="ans"><p>Some systems add a middle tier: not on the critical request, but needs results within seconds or minutes. Fast path and slow path are the same idea named differently: handle the common case quickly, push the rest aside.</p><div class="say"><b>In APMS</b>The 1-minute aggregation flush is arguably warm: it is asynchronous but time-bounded, since stale stats delay learning.</div></div></details>
+</div>
+<div class="group"><div class="group-title">The planes</div>
+<details open><summary><span class="n">4</span>Data plane</summary><div class="ans"><p>The part that <b>carries the real traffic</b>: it does the actual work the product exists for. Data plane = "what happens to each request".</p><div class="say"><b>In APMS</b>The Go selector forwarding scraper requests through proxy vendors and returning pages.</div></div></details>
+<details open><summary><span class="n">5</span>Control plane</summary><div class="ans"><p>The part that <b>decides the rules</b> the data plane follows, but does not carry user traffic itself. Control plane = "how should requests be handled". It changes slowly and is allowed to be slower than the data plane.</p><div class="say"><b>In APMS</b>The per-host settings in Mongo (probabilities, on/off switch, costs, learning rate) and the Python updater that rewrites them. A human flipping a vendor switch is manual control; the updater is automated control. That is the "Automated" in APMS.</div><div class="gap"><b>Mix-up to avoid</b>People call Mongo "the database" and stop there. Name it as the control plane state and the updater as the control loop, and the design sounds deliberate.</div></div></details>
+<details open><summary><span class="n">6</span>Management plane</summary><div class="ans"><p>Sometimes listed as a third plane: tools for humans to configure, monitor and operate the system (dashboards, admin UIs, deployment). Many teams fold it into the control plane.</p><div class="say"><b>In APMS</b>Closest items are the <code>/health</code> endpoint and whatever you use to edit Mongo documents. APMS has no admin UI of its own.</div></div></details>
+<details open><summary><span class="n">7</span>Why separate planes at all?</summary><div class="ans"><p>So that a failure or slowdown in the rules side cannot take down traffic. If the control plane dies, the data plane keeps running on the last known rules.</p><div class="say"><b>In APMS</b>If the Python updater stops, requests keep flowing using the last probabilities in Mongo and Redis. They just stop improving.</div><div class="gap"><b>Mix-up to avoid</b>This works only if the data plane caches rules locally. APMS does that with Redis and a 5-minute TTL. But if Redis and Mongo are both unreachable, the request fails, so the independence is partial.</div></div></details>
+</div>
+<div class="group"><div class="group-title">Loops and state</div>
+<details open><summary><span class="n">8</span>Feedback loop (closed loop)</summary><div class="ans"><p>The system measures the result of its own decisions and uses it to change future decisions. A thermostat is the classic example. Without the measurement step it is an open loop: set once and hope.</p><div class="say"><b>In APMS</b>Pick vendor, observe 200 or not, adjust probability, pick again. The whole point of the project.</div></div></details>
+<details open><summary><span class="n">9</span>Source of truth vs cache</summary><div class="ans"><p>The source of truth is the one place whose value is final. A cache is a faster copy that may be slightly stale and can be thrown away and rebuilt.</p><div class="say"><b>In APMS</b>Mongo is the source of truth. Redis is the cache, with a 5-minute lifetime (TTL).</div></div></details>
+<details open><summary><span class="n">10</span>Cache-aside, TTL and cache stampede</summary><div class="ans"><ul><li><b>Cache-aside:</b> the app checks the cache first, and on a miss loads from the database and fills the cache.</li><li><b>TTL:</b> time to live, how long a cached value stays before it expires.</li><li><b>Stampede:</b> when a popular key expires and many requests all hit the database at once.</li></ul><div class="say"><b>In APMS</b>On a miss, one request takes a Redis lock (<code>SETNX</code>) and reads Mongo. The others wait and poll Redis, so Mongo sees one read instead of hundreds.</div></div></details>
+<details open><summary><span class="n">11</span>Eventual consistency</summary><div class="ans"><p>Different parts of the system may briefly disagree, but they converge if you wait. You trade instant agreement for speed and resilience.</p><div class="say"><b>In APMS</b>A vendor starts failing now, and the system stops favouring it about 6.5 minutes later (1 min aggregation + 30 s batching + up to 5 min cache).</div></div></details>
+</div>
+<div class="group"><div class="group-title">Flow and pressure</div>
+<details open><summary><span class="n">12</span>Synchronous vs asynchronous</summary><div class="ans"><p>Synchronous: the caller waits for the answer. Asynchronous: the caller hands off work and moves on, getting results later or never.</p><div class="say"><b>In APMS</b>Making the proxied request is synchronous. Recording the outcome is asynchronous (channel, then SQS).</div></div></details>
+<details open><summary><span class="n">13</span>Batching and aggregation</summary><div class="ans"><p>Combine many small events into one bigger message. You pay less overhead per event and lose a little freshness.</p><div class="say"><b>In APMS</b>Thousands of per-request outcomes become one SQS message per minute per instance, holding counts per host and vendor.</div></div></details>
+<details open><summary><span class="n">14</span>Backpressure</summary><div class="ans"><p>What happens when a producer is faster than its consumer. Options: block the producer, drop items, or buffer more. Blocking passes the slowness upstream.</p><div class="say"><b>In APMS</b>The outcome channel holds 1000 items. If it fills, <code>Push</code> blocks and can slow live requests.</div><div class="gap"><b>Mix-up to avoid</b>On the hot path, telemetry should never block. Dropping events with a counter is usually the right choice.</div></div></details>
+<details open><summary><span class="n">15</span>Fail open vs fail closed</summary><div class="ans"><p>When a safety or routing component breaks, do you let traffic through anyway (fail open) or refuse it (fail closed)?</p><div class="say"><b>In APMS</b>If every vendor is switched off for a host, APMS returns an error rather than sending the request without a proxy. That is fail closed, and it protects your own IP address from being exposed or banned.</div></div></details>
+<details open><summary><span class="n">16</span>Exploration vs exploitation</summary><div class="ans"><p>Use what looks best now (exploit), or try alternatives to learn whether they are better (explore). Too much exploitation locks you onto a stale favourite. Too much exploration wastes traffic.</p><div class="say"><b>In APMS</b>Weighted random choice means weaker vendors still get a share of requests, which keeps learning alive.</div></div></details>
+<details open><summary><span class="n">17</span>Stateless vs stateful</summary><div class="ans"><p>Stateless: an instance keeps nothing that matters between requests, so you can add or remove copies freely. Stateful: it holds data you would lose or have to move.</p><div class="say"><b>In APMS</b>Selector instances are nearly stateless, with one exception: the in-memory one-minute stats window, which is lost if an instance dies.</div></div></details>
+<details open><summary><span class="n">18</span>Latency vs throughput</summary><div class="ans"><p>Latency is how long one request takes. Throughput is how many requests per second the system handles. Optimizing one can hurt the other.</p><div class="say"><b>In APMS</b>Batching raises throughput of the cold path at the cost of freshness. The hot path is tuned for latency: cache first, no database writes.</div></div></details>
+
+    </div>
+  </section>
+  <section>
+    <h2>Say it in an interview</h2>
+    <div class="pitch"><p>"The request path is the hot path and stays minimal: a Redis read, a weighted pick and the proxied call. Outcomes go to a cold path through a channel and SQS, where a Python job updates probabilities. That job is the control plane, so the data plane never waits on learning, and if the control plane stops, traffic keeps running on the last known rules."</p></div>
+  </section>
+  <footer>The Mongo, Redis and SQS details come from the APMS source code. Terms are standard industry vocabulary and different companies draw the lines slightly differently, so ask what an interviewer means if a term is used loosely.</footer>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.3/dist/mermaid.min.js"></script>
+<script>
+  (function(){
+    var pre = document.getElementById("vocabDiagram"), fb = document.getElementById("vocabFallback");
+    function fallback(){ if(pre) pre.hidden = true; if(fb) fb.hidden = false; }
+    if(!window.mermaid){ fallback(); return; }
+    var root = document.documentElement.getAttribute("data-theme");
+    var dark = root ? root === "dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    try {
+      mermaid.initialize({ startOnLoad:false, theme: dark ? "dark" : "neutral", flowchart:{ curve:"basis", htmlLabels:true } });
+      mermaid.run({ nodes:[pre] }).catch(fallback);
+    } catch(e){ fallback(); }
+  })();
+</script>
+<script>
+  var all=function(){return document.querySelectorAll("details");};
+  document.getElementById("openAll").addEventListener("click",function(){all().forEach(function(d){d.open=true;});});
+  document.getElementById("closeAll").addEventListener("click",function(){all().forEach(function(d){d.open=false;});});
+</script>
+</body></html>

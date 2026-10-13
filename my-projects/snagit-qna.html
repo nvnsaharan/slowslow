@@ -1,0 +1,199 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SnagIt Practice QnA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,500;12..96,700&family=Figtree:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+  /* Layout: single reading column, Q&A as open disclosure rows grouped by theme, one data-flow diagram up top */
+  :root{
+    --bg:#f6f7f4; --surface:#ffffff; --ink:#18201c; --muted:#56635b; --faint:#8a968f;
+    --line:#dde3dd; --accent:#0f6b52; --accent-soft:#e1f0ea; --warn:#9a5b00; --warn-soft:#f8ecd6;
+    --code:#eef1ec;
+    --display:"Bricolage Grotesque","Segoe UI",system-ui,sans-serif;
+    --body:"Figtree",system-ui,-apple-system,"Segoe UI",sans-serif;
+    --mono:"JetBrains Mono",ui-monospace,Menlo,Consolas,monospace;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#0f1512; --surface:#161e19; --ink:#e6ece8; --muted:#a2b0a8; --faint:#6f7e76;
+      --line:#26322b; --accent:#59c9a3; --accent-soft:#18322a; --warn:#e5b45e; --warn-soft:#33270f;
+      --code:#1c2620; color-scheme:dark;
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:#0f1512; --surface:#161e19; --ink:#e6ece8; --muted:#a2b0a8; --faint:#6f7e76;
+    --line:#26322b; --accent:#59c9a3; --accent-soft:#18322a; --warn:#e5b45e; --warn-soft:#33270f;
+    --code:#1c2620; color-scheme:dark;
+  }
+  *{box-sizing:border-box}
+  body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.6;
+    padding-inline:16px;padding-block:40px 80px;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:780px;margin:0 auto;display:flex;flex-direction:column;gap:44px}
+  .eyebrow{font-family:var(--mono);font-size:12px;letter-spacing:.12em;text-transform:uppercase;color:var(--accent)}
+  h1{font-family:var(--display);font-weight:700;font-size:clamp(2rem,6vw,3rem);line-height:1.05;letter-spacing:-.02em;margin:8px 0 14px;text-wrap:balance}
+  .lede{color:var(--muted);font-size:1.08rem;max-width:62ch;margin:0}
+  h2{font-family:var(--display);font-weight:700;font-size:1.45rem;letter-spacing:-.01em;margin:0 0 6px;text-wrap:balance}
+  .sub{color:var(--muted);margin:0 0 18px;max-width:64ch}
+  code{font-family:var(--mono);font-size:.86em;background:var(--code);padding:1px 5px;border-radius:4px}
+  .pitch{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:20px 22px}
+  .pitch p{margin:0 0 10px} .pitch p:last-child{margin:0}
+  .facts{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+  .fact{background:var(--surface);padding:14px 16px;min-width:0}
+  .fact b{display:block;font-family:var(--mono);font-size:12px;font-weight:500;color:var(--faint);text-transform:uppercase;letter-spacing:.06em;margin-bottom:4px}
+  .fact span{font-size:.95rem}
+  .diagram{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px;overflow-x:auto}
+  .diagram pre.mermaid{margin:0;min-width:560px}
+  .toolbar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  button{font:inherit;font-size:.85rem;font-weight:500;color:var(--ink);background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:6px 12px;cursor:pointer}
+  button:hover{border-color:var(--accent)}
+  button:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+  .group{display:flex;flex-direction:column;gap:10px}
+  .group-title{font-family:var(--mono);font-size:12px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin:14px 0 2px;display:flex;align-items:center;gap:10px}
+  .group-title::after{content:"";flex:1;height:1px;background:var(--line)}
+  details{background:var(--surface);border:1px solid var(--line);border-radius:10px}
+  summary{cursor:pointer;list-style:none;padding:14px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:baseline;font-weight:600}
+  summary::-webkit-details-marker{display:none}
+  summary .n{font-family:var(--mono);font-size:12px;color:var(--accent);font-weight:500}
+  summary::after{content:"+";font-family:var(--mono);color:var(--faint)}
+  details[open] summary::after{content:"\2212"}
+  .ans{padding:0 16px 16px 16px;display:flex;flex-direction:column;gap:10px;color:var(--ink)}
+  .ans p{margin:0} .ans ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:5px}
+  .say{border-left:3px solid var(--accent);background:var(--accent-soft);padding:9px 13px;border-radius:0 8px 8px 0;font-size:.97rem}
+  .say b{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--accent);display:block;margin-bottom:2px;font-weight:500}
+  .gap{border-left:3px solid var(--warn);background:var(--warn-soft);padding:9px 13px;border-radius:0 8px 8px 0;font-size:.95rem}
+  .gap b{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--warn);display:block;margin-bottom:2px;font-weight:500}
+  .src{font-family:var(--mono);font-size:12px;color:var(--faint)}
+  table{border-collapse:collapse;width:100%;font-size:.92rem}
+  .tscroll{overflow-x:auto}
+  th,td{text-align:left;padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+  th{font-family:var(--mono);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--faint);font-weight:500}
+  footer{color:var(--faint);font-size:.85rem;border-top:1px solid var(--line);padding-top:16px}
+  @media (prefers-reduced-motion:reduce){*{transition:none!important}}
+  .diagram pre.mermaid{margin:0;min-width:640px;text-align:center;font-family:var(--body)}
+  .flow{display:flex;flex-wrap:wrap;gap:8px 6px;align-items:center;font-size:.88rem}
+  .flow span{background:var(--accent-soft);border:1px solid var(--line);border-radius:6px;padding:3px 9px;font-weight:600}
+  .flow i{color:var(--muted);font-style:normal;font-size:.8rem}
+  .back{font-size:.9rem}.back a{color:var(--accent)}
+  .def{display:grid;grid-template-columns:1fr;gap:10px}
+  .tag{font-family:var(--mono);font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--faint);font-weight:500}
+  .term{font-family:var(--display);font-weight:700;font-size:1.05rem}
+  .pair{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
+  .pair>div{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+  .pair h3{margin:0 0 4px;font-family:var(--display);font-size:1.05rem}
+  .pair p{margin:0;font-size:.95rem;color:var(--muted)}
+</style>
+<style>.diagram pre.mermaid{margin:0;min-width:560px;text-align:center;font-family:var(--body)} .flow{display:flex;flex-wrap:wrap;gap:8px 6px;align-items:center;font-size:.88rem} .flow span{background:var(--accent-soft);border:1px solid var(--line);border-radius:6px;padding:3px 9px;font-weight:600} .flow i{color:var(--muted);font-style:normal;font-size:.8rem} .back{font-size:.9rem} .back a{color:var(--accent)}.pair p b{color:var(--ink)} .nav{font-size:.9rem;display:flex;flex-wrap:wrap;gap:6px 14px} .nav a{color:var(--accent)} .ok{color:var(--accent)} .bad{color:var(--warn)} td b{font-weight:600}</style></head><body>
+<div class="wrap">
+<p class="nav"><a href="../index.html">&larr; Course Library</a><a href="apms-interview.html">APMS Q&amp;A</a><a href="system-design-vocabulary.html">Ch 2 Vocabulary</a><a href="snagit-overview.html">Ch 3 SnagIt overview</a><a href="snagit-systems-explained.html">Ch 4 Systems explained</a><a href="snagit-qna.html">Ch 5 Practice Q&amp;A</a> &middot; <a href="core-techniques-revision.html">Ch 6 Core techniques</a></p>
+<header><div class="eyebrow">Chapter 5 &middot; SnagIt</div><h1>SnagIt practice questions</h1><p class="lede">Questions grouped by what an interviewer is probing, with answers grounded in the code and docs.</p></header>
+<section><h2>79 practice questions</h2><p class="sub">Click Random question, answer out loud, then open it. Green is what to say. Amber is the weak spot to admit.</p><div class="toolbar"><button type="button" id="rand">Random question</button><button type="button" id="openAll">Expand all</button><button type="button" id="closeAll">Collapse all</button></div><p id="rqshow" class="sub" style="color:var(--accent)"></p><div class="group"><div class="group-title">Product and fleet</div>
+<details><summary><span class="n">Q1</span>What is SnagIt in one sentence?</summary><div class="ans"><p>A backend plus three Android apps that run scraping jobs on a fleet of consumer phones over residential IPs, and deliver the results as files to a B2B customer.</p></div></details>
+<details><summary><span class="n">Q2</span>Why phones and not servers?</summary><div class="ans"><p>Targets block data-centre IPs and bot-like clients. Real phones on residential networks look like normal users.</p><div class="gap"><b>Know the catch</b>The fleet is not owned, so battery, data and consent become design constraints.</div></div></details>
+<details><summary><span class="n">Q3</span>Who are the two external parties and why do they never talk?</summary><div class="ans"><p>The customer producer (publishes batches to SQS) and the phones (poll HTTP). We sit between so each side runs at its own pace.</p></div></details>
+<details><summary><span class="n">Q4</span>How do you get phones?</summary><div class="ans"><p>Users install our comparison apps (Comparoo, Compario, Comparion) and the app contributes background scraping in exchange for the tool and points.</p><div class="gap"><b>Know the catch</b>Consent must be explicit. Compario defaults FleetConsent to no.</div></div></details>
+<details><summary><span class="n">Q5</span>What is a "walk"?</summary><div class="ans"><p>A job that collects data for one store or category, up to about 45 minutes, with heartbeats. Short jobs like search are about 30 seconds.</p></div></details>
+<details><summary><span class="n">Q6</span>What job types exist?</summary><div class="ans"><p>Blinkit assortment, product_listing, category discovery, US ride routes, and per-store catalogue walks. Lease lengths differ per type.</p></div></details>
+<details><summary><span class="n">Q7</span>What is the difference between the three apps?</summary><div class="ans"><p>Comparoo: India grocery plus rides (com.automation.jediapp). Compario: US rides (com.jedi.us). Comparion: Africa rides, Tanzania default, negotiated fares never badged cheapest.</p><div class="gap"><b>Know the catch</b>Africa has no backend cell yet.</div></div></details>
+<details><summary><span class="n">Q8</span>How do users earn?</summary><div class="ans"><p>The Earn feature runs background scraping and awards points. The apps removed earn/points messaging on the marketing site for Compario.</p></div></details>
+</div>
+<div class="group"><div class="group-title">Architecture and service split</div>
+<details><summary><span class="n">Q9</span>Why four services from one image?</summary><div class="ans"><p>Split by resource profile and scaling signal. dispatch scales on request rate, artifactworker on build queue depth, orchestrator and control are fixed. One image keeps one toolchain and one build.</p><div class="say"><b>Say this</b>The split is by what the process does to the machine, not by domain.</div></div></details>
+<details><summary><span class="n">Q10</span>Why does dispatch have no database handle?</summary><div class="ans"><p>So its scale can never multiply DB connections. v1 scaled on queue depth and exhausted the pool. The doc checks that go list shows no pgx in cmd/dispatch.</p></div></details>
+<details><summary><span class="n">Q11</span>Why Go instead of staying on Python?</summary><div class="ans"><p>Measured 47,345 req/s with p99 3.4 ms in Go vs 5,325 req/s and 17.2 ms in FastAPI. The decision was also about maintainability and one binary. Parity tests found four defects.</p><div class="gap"><b>Know the catch</b>Benchmarks are laptop numbers.</div></div></details>
+<details><summary><span class="n">Q12</span>What are the orchestrator loops?</summary><div class="ans"><p>intake, settler, sweep (30 s), reap (10 s), outbox (5 s), shelf (5 s), reconcile (60 s), revocations (60 s), retention (hourly), backlog (60 s), fleet (60 s).</p></div></details>
+<details><summary><span class="n">Q13</span>How do multiple orchestrator replicas avoid doing the same work?</summary><div class="ans"><p>No leader election. SQS visibility timeouts, a Redis consumer group, and FOR UPDATE SKIP LOCKED partition the work.</p><div class="gap"><b>Know the catch</b>Admission control still needs a fixed count.</div></div></details>
+<details><summary><span class="n">Q14</span>What is the control plane here?</summary><div class="ans"><p>control service, app_config, revocations, admission control and reconcilers. They decide rules; dispatch carries traffic.</p></div></details>
+<details><summary><span class="n">Q15</span>How do you evolve APIs when installed apps cannot be updated?</summary><div class="ans"><p>A compatibility shim serves v1 paths in v2, and a minimum version code gate stops old builds that cannot behave.</p><div class="gap"><b>Know the catch</b>Temporary token bridge cannot verify tokens.</div></div></details>
+<details><summary><span class="n">Q16</span>Why a producer API for US routes?</summary><div class="ans"><p>Customers could not publish to SQS directly for rides. POST /v2/producer/us-routes accepts routes with expiry and an hourly rate limit and queues a batch.</p><div class="gap"><b>Know the catch</b>Default minimum expiry is 30 minutes because ride intake shares the queue with Blinkit bursts.</div></div></details>
+</div>
+<div class="group"><div class="group-title">Redis, Lua and queueing</div>
+<details><summary><span class="n">Q17</span>Explain the shelf.</summary><div class="ans"><p>Per type and priority sorted sets holding job ids, a hash of payloads, a zset of leases and a hash of lease metadata. Dispatch pops the first non-empty key in the device plan order.</p></div></details>
+<details><summary><span class="n">Q18</span>How do you guarantee one device per job?</summary><div class="ans"><p>claim.lua uses ZPOPMIN, which removes the member as it reads it, inside single-threaded Redis. No race and no row to vacuum.</p><div class="say"><b>Say this</b>Atomicity of the script is the guarantee.</div></div></details>
+<details><summary><span class="n">Q19</span>Why encode priority in the key?</summary><div class="ans"><p>First non-empty key wins is correct global ordering only because the caller sorts keys highest first. It also means a miss is a few O(1) calls on mostly missing keys.</p></div></details>
+<details><summary><span class="n">Q20</span>Why not a Postgres queue with SKIP LOCKED?</summary><div class="ans"><p>At 1,667 claims/s delete-on-claim creates about 144M dead tuples a day. Eligibility was the argument for SQL; encoding it at enqueue removed it.</p><div class="gap"><b>Know the catch</b>reclassify.lua moves already queued work when eligibility changes.</div></div></details>
+<details><summary><span class="n">Q21</span>What does the reaper do?</summary><div class="ans"><p>reap.lua takes expired leases (bounded per call), restores the original score so the job keeps its place, requeues, and buries after max attempts into a dead set.</p><div class="gap"><b>Know the catch</b>Dead set lives only in Redis.</div></div></details>
+<details><summary><span class="n">Q22</span>Why restore the original score?</summary><div class="ans"><p>A reclaimed job should not go to the back. The trade-off: a failing job holds the head of its lane until max attempts.</p></div></details>
+<details><summary><span class="n">Q23</span>What was the complete.lua bug?</summary><div class="ans"><p>The holder was read as the last field of lease metadata. After claimed_ms was appended, it compared device id to a timestamp, every release returned 0 and no lease was torn down. Fixed by matching trailing digits explicitly.</p><div class="say"><b>Say this</b>Appending a field to a packed string broke a positional parse. Now matched explicitly and tested.</div></div></details>
+<details><summary><span class="n">Q24</span>Why do late results return 200?</summary><div class="ans"><p>A late but genuine result is a success. v1 returned 400, the phone counted it as its own failure, and three of those ended a run.</p></div></details>
+<details><summary><span class="n">Q25</span>What is the drain rate and why count it in Lua?</summary><div class="ans"><p>Jobs leaving the shelf per minute. Counted with one INCR on the hit path (about 17% of calls) so admission control uses the real fleet speed rather than an assumption.</p></div></details>
+<details><summary><span class="n">Q26</span>What is a Redis hash tag and why use it?</summary><div class="ans"><p>Braces like {in} in the key force keys into the same slot so multi-key Lua stays legal on cluster. The cost is a cell pinned to one slot (about 100k claims/s).</p></div></details>
+<details><summary><span class="n">Q27</span>What happened with float scores?</summary><div class="ans"><p>now_ms + position/1e6 was rounded away in float64, making FIFO arbitrary silently. Fixed with integer ticks.</p></div></details>
+</div>
+<div class="group"><div class="group-title">Postgres, ledger, outbox and idempotency</div>
+<details><summary><span class="n">Q28</span>Why keep Postgres if Redis serves jobs?</summary><div class="ans"><p>Redis is derived and can be lost. Postgres is the ledger that can rebuild the shelf and prove what was settled.</p></div></details>
+<details><summary><span class="n">Q29</span>What does "ledger first, shelf second" prevent?</summary><div class="ans"><p>A crash between them. Reverse order leaves a dispatchable job with no ledger row that cannot settle. Correct order leaves a ready row not on the shelf, and the reconciler re-fills it.</p></div></details>
+<details><summary><span class="n">Q30</span>Why settle before releasing the lease?</summary><div class="ans"><p>If Redis is lost after release, both result and lease are gone while the ledger says outstanding. Settling first makes the worst case a redo, never silent loss.</p></div></details>
+<details><summary><span class="n">Q31</span>How are retries idempotent?</summary><div class="ans"><p>job_id = blake2b(batch_id||msg_id), seen_messages guards intake, and the settler status-transition claim makes a second settlement a no-op.</p></div></details>
+<details><summary><span class="n">Q32</span>Explain the outbox.</summary><div class="ans"><p>Messages owed are rows with sent_at NULL. The drain claims with SKIP LOCKED, sends, marks sent. Locks stay held across the send to avoid deadlock with a split design.</p><div class="gap"><b>Know the catch</b>At-least-once, so receivers must dedupe.</div></div></details>
+<details><summary><span class="n">Q33</span>Why partition completions by month?</summary><div class="ans"><p>Retention can drop an old partition cheaply instead of deleting rows. ensure_completion_partitions creates future ones.</p></div></details>
+<details><summary><span class="n">Q34</span>How do you protect Postgres connections?</summary><div class="ans"><p>Budget 0 + 32 + 32 + 4 = 68 against role limit 80. A test recomputes it from config.json.</p></div></details>
+<details><summary><span class="n">Q35</span>Why batch 500 results per transaction?</summary><div class="ans"><p>0.018 transactions per result. At design load 73.1 txns/s instead of 1,667/s.</p></div></details>
+</div>
+<div class="group"><div class="group-title">Failure modes and reliability</div>
+<details><summary><span class="n">Q36</span>Phone dies mid-job.</summary><div class="ans"><p>Lease expires, reaper requeues with the original score, next phone picks it up. After 3 attempts the job is buried.</p></div></details>
+<details><summary><span class="n">Q37</span>Redis is lost.</summary><div class="ans"><p>Pending results and leases die together. The ledger says outstanding, reconcile rebuilds the shelf, a phone redoes it. Wasteful, never silently wrong.</p><div class="gap"><b>Know the catch</b>No automatic failover or backups today.</div></div></details>
+<details><summary><span class="n">Q38</span>Postgres is down.</summary><div class="ans"><p>dispatch is unaffected (no DB). Settlement stalls and results queue on the Redis stream. Orchestrator retries.</p></div></details>
+<details><summary><span class="n">Q39</span>S3 is down.</summary><div class="ans"><p>dispatch returns 503 with jittered Retry-After. The phone retries; the ResultOutbox keeps unsent results.</p></div></details>
+<details><summary><span class="n">Q40</span>Why 503 and never 500?</summary><div class="ans"><p>The client treats non-404/429 as its own failure and stops after three. 503 plus Retry-After means come back later.</p></div></details>
+<details><summary><span class="n">Q41</span>What is the silent-loss risk?</summary><div class="ans"><p>Work older than SQS retention is hard-deleted with no error or ledger row. blinkit-in retains 5 hours, design assumed 14 days. backlog loop reports headroom_s.</p><div class="say"><b>Say this</b>I would name this before they ask.</div><div class="gap"><b>Know the catch</b>The fix needs another team to change retention.</div></div></details>
+<details><summary><span class="n">Q42</span>A poison message?</summary><div class="ans"><p>DLQ with redrive. Throttle retry must outlast the redrive window (fix on 5 Oct).</p></div></details>
+<details><summary><span class="n">Q43</span>Fleet drains slower than supply.</summary><div class="ans"><p>Admission control caps intake to drain_rate x deadline. Supply 1,667/s vs drain about 9.3/s is a 180x gap.</p></div></details>
+<details><summary><span class="n">Q44</span>What caused the 5,000 rejected submits a day in v1?</summary><div class="ans"><p>Empty walks were rejected, each counted as a phone failure, stopping 753 devices (about 12% of fleet). v2 returns 200 on an empty walk.</p></div></details>
+<details><summary><span class="n">Q45</span>How do you detect trouble?</summary><div class="ans"><p>16-stage log vocabulary to Loki, three Grafana dashboards, 18 alerts. A fleet-drain-collapse alert had never been able to evaluate until it was fixed.</p></div></details>
+</div>
+<div class="group"><div class="group-title">Security and auth</div>
+<details><summary><span class="n">Q46</span>How do phones authenticate?</summary><div class="ans"><p>Device token (HMAC-SHA256, 30-day max, epoch) from POST /v2/enrol, and a work token bound to job and device with 1 h TTL.</p></div></details>
+<details><summary><span class="n">Q47</span>Why is the work token TTL longer than the lease?</summary><div class="ans"><p>So a slow but genuine completion after lease expiry is still provable and can be accepted.</p></div></details>
+<details><summary><span class="n">Q48</span>How does revocation work?</summary><div class="ans"><p>Revoking bumps the device epoch. The orchestrator republishes revoked devices to Redis every 60 s. The epoch was once never compared; now it is.</p></div></details>
+<details><summary><span class="n">Q49</span>Is guest enrolment safe?</summary><div class="ans"><p>It mirrors v1: any presented string enrols. It is a known weakness; real verification is on the list.</p><div class="gap"><b>Know the catch</b>The v1 token bridge also cannot verify tokens.</div></div></details>
+<details><summary><span class="n">Q50</span>What secrets exist and where?</summary><div class="ans"><p>Secrets Manager entries injected with :field:: JSON-key suffix. Redis has a 40-character password, plain redis://, shared security group.</p><div class="gap"><b>Know the catch</b>No TLS to Redis. Task role has AmazonSQSFullAccess.</div></div></details>
+<details><summary><span class="n">Q51</span>Leased credentials?</summary><div class="ans"><p>The orchestrator leases a provider account credential for a job, and logs redact it. A test proves a leased credential actually authenticates a walk.</p></div></details>
+<details><summary><span class="n">Q52</span>Any legal risk?</summary><div class="ans"><p>Bolt adapter uses a private rider API and the README warns to check terms. Fleet consent follows Play policy.</p></div></details>
+</div>
+<div class="group"><div class="group-title">Clients and Android</div>
+<details><summary><span class="n">Q53</span>Why gomobile?</summary><div class="ans"><p>Shared Go provider logic with TLS fingerprinting and parsing, exposed as one caller package in an AAR. UI stays native Kotlin/Compose.</p><div class="gap"><b>Know the catch</b>Providers drifted between India and US copies.</div></div></details>
+<details><summary><span class="n">Q54</span>How does background scraping run?</summary><div class="ans"><p>WorkManager worker with a shared ScrapeCycle mutex. An Android 15 crash from a restricted foreground-service type led to running inside the worker.</p></div></details>
+<details><summary><span class="n">Q55</span>What happens offline?</summary><div class="ans"><p>ResultOutbox stores unsent results (55 min, 50 entries, 1 MB). The server sets next poll. 404 retries after 3 s and 8 s.</p></div></details>
+<details><summary><span class="n">Q56</span>How do pushes start work?</summary><div class="ans"><p>FCM silent_sync messages start a cycle. Message types: normal, cta, feedback, silent_sync. In the US the orchestrator sends them every 30 min inside the work window.</p></div></details>
+<details><summary><span class="n">Q57</span>How did you cut Comparoo latency?</summary><div class="ans"><p>Three causes: EncryptedSharedPreferences rebuilt on every construction (60-90 ms each), Moshi falling back to reflection (about 480 ms, three times) because codegen was missing, and sequential store calls. Connect tab went from 3-4 s to 20-340 ms.</p><div class="say"><b>Say this</b>Measure first: I could name three concrete causes.</div></div></details>
+<details><summary><span class="n">Q58</span>What is DemoMode?</summary><div class="ans"><p>For Play reviewers. The server ships only the SHA-256 of the access code and demo mode borrows a sample pickup when location is denied.</p></div></details>
+<details><summary><span class="n">Q59</span>ProviderConfigSync?</summary><div class="ans"><p>Backend can override provider hosts, headers and field names through /rides/provider-config, applied only when version increases. Lets us fix a provider change without a release.</p></div></details>
+<details><summary><span class="n">Q60</span>How are ride fares ranked?</summary><div class="ans"><p>Cheapest, Fastest, Best value. Negotiated-fare providers are never badged. It never books, only deeplinks.</p><div class="gap"><b>Know the catch</b>Value-of-time numbers in Africa are assumptions.</div></div></details>
+<details><summary><span class="n">Q61</span>Local storage and its risks?</summary><div class="ans"><p>Auth token in EncryptedSharedPreferences (plaintext fallback if MasterKey fails). Provider sessions in unencrypted bbolt. Cart is in memory only.</p></div></details>
+<details><summary><span class="n">Q62</span>Testing?</summary><div class="ans"><p>About 20 unit test files in Comparoo, 125/127 pass. No Android CI workflow yet. Backend CI runs real Redis and Postgres.</p></div></details>
+</div>
+<div class="group"><div class="group-title">Deploy, observability and cost</div>
+<details><summary><span class="n">Q63</span>Why the arm64 pin?</summary><div class="ans"><p>Cluster is all Graviton t4g.xlarge. An amd64 image dies with exec format error before any log reaches Loki, which looks like silence.</p></div></details>
+<details><summary><span class="n">Q64</span>Why a separate target group and /v2/health?</summary><div class="ans"><p>v1 checks /health which v2 does not serve. Registering v2 in the v1 group fails every check and ECS kills tasks in a loop that looks like an app bug.</p></div></details>
+<details><summary><span class="n">Q65</span>How was cutover done?</summary><div class="ans"><p>Added v2 by rules first, tested, then moved the ALB default action. First attempt on 25 Sep was rolled back; v2 serves the fleet since 28 Sep. v1 is at desiredCount 0.</p><div class="gap"><b>Know the catch</b>Rollback is no longer one call.</div></div></details>
+<details><summary><span class="n">Q66</span>How do configs stay correct?</summary><div class="ans"><p>config.json is the single source rendered into task definitions. Tests fail if a variable without a safe default is unset.</p><div class="say"><b>Say this</b>Missing REDIS_URL would dial localhost and look like an empty shelf.</div></div></details>
+<details><summary><span class="n">Q67</span>What does it cost?</summary><div class="ans"><p>About $30/month idle. At design load S3 PUTs would be about $43k/month, which is why presigned uploads matter.</p><div class="gap"><b>Know the catch</b>No budget alarm.</div></div></details>
+<details><summary><span class="n">Q68</span>How is retention handled?</summary><div class="ans"><p>retention.sql with bounded purge functions and monthly partitions. S3 lifecycle: staging 1 day, artifacts to IA at 7 days, Glacier IR at 30.</p></div></details>
+</div>
+<div class="group"><div class="group-title">Scale and capacity math</div>
+<details><summary><span class="n">Q69</span>How many polls per second and how many jobs?</summary><div class="ans"><p>Design budget: 10,000 polls/s and 1,667 jobs/s. About 83% of polls are misses.</p><div class="gap"><b>Know the catch</b>Budgets, not an end-to-end run.</div></div></details>
+<details><summary><span class="n">Q70</span>Why is fleet drain the real limit?</summary><div class="ans"><p>10,000 devices at about 9.3 jobs/s total means 10,000 batches would take about 15 hours. Hence admission control.</p></div></details>
+<details><summary><span class="n">Q71</span>What breaks first as you scale 10x?</summary><div class="ans"><p>A single Redis slot per cell (about 100k claims/s), the single Redis host, and Postgres being shared. Split cells by routing and use a dedicated Postgres.</p></div></details>
+<details><summary><span class="n">Q72</span>What is the connection budget?</summary><div class="ans"><p>68 of 80: dispatch 0, orchestrator 32, artifactworker 32, control 4.</p></div></details>
+<details><summary><span class="n">Q73</span>Footprint at 500k queued jobs?</summary><div class="ans"><p>Redis 477 MB, Postgres 331 MB (measured).</p></div></details>
+</div>
+<div class="group"><div class="group-title">Behavioural and hindsight</div>
+<details><summary><span class="n">Q74</span>What did you personally own?</summary><div class="ans"><p>Fill from the "My part" list: Comparoo earner and providers, Compario start, orchestrator credential leasing and store lookup, enrolment and user endpoints, cutover readiness report.</p><div class="say"><b>Say this</b>Pick two stories with a problem, a decision and a result.</div><div class="gap"><b>Know the catch</b>Do not claim backend core work that Arun Singh built.</div></div></details>
+<details><summary><span class="n">Q75</span>A bug you are proud of fixing?</summary><div class="ans"><p>Artifact worker read the staged blob from the wrong bucket; or the Grafana alert that could not evaluate since deploy, so it never fired.</p></div></details>
+<details><summary><span class="n">Q76</span>What would you change first?</summary><div class="ans"><p>Real load test, presigned uploads, Redis failover and backups, Android CI, fleet-wide rate limiter.</p></div></details>
+<details><summary><span class="n">Q77</span>What was the hardest decision?</summary><div class="ans"><p>Redis over Postgres for the shelf, and keeping dispatch DB-free. Both trade simplicity of one store for scale.</p></div></details>
+<details><summary><span class="n">Q78</span>Biggest risk today?</summary><div class="ans"><p>Silent loss from SQS retention, and Redis being a single host.</p></div></details>
+<details><summary><span class="n">Q79</span>How would you explain the cutover failure on 25 Sep?</summary><div class="ans"><p>Three of four blockers were invisible to code review and only appeared with production traffic (store location, credential leasing, missing v1 paths). We fixed them and cut over on 28 Sep.</p></div></details>
+</div>
+</section>
+<footer>Answers come from snagit/docs, the Lua scripts and git history read on 2026-10-13. Numbers marked as measured are laptop benchmarks. Verify your own role claims against the commit log.</footer>
+</div>
+
+<script>
+var all=function(){return document.querySelectorAll("details");};
+var oa=document.getElementById("openAll"),ca=document.getElementById("closeAll"),rq=document.getElementById("rand");
+if(oa)oa.addEventListener("click",function(){all().forEach(function(d){d.open=true;});});
+if(ca)ca.addEventListener("click",function(){all().forEach(function(d){d.open=false;});});
+if(rq)rq.addEventListener("click",function(){var a=Array.prototype.slice.call(all());a.forEach(function(d){d.open=false;});var d=a[Math.floor(Math.random()*a.length)];d.scrollIntoView({block:"center"});var t=d.querySelector("summary").textContent;document.getElementById("rqshow").textContent="Try answering out loud first: "+t;});
+</script>
+</body></html>
