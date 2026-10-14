@@ -42,6 +42,10 @@ Product launches specifically: lead with why-should-anyone-care, the problem, th
 - The first ~280 characters must earn the expand/scroll-stop on their own — never waste it on "Hi everyone" / "I'm excited to announce" / throat-clearing.
 - Threads only when one tweet genuinely can't hold the idea — not every thought needs one. Tweet 1 = strongest hook, tweet 2 = context, 3+ = evidence/story, last = takeaway.
 
+## Story structure
+
+For threads, launch posts and founder stories, shape the narrative with the `story-addiction-loop` skill (Stakes, Big Question, Headfake, Rehook). Use it for structure; this skill still owns voice, hooks and the review gate.
+
 ## Virality check (before returning any draft)
 
 Would I stop scrolling? Is there a curiosity gap? Is the idea clear? Is the payoff worth it? Does it sound like a real person? Would someone reply, or send this to a friend? Is anything in it unnecessary? Does the account/voice fit? If weak on more than one, rewrite before showing it.

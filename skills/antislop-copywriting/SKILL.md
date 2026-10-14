@@ -370,3 +370,6 @@ Run these alongside the core Delivery Gate when the task is copy work. Every lin
 - [ ] No AI-rhythm tells: no forced rule of three, no negative parallelism, no staccato drama, no aphorism formulas, no false ranges (R-36)
 - [ ] Voice present: the copy has a real voice (the user's sample or a clearly chosen tone), not a sterile default (R-37)
 - [ ] Read aloud: the copy sounds like a person wrote it, not like a model padded it
+
+## Related
+For narrative structure (stories, threads, scripts) see the `story-addiction-loop` skill.
